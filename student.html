@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#1565C0">
+<title>ছাত্র প্যানেল · মাদরাসাতুল মদিনা</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+/* ── Student theme ── */
+#lockScreen{background:linear-gradient(160deg,#0D47A1 0%,#1565C0 60%,#1976D2 100%)}
+.header{background:#1565C0}.tab-bar{background:#1565C0;border-bottom:2px solid #42A5F5}
+.tab-btn.active{border-bottom-color:#42A5F5}.tab-badge{background:#42A5F5;color:#0D47A1}
+.filter-chip.active{background:#1565C0}.progress-fill{background:#42A5F5}
+.send-btn{background:#1565C0}.goal-add-btn{background:#1565C0}.goal-check{border-color:#1565C0}
+.goal-check.done{background:#1565C0;border-color:#1565C0}.btn-primary{background:#1565C0}
+.form-input:focus{border-color:#1565C0}.sec-link{color:#1565C0}
+.goal-progress-wrap{background:#E3F2FD}.goal-progress-label{color:#1565C0}.goal-progress-fill{background:#1565C0}
+.stat-card{border-bottom:3px solid #42A5F5}.stat-num{color:#1565C0}
+.stat-card.green .stat-num{color:var(--green)}.stat-card.orange .stat-num{color:var(--orange)}.stat-card.red .stat-num{color:var(--red)}
+.stat-card.green{border-bottom-color:#4CAF50}.stat-card.orange{border-bottom-color:var(--orange)}.stat-card.red{border-bottom-color:#F44336}
+.at-done-btn{background:#1565C0}.at-done-btn.done{background:#4CAF50}.at-done-btn.late{background:#F44336}
+.msg-bubble.out{background:#BBDEFB;border-bottom-right-radius:4px}.msg-tick{color:#1565C0}.msg-sender{color:#1565C0}
+.task-bubble-hd{background:#0D47A1}
+.welcome-card{background:linear-gradient(135deg,#1565C0,#00BCD4)}
+.chat-messages{background-color:#E8EDF5;background-image:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%231565C0' fill-opacity='0.04'%3E%3Cpath d='M20 20.5V18H0v5h5v5H0v5h20v-5h15v-5H20v-.5z'/%3E%3C/g%3E%3C/svg%3E")}
+
+/* ── Task type badge ── */
+.type-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:6px}
+.type-badge.daily{background:#E8F5E9;color:#2E7D32}.type-badge.onetime{background:#FFF3E0;color:#E65100}
+.daily-reset-notice{font-size:12px;color:#2E7D32;background:#E8F5E9;border-radius:8px;padding:6px 10px;margin:8px 12px;display:flex;align-items:center;gap:6px}
+
+/* ── Exams ── */
+.exam-card{background:#fff;margin:10px 12px;border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden}
+.exam-card-hd{padding:12px 14px;display:flex;gap:12px;align-items:flex-start}
+.exam-card-icon{width:44px;height:44px;border-radius:12px;background:#E3F2FD;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.exam-card-info{flex:1;min-width:0}
+.exam-card-title{font-size:15px;font-weight:700;color:var(--gray-700)}
+.exam-card-meta{font-size:12px;color:var(--gray-400);margin-top:3px}
+.exam-card-ft{padding:8px 14px;background:var(--gray-50);border-top:1px solid var(--gray-100);display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.exam-start-btn{background:#1565C0;color:#fff;border:none;border-radius:20px;padding:7px 20px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer}
+.exam-done-chip{background:#E8F5E9;color:#2E7D32;padding:5px 12px;border-radius:12px;font-size:12px;font-weight:600}
+.exam-fail-chip{background:#FFEBEE;color:#C62828;padding:5px 12px;border-radius:12px;font-size:12px;font-weight:600}
+
+/* ── Quiz taking view ── */
+.quiz-view{display:none;flex-direction:column;flex:1;overflow:hidden}
+.quiz-view.open{display:flex}
+.quiz-header{background:#1565C0;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px}
+.quiz-timer{background:rgba(255,255,255,.2);border-radius:12px;padding:4px 12px;font-size:13px;font-weight:700;margin-left:auto}
+.quiz-timer.warning{background:#F44336;animation:pulse .8s infinite alternate}
+@keyframes pulse{from{opacity:1}to{opacity:.6}}
+.quiz-body{flex:1;overflow-y:auto;padding:12px}
+.quiz-question-card{background:#fff;border-radius:var(--radius);padding:14px;margin-bottom:12px;box-shadow:var(--shadow-sm)}
+.quiz-q-num{font-size:11px;font-weight:700;color:var(--gray-400);margin-bottom:6px}
+.quiz-q-text{font-size:15px;font-weight:600;color:var(--gray-700);margin-bottom:12px;line-height:1.5}
+.quiz-option{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:all .2s}
+.quiz-option:active{background:var(--gray-100)}
+.quiz-option.selected{border-color:#1565C0;background:#E3F2FD}
+.quiz-option input[type=radio]{accent-color:#1565C0}
+.quiz-answer-input{width:100%;border:1.5px solid var(--gray-300);border-radius:var(--radius);padding:10px 12px;font-family:var(--font);font-size:14px;outline:none}
+.quiz-answer-input:focus{border-color:#1565C0}
+.quiz-footer{padding:12px 16px;border-top:1px solid var(--gray-200);background:#fff}
+
+/* ── Documents ── */
+.doc-upload-area{border:2px dashed var(--gray-300);border-radius:var(--radius);padding:24px;text-align:center;margin:12px;cursor:pointer;transition:border-color .2s}
+.doc-upload-area:hover{border-color:#1565C0}
+.doc-upload-icon{font-size:40px;margin-bottom:8px}
+.doc-upload-label{font-size:14px;font-weight:600;color:var(--gray-600);margin-bottom:4px}
+.doc-upload-hint{font-size:12px;color:var(--gray-400)}
+.doc-sent-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--gray-100)}
+.doc-sent-icon{width:40px;height:40px;border-radius:10px;background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.doc-sent-info{flex:1;min-width:0}
+.doc-sent-name{font-size:14px;font-weight:600;color:var(--gray-700);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.doc-sent-meta{font-size:11px;color:var(--gray-400);margin-top:2px}
+.doc-cat-badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:8px;background:var(--gray-200);color:var(--gray-600);margin-right:4px}
+.upload-progress{height:4px;background:var(--gray-200);border-radius:2px;margin:4px 0;overflow:hidden}
+.upload-progress-fill{height:100%;background:#1565C0;border-radius:2px;transition:width .3s}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══ LOCK ══════════════════════════════════════════════ -->
+<div id="lockScreen">
+  <div class="lock-logo">📖</div>
+  <div class="lock-title" id="lockTitle">ছাত্র প্যানেল</div>
+  <div class="lock-sub" id="lockName">মাদরাসাতুল মদিনা</div>
+
+  <!-- Step 1: student picker -->
+  <div class="student-picker" id="studentPicker">
+    <div class="student-picker-title">আপনি কে? নাম বেছে নিন ↓</div>
+    <div class="student-list-scroll" id="studentPickList"></div>
+  </div>
+
+  <!-- Step 2: PIN entry (hidden until student picked) -->
+  <div id="pinEntry" style="display:none;flex-direction:column;align-items:center;gap:16px">
+    <div class="lock-hint" id="pinHint">আপনার ৪ সংখ্যার পিন দিন।</div>
+    <div class="pin-dots"><div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div><div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div></div>
+    <div class="pin-error" id="pinErr"></div>
+    <div class="pin-pad">
+      <button class="pin-key" onclick="pk('1')">1</button><button class="pin-key" onclick="pk('2')">2<span class="sub">ABC</span></button><button class="pin-key" onclick="pk('3')">3<span class="sub">DEF</span></button>
+      <button class="pin-key" onclick="pk('4')">4<span class="sub">GHI</span></button><button class="pin-key" onclick="pk('5')">5<span class="sub">JKL</span></button><button class="pin-key" onclick="pk('6')">6<span class="sub">MNO</span></button>
+      <button class="pin-key" onclick="pk('7')">7<span class="sub">PQRS</span></button><button class="pin-key" onclick="pk('8')">8<span class="sub">TUV</span></button><button class="pin-key" onclick="pk('9')">9<span class="sub">WXYZ</span></button>
+      <button class="pin-key" style="opacity:.3"></button><button class="pin-key" onclick="pk('0')">0</button><button class="pin-key" onclick="pd()">⌫</button>
+    </div>
+    <button class="picker-back-btn" onclick="backToPicker()">← অন্য নাম বেছে নিন</button>
+  </div>
+</div>
+
+<!-- ══ HEADER ════════════════════════════════════════════ -->
+<div class="header">
+  <div class="header-avatar" id="hAvatar" style="background:rgba(255,255,255,.25)">?</div>
+  <div class="header-info"><div class="header-title" id="hTitle">লোড হচ্ছে...</div><div class="header-sub" id="hSub">ছাত্র</div></div>
+  <button class="logout-btn" onclick="logout()">লগআউট</button>
+</div>
+
+<!-- ══ TAB BAR ═══════════════════════════════════════════ -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="goTab('home')"  id="tab-home">🏠 হোম</button>
+  <button class="tab-btn"        onclick="goTab('chat')"  id="tab-chat">💬 চ্যাট<span class="tab-badge" id="urBadge"></span></button>
+  <button class="tab-btn"        onclick="goTab('tasks')" id="tab-tasks">📋 টাস্ক<span class="tab-badge" id="tBadge"></span></button>
+  <button class="tab-btn"        onclick="goTab('exams')" id="tab-exams">📝 পরীক্ষা<span class="tab-badge" id="examBadge"></span></button>
+  <button class="tab-btn"        onclick="goTab('goals')" id="tab-goals">🎯 লক্ষ্য</button>
+</div>
+
+<!-- ══ HOME ══════════════════════════════════════════════ -->
+<div class="screen active" id="screen-home">
+  <div class="list-scroll">
+    <div class="welcome-card"><div class="welcome-avatar" id="wAvatar">?</div><div class="welcome-text"><h2 id="wName">আস-সালামু আলাইকুম</h2><p id="wCls">লোড হচ্ছে...</p></div></div>
+    <div class="stats-row">
+      <div class="stat-card green"><div class="stat-num" id="sDone">0</div><div class="stat-label">✅ সম্পন্ন</div></div>
+      <div class="stat-card orange"><div class="stat-num" id="sPend">0</div><div class="stat-label">⏳ বকেয়া</div></div>
+      <div class="stat-card red"><div class="stat-num" id="sLate">0</div><div class="stat-label">❌ দেরি</div></div>
+    </div>
+    <div class="sec-hd">সাম্প্রতিক টাস্ক <span class="sec-link" onclick="goTab('tasks')">সব দেখুন →</span></div>
+    <div id="homeTaskPrev"></div>
+    <div class="sec-hd">পরীক্ষা <span class="sec-link" onclick="goTab('exams')">সব দেখুন →</span></div>
+    <div id="homeExamPrev"></div>
+    <div class="sec-hd">আমার লক্ষ্য <span class="sec-link" onclick="goTab('goals')">সব দেখুন →</span></div>
+    <div id="homeGoalPrev"></div>
+    <div style="height:20px"></div>
+  </div>
+</div>
+
+<!-- ══ CHAT ══════════════════════════════════════════════ -->
+<div class="screen" id="screen-chat">
+  <div class="chat-messages" id="chatMsgs"></div>
+  <!-- File preview before sending -->
+  <div class="chat-file-preview" id="chatFilePreview" style="display:none">
+    <span id="chatFileIcon" style="font-size:22px">📎</span>
+    <div style="flex:1;min-width:0">
+      <div class="chat-file-preview-name" id="chatFileName">-</div>
+      <div class="chat-file-preview-size" id="chatFileSize">-</div>
+    </div>
+    <button class="chat-file-cancel" onclick="cancelChatFile()">✕</button>
+  </div>
+  <input type="file" id="chatFileInput" style="display:none" accept="image/*,.pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx" onchange="onChatFileChosen(this)">
+  <div class="chat-input-bar">
+    <button class="attach-btn" onclick="document.getElementById('chatFileInput').click()" title="ফাইল পাঠান">📎</button>
+    <div class="chat-input-wrap"><textarea id="msgIn" placeholder="উস্তাদকে বার্তা লিখুন..." rows="1" oninput="autoResize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"></textarea></div>
+    <button class="send-btn" onclick="sendMsg()">➤</button>
+  </div>
+</div>
+
+<!-- ══ TASKS ══════════════════════════════════════════════ -->
+<div class="screen" id="screen-tasks">
+  <div class="filter-bar">
+    <button class="filter-chip active" onclick="fTask('all',this)">সব</button>
+    <button class="filter-chip"        onclick="fTask('daily',this)">🔁 দৈনিক</button>
+    <button class="filter-chip"        onclick="fTask('onetime',this)">📌 এককালীন</button>
+    <button class="filter-chip"        onclick="fTask('done',this)">✅ সম্পন্ন</button>
+  </div>
+  <div class="list-scroll" id="taskList"></div>
+</div>
+
+<!-- ══ EXAMS ══════════════════════════════════════════════ -->
+<div class="screen" id="screen-exams">
+  <div class="list-scroll" id="examList"></div>
+</div>
+
+<!-- ══ QUIZ TAKING VIEW (full screen overlay) ══════════════ -->
+<div class="quiz-view" id="quizView">
+  <div class="quiz-header">
+    <button onclick="exitQuiz()" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:4px">‹</button>
+    <div style="flex:1"><div id="quizViewTitle" style="font-size:15px;font-weight:700;color:#fff"></div><div id="quizViewMeta" style="font-size:12px;opacity:.8;margin-top:2px"></div></div>
+    <div class="quiz-timer" id="quizTimer">--:--</div>
+  </div>
+  <div class="quiz-body" id="quizBody"></div>
+  <div class="quiz-footer">
+    <button class="btn-primary" onclick="submitQuiz()">📩 জমা দিন</button>
+  </div>
+</div>
+
+<!-- ══ DOCUMENTS ══════════════════════════════════════════ -->
+<div class="screen" id="screen-docs">
+  <div class="list-scroll">
+    <!-- Upload area -->
+    <div class="doc-upload-area" onclick="document.getElementById('fileInput').click()">
+      <div class="doc-upload-icon">📎</div>
+      <div class="doc-upload-label">ফাইল আপলোড করুন</div>
+      <div class="doc-upload-hint">ক্লিক করুন · ছবি, PDF, Word — সর্বোচ্চ 5MB</div>
+    </div>
+    <input type="file" id="fileInput" style="display:none" accept="image/*,.pdf,.doc,.docx,.txt" onchange="handleFileSelect(this)">
+
+    <!-- Category & note before upload -->
+    <div id="uploadPreview" style="display:none;margin:0 12px 12px">
+      <div class="form-group"><label class="form-label">বিভাগ</label>
+        <select class="form-input" id="uploadCat">
+          <option value="general">সাধারণ</option>
+          <option value="question">প্রশ্ন</option>
+          <option value="report">রিপোর্ট</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">নোট (ঐচ্ছিক)</label><input class="form-input" id="uploadNote" placeholder="উস্তাদের জন্য নোট..."></div>
+      <div id="uploadProgressWrap" style="display:none"><div class="upload-progress"><div class="upload-progress-fill" id="uploadProgressFill" style="width:0%"></div></div></div>
+      <button class="btn-primary" onclick="confirmUpload()">📤 উস্তাদের কাছে পাঠান</button>
+      <button class="btn-secondary" onclick="cancelUpload()">বাতিল</button>
+    </div>
+
+    <!-- Sent docs list -->
+    <div class="sec-hd">পাঠানো ডকুমেন্টসমূহ</div>
+    <div id="sentDocsList"></div>
+    <div style="height:20px"></div>
+  </div>
+</div>
+
+<!-- ══ GOALS ══════════════════════════════════════════════ -->
+<div class="screen" id="screen-goals">
+  <div class="goal-add-bar">
+    <input id="goalIn" placeholder="নতুন লক্ষ্য লিখুন..." onkeydown="if(event.key==='Enter')quickGoal()">
+    <button class="goal-add-btn" onclick="openModal('addGoalModal')">＋ যোগ</button>
+  </div>
+  <div class="list-scroll">
+    <div id="goalProgress"></div>
+    <div class="filter-bar">
+      <button class="filter-chip active" onclick="fGoal('all',this)">সব</button>
+      <button class="filter-chip"        onclick="fGoal('quran',this)">📖 কুরআন</button>
+      <button class="filter-chip"        onclick="fGoal('study',this)">📚 পড়াশোনা</button>
+      <button class="filter-chip"        onclick="fGoal('ibadah',this)">🕌 ইবাদত</button>
+      <button class="filter-chip"        onclick="fGoal('other',this)">🌟 অন্য</button>
+    </div>
+    <div id="goalList"></div>
+    <div style="height:20px"></div>
+  </div>
+</div>
+
+<!-- ══ MODALS ══════════════════════════════════════════════ -->
+<div class="modal-overlay" id="addGoalModal"><div class="modal-sheet">
+  <div class="modal-handle"></div><div class="modal-title">🎯 নতুন লক্ষ্য</div>
+  <div class="form-group"><label class="form-label">লক্ষ্যের বিবরণ *</label><input class="form-input" id="gm_title" placeholder="যেমন: প্রতিদিন ১ পারা তেলাওয়াত"></div>
+  <div class="form-group"><label class="form-label">বিভাগ</label>
+    <select class="form-input" id="gm_cat"><option value="quran">📖 কুরআন</option><option value="study">📚 পড়াশোনা</option><option value="ibadah">🕌 ইবাদত</option><option value="other">🌟 অন্যান্য</option></select>
+  </div>
+  <div class="form-group"><label class="form-label">শেষ তারিখ (ঐচ্ছিক)</label><input class="form-input" type="date" id="gm_dl"></div>
+  <div class="form-group"><label class="form-label">নোট</label><textarea class="form-input" id="gm_note" rows="2" placeholder="কোনো পরিকল্পনা..."></textarea></div>
+  <button class="btn-primary" onclick="addGoalModal()">✅ লক্ষ্য যোগ করুন</button>
+  <button class="btn-secondary" onclick="closeModal('addGoalModal')">বাতিল</button>
+</div></div>
+
+<div class="toast" id="toast"></div>
+<script src="api.js"></script>
+<script>
+// ══ State ══════════════════════════════════════════════════
+let pin='', me=null, pickedStudent=null, tFilter='all', gFilter='all';
+let activeQuizId=null, quizAnswers={}, quizTimerInterval=null, quizSecondsLeft=0;
+let pendingFile=null, chatPendingFile=null;
+
+// ══ Init ═══════════════════════════════════════════════════
+function init(){
+  API.DB.init();
+  API.Tasks.resetDailyForToday();
+  document.getElementById('lockName').textContent=API.DB.getTeacher().madrasa||'মাদরাসাতুল মদিনা';
+  document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); }));
+  renderStudentPicker();
+}
+
+// ══ STUDENT PICKER (device-shared login) ═══════════════════
+function renderStudentPicker(){
+  const students=API.Students.getAll();
+  const el=document.getElementById('studentPickList');
+  if(!students.length){
+    el.innerHTML='<div style="color:rgba(255,255,255,.6);font-size:13px;text-align:center;padding:16px">কোনো ছাত্র নেই।<br>উস্তাদকে যোগ করতে বলুন।</div>';
+    return;
+  }
+  el.innerHTML=students.map(s=>`
+    <button class="student-pick-btn" onclick="pickStudent('${s.id}')">
+      <div class="student-pick-avatar" style="background:${s.color||'#1565C0'}">${s.name.charAt(0)}</div>
+      <div style="flex:1;min-width:0">
+        <div class="student-pick-name">${esc(s.name)}</div>
+        <div class="student-pick-cls">${esc(s.cls||'')}${s.roll?' · রোল '+s.roll:''}</div>
+      </div>
+      <span class="student-pick-arrow">›</span>
+    </button>`).join('');
+}
+
+function pickStudent(sid){
+  pickedStudent=API.Students.getById(sid); if(!pickedStudent) return;
+  pin='';
+  document.getElementById('pinHint').textContent=`${pickedStudent.name.split(' ')[0]} — ৪ সংখ্যার পিন দিন`;
+  document.getElementById('studentPicker').style.display='none';
+  document.getElementById('lockTitle').textContent=pickedStudent.name.split(' ')[0];
+  document.getElementById('pinEntry').style.display='flex';
+  dots();
+}
+
+function backToPicker(){
+  pickedStudent=null; pin='';
+  document.getElementById('pinEntry').style.display='none';
+  document.getElementById('lockTitle').textContent='ছাত্র প্যানেল';
+  document.getElementById('studentPicker').style.display='flex';
+  document.getElementById('pinErr').textContent='';
+  dots();
+}
+
+// ══ PIN ════════════════════════════════════════════════════
+function pk(k){ if(!k||pin.length>=4) return; pin+=k; dots(); if(pin.length===4) setTimeout(chkPin,150); }
+function pd(){ pin=pin.slice(0,-1); dots(); }
+function dots(){ [0,1,2,3].forEach(i=>document.getElementById('d'+i).classList.toggle('filled',i<pin.length)); }
+function chkPin(){
+  // Verify PIN matches the picked student specifically
+  if(pickedStudent && pin===pickedStudent.pin){
+    me=pickedStudent;
+    document.getElementById('lockScreen').style.display='none';
+    onLogin();
+  } else {
+    document.getElementById('pinErr').textContent='❌ পিন ভুল হয়েছে';
+    pin=''; dots();
+    setTimeout(()=>document.getElementById('pinErr').textContent='',2500);
+  }
+}
+function onLogin(){
+  localStorage.setItem('madrasa_lastPanel','student');
+  document.getElementById('hAvatar').textContent=me.name.charAt(0); document.getElementById('hAvatar').style.background=me.color||'#1565C0';
+  document.getElementById('hTitle').textContent=me.name; document.getElementById('hSub').textContent=me.cls||'ছাত্র';
+  document.getElementById('wAvatar').textContent=me.name.charAt(0);
+  document.getElementById('wName').textContent='আস-সালামু আলাইকুম, '+me.name.split(' ')[0];
+  document.getElementById('wCls').textContent=(me.cls||'')+(me.roll?' · রোল '+me.roll:'');
+  renderAll();
+}
+function logout(){
+  me=null; pin=''; pickedStudent=null;
+  document.getElementById('lockScreen').style.display='flex';
+  document.getElementById('pinEntry').style.display='none';
+  document.getElementById('lockTitle').textContent='ছাত্র প্যানেল';
+  document.getElementById('studentPicker').style.display='flex';
+  renderStudentPicker();
+  dots(); goTab('home');
+}
+function renderAll(){ renderHome(); renderChat(); renderTaskList(); renderExamList(); renderSentDocs(); renderGoals(); updateBadges(); }
+
+// ══ HOME ═══════════════════════════════════════════════════
+function renderHome(){
+  const tasks=API.Tasks.getForStudent(me.id);
+  const daily=tasks.filter(t=>t.type==='daily');
+  const onetime=tasks.filter(t=>t.type!=='daily');
+  const dailyDone=daily.filter(t=>API.Tasks.isDailyDoneToday(t,me.id)).length;
+  const onetimeDone=onetime.filter(t=>t.assignees[me.id]==='done').length;
+  const late=onetime.filter(t=>t.assignees[me.id]==='late').length;
+  const pend=daily.filter(t=>!API.Tasks.isDailyDoneToday(t,me.id)).length + onetime.filter(t=>t.assignees[me.id]==='pending').length;
+  document.getElementById('sDone').textContent=dailyDone+onetimeDone;
+  document.getElementById('sPend').textContent=pend;
+  document.getElementById('sLate').textContent=late;
+
+  const recent=tasks.filter(t=>t.type==='daily'?!API.Tasks.isDailyDoneToday(t,me.id):t.assignees[me.id]!=='done').slice(0,2);
+  document.getElementById('homeTaskPrev').innerHTML=recent.length?recent.map(t=>atCardHtml(t,true)).join(''):'<div style="padding:12px 16px;font-size:13px;color:var(--gray-400)">✅ সব টাস্ক সম্পন্ন!</div>';
+
+  const pendingExams=API.Exams.getQuizzesForStudent(me.id).filter(q=>!API.Exams.getSubmission(q.id,me.id)).slice(0,2);
+  document.getElementById('homeExamPrev').innerHTML=pendingExams.length
+    ? pendingExams.map(q=>`<div class="exam-card" style="margin:0 12px 8px"><div class="exam-card-hd"><div class="exam-card-icon">📝</div><div class="exam-card-info"><div class="exam-card-title">${esc(q.title)}</div><div class="exam-card-meta">${q.questions?.length||0}টি প্রশ্ন · ${q.timeLimit} মিনিট${q.deadline?' · 📅 '+q.deadline:''}</div></div></div></div>`).join('')
+    : '<div style="padding:12px 16px;font-size:13px;color:var(--gray-400)">কোনো পরীক্ষা নেই।</div>';
+
+  const goals=API.Goals.getAll(me.id).filter(g=>!g.done).slice(0,2);
+  document.getElementById('homeGoalPrev').innerHTML=goals.length
+    ? goals.map(g=>`<div class="goal-item" style="margin:0 12px 8px;border-radius:var(--radius);box-shadow:var(--shadow-sm)"><div class="goal-check ${g.done?'done':''}" onclick="toggleGoal('${g.id}')"></div><div style="flex:1"><div class="goal-text">${esc(g.title)}</div><div class="goal-meta">${catIc(g.cat)} ${g.deadline?'📅 '+g.deadline:''}</div></div></div>`).join('')
+    : '<div style="padding:12px 16px;font-size:13px;color:var(--gray-400)">🎯 নতুন লক্ষ্য যোগ করুন!</div>';
+}
+
+// ══ CHAT ═══════════════════════════════════════════════════
+function tickHtml(msg){
+  // msg.role==='in' means student sent it (out from student's view)
+  // msg.read=true means teacher has seen it → double tick
+  if(msg.read) return '<span class="tick-double msg-tick">✓✓</span>';
+  return '<span class="tick-single">✓</span>';
+}
+function fileIcon(type){ return type?.startsWith('image/')?'🖼️':type==='application/pdf'?'📕':type?.includes('word')||type?.includes('doc')?'📝':type?.includes('sheet')||type?.includes('excel')?'📊':'📎'; }
+
+function renderChat(){
+  const msgs=API.Messages.getThread(me.id); const el=document.getElementById('chatMsgs');
+  if(!msgs.length){ el.innerHTML='<div style="text-align:center;padding:40px;color:var(--gray-400);font-size:14px">📖 উস্তাদকে সালাম দিন! 👋</div>'; return; }
+  let h='<div class="msg-date-sep"><span>আজ</span></div>';
+  msgs.forEach(m=>{
+    // From student's view: role='in' is messages student sent (shown on right), role='out' is from teacher (shown on left)
+    const viewRole=m.role==='in'?'out':'in';
+    if(m.type==='task'){
+      const tLabel=m.task?.taskType==='daily'?'🔁 দৈনিক':'📌 এককালীন';
+      h+=`<div class="msg-wrap in"><div class="task-bubble"><div class="task-bubble-hd">📋 উস্তাদ টাস্ক দিয়েছেন · ${tLabel}</div><div class="task-bubble-bd"><div class="task-bubble-title">${esc(m.task.title)}</div><div class="task-bubble-desc">${esc(m.task.desc)}</div>${m.task.deadline?`<div class="task-bubble-dl">📅 শেষ তারিখ: ${m.task.deadline}</div>`:''}</div></div><div style="font-size:11px;color:var(--gray-400);text-align:left;margin-top:2px;padding-left:4px">${m.time}</div></div>`;
+    } else if(m.type==='doc'){
+      const ic=fileIcon(m.fileType);
+      if(m.role==='in'){
+        // Student sent this file (shown right side, with tick)
+        h+=`<div class="msg-wrap out"><div class="msg-doc-bubble"><div class="msg-doc-icon">${ic}</div><div class="msg-doc-info"><div class="msg-doc-name">${esc(m.fileName)}</div><div class="msg-doc-size">${m.fileSize?formatBytes(m.fileSize):''}</div></div></div><div class="msg-meta" style="position:static;display:flex;gap:3px;justify-content:flex-end;margin-top:3px;padding-right:4px"><span class="msg-time">${m.time}</span>${tickHtml(m)}</div></div>`;
+      } else {
+        // Teacher sent a file (shown left side)
+        h+=`<div class="msg-wrap in"><div class="msg-sender">${esc(API.DB.getTeacher().name||'উস্তাদ')}</div><div class="msg-doc-bubble"><div class="msg-doc-icon">${ic}</div><div class="msg-doc-info"><div class="msg-doc-name">${esc(m.fileName)}</div><div class="msg-doc-size">${m.fileSize?formatBytes(m.fileSize):''}</div></div></div><div style="font-size:11px;color:var(--gray-400);margin-top:2px;padding-left:4px">${m.time}</div></div>`;
+      }
+    } else {
+      if(m.role==='in'){
+        // Student sent this text (shown right)
+        h+=`<div class="msg-wrap out"><div class="msg-bubble out">${esc(m.text)}<div class="msg-meta"><span class="msg-time">${m.time}</span>${tickHtml(m)}</div></div></div>`;
+      } else {
+        // Teacher sent this text (shown left)
+        h+=`<div class="msg-wrap in"><div class="msg-sender">${esc(API.DB.getTeacher().name||'উস্তাদ')}</div><div class="msg-bubble in">${esc(m.text)}<div class="msg-meta"><span class="msg-time">${m.time}</span></div></div></div>`;
+      }
+    }
+  });
+  el.innerHTML=h; setTimeout(()=>el.scrollTop=9e9,50);
+}
+function sendMsg(){
+  if(!me) return;
+  // If a file is pending, send it
+  if(chatPendingFile){ sendChatFile(); return; }
+  const inp=document.getElementById('msgIn'); const text=inp.value.trim(); if(!text) return;
+  API.Messages.sendFromStudent(me.id,text); inp.value=''; inp.style.height='auto'; renderChat(); updateBadges();
+}
+
+// ── Chat file attachment ─────────────────────────────────
+function onChatFileChosen(input){
+  if(!input.files?.length) return;
+  const f=input.files[0];
+  if(f.size>5*1024*1024){ showToast('❌ ফাইল 5MB এর বেশি হতে পারবে না!'); input.value=''; return; }
+  chatPendingFile=f;
+  document.getElementById('chatFileIcon').textContent=fileIcon(f.type);
+  document.getElementById('chatFileName').textContent=f.name;
+  document.getElementById('chatFileSize').textContent=formatBytes(f.size);
+  document.getElementById('chatFilePreview').style.display='flex';
+  // Change send button to show it will send a file
+  showToast(`📎 ${f.name} — ➤ বোতামে চাপুন`);
+}
+function cancelChatFile(){
+  chatPendingFile=null;
+  document.getElementById('chatFileInput').value='';
+  document.getElementById('chatFilePreview').style.display='none';
+}
+async function sendChatFile(){
+  if(!chatPendingFile||!me) return;
+  const f=chatPendingFile;
+  cancelChatFile();
+  try{
+    await API.Messages.sendFileFromStudent(me.id, f);
+    renderChat(); renderSentDocs(); updateBadges();
+    showToast('✅ ফাইল পাঠানো হয়েছে!');
+  } catch(e){
+    if(e.message==='file_too_large') showToast('❌ ফাইল 5MB এর বেশি!');
+    else if(e.message==='storage_full') showToast('❌ স্টোরেজ পূর্ণ!');
+    else showToast('❌ পাঠানো ব্যর্থ হয়েছে!');
+  }
+}
+
+// ══ TASKS ══════════════════════════════════════════════════
+function atCardHtml(task, compact){
+  const isDaily=task.type==='daily';
+  const isDoneToday=isDaily&&API.Tasks.isDailyDoneToday(task,me.id);
+  const st=isDaily?(isDoneToday?'done':'pending'):task.assignees[me.id];
+  const ic={done:'✅',pending:'⏳',late:'❌'};
+  const cl={done:'done',late:'late',pending:''};
+  return `<div class="at-card ${cl[st]||''}" style="margin:0 12px ${compact?'8':'10'}px">
+    <div class="at-card-body">
+      <div class="at-card-title">${ic[st]||'⏳'} ${esc(task.title)} <span class="type-badge ${isDaily?'daily':'onetime'}">${isDaily?'🔁':'📌'}</span></div>
+      ${!compact?`<div class="at-card-desc">${esc(task.desc||'')}</div>`:''}
+      <div class="at-card-ft">
+        <div class="at-deadline">${isDaily?'🔄 প্রতিদিন':'📅 '+task.deadline}</div>
+        ${isDaily
+          ? (isDoneToday
+            ? `<span style="font-size:12px;background:#E8F5E9;color:#2E7D32;padding:4px 10px;border-radius:12px;font-weight:600">আজকের জন্য সম্পন্ন ✅</span>`
+            : `<button class="at-done-btn" onclick="markDailyDone('${task.id}')">আজ সম্পন্ন করেছি</button>`)
+          : (st!=='done'
+            ? `<button class="at-done-btn ${st}" onclick="markDone('${task.id}')">সম্পন্ন করেছি</button>`
+            : `<span style="font-size:12px;background:#E8F5E9;color:#2E7D32;padding:4px 10px;border-radius:12px;font-weight:600">সম্পন্ন ✅</span>`)
+        }
+      </div>
+    </div>
+  </div>`;
+}
+function renderTaskList(f){
+  if(f) tFilter=f; const el=document.getElementById('taskList');
+  const tasks=API.Tasks.getForStudent(me.id);
+  const daily=tasks.filter(t=>t.type==='daily');
+  const onetime=tasks.filter(t=>t.type!=='daily');
+  let h='';
+  if((tFilter==='all'||tFilter==='daily')&&daily.length){
+    const doneToday=daily.filter(t=>API.Tasks.isDailyDoneToday(t,me.id)).length;
+    h+=`<div class="daily-reset-notice">🔄 দৈনিক টাস্ক — আজ ${doneToday}/${daily.length} সম্পন্ন। প্রতিদিন নতুন হয়।</div>`;
+    daily.forEach(t=>{ h+=atCardHtml(t,false); });
+  }
+  if((tFilter==='all'||tFilter==='onetime'||tFilter==='done')&&onetime.length){
+    const filtered=tFilter==='done'?onetime.filter(t=>t.assignees[me.id]==='done'):onetime;
+    filtered.forEach(t=>{ h+=atCardHtml(t,false); });
+  }
+  if(!h) h=`<div class="empty-state"><div class="icon">${tFilter==='all'?'📋':'🔍'}</div><p>${tFilter==='all'?'উস্তাদ এখনো কোনো টাস্ক দেননি।':'এই ফিল্টারে কিছু নেই।'}</p></div>`;
+  el.innerHTML=h+'<div style="height:20px"></div>';
+}
+function fTask(f,btn){ document.querySelectorAll('#screen-tasks .filter-chip').forEach(c=>c.classList.remove('active')); btn.classList.add('active'); renderTaskList(f); }
+function markDailyDone(tid){ API.Tasks.markDailyDone(tid,me.id); renderAll(); showToast('مَا شَاءَ اللّٰه! আজকের টাস্ক সম্পন্ন ✅'); }
+function markDone(tid){ API.Tasks.markDone(tid,me.id); renderAll(); showToast('مَا شَاءَ اللّٰه! টাস্ক সম্পন্ন ✅'); }
+
+// ══ EXAMS ══════════════════════════════════════════════════
+function renderExamList(){
+  const quizzes=API.Exams.getQuizzesForStudent(me.id);
+  const el=document.getElementById('examList');
+  if(!quizzes.length){ el.innerHTML='<div class="empty-state"><div class="icon">📝</div><p>কোনো পরীক্ষা নেই।</p></div>'; return; }
+  el.innerHTML=quizzes.map(q=>{
+    const sub=API.Exams.getSubmission(q.id,me.id);
+    const isDone=!!sub;
+    return `<div class="exam-card">
+      <div class="exam-card-hd">
+        <div class="exam-card-icon">📝</div>
+        <div class="exam-card-info">
+          <div class="exam-card-title">${esc(q.title)}</div>
+          <div class="exam-card-meta">${esc(q.subject||'')} · ${q.questions?.length||0}টি প্রশ্ন · ${q.timeLimit} মিনিট</div>
+          ${q.deadline?`<div class="exam-card-meta">📅 শেষ তারিখ: ${q.deadline}</div>`:''}
+        </div>
+      </div>
+      <div class="exam-card-ft">
+        ${isDone
+          ? (sub.needsManualGrade
+            ? `<span class="exam-done-chip">✅ জমা দেওয়া হয়েছে · ফলাফল অপেক্ষায়</span>`
+            : `<span class="${sub.passed?'exam-done-chip':'exam-fail-chip'}">${sub.passed?'✅':'❌'} ${sub.score}/${sub.total} নম্বর · ${sub.passed?'পাস':'ফেল'}</span>`)
+          : `<button class="exam-start-btn" onclick="startQuiz('${q.id}')">📝 পরীক্ষা দিন</button>`
+        }
+        ${isDone?`<button onclick="startQuiz('${q.id}')" style="background:none;border:1px solid var(--gray-300);border-radius:16px;padding:5px 12px;font-size:12px;cursor:pointer;color:var(--gray-600)">পুনরায় দিন</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function startQuiz(qid){
+  const quiz=API.Exams.getQuizById(qid); if(!quiz){ showToast('পরীক্ষা পাওয়া যায়নি!'); return; }
+  activeQuizId=qid; quizAnswers={};
+  document.getElementById('quizViewTitle').textContent=quiz.title;
+  document.getElementById('quizViewMeta').textContent=`${quiz.subject||''} · ${quiz.questions?.length||0}টি প্রশ্ন`;
+  renderQuizBody(quiz);
+  startQuizTimer(quiz.timeLimit*60);
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelector('.tab-bar').style.display='none';
+  document.querySelector('.header').style.display='none';
+  document.getElementById('quizView').classList.add('open');
+}
+function renderQuizBody(quiz){
+  const el=document.getElementById('quizBody');
+  el.innerHTML=(quiz.questions||[]).map((q,i)=>`
+    <div class="quiz-question-card">
+      <div class="quiz-q-num">প্রশ্ন ${i+1} · ${q.marks||1} নম্বর</div>
+      <div class="quiz-q-text">${esc(q.text)}</div>
+      ${renderQuizAnswer(q,i)}
+    </div>`).join('');
+}
+function renderQuizAnswer(q,i){
+  if(q.type==='multiple_choice'){
+    return (q.options||[]).map((opt,oi)=>`
+      <label class="quiz-option" id="opt_${i}_${oi}">
+        <input type="radio" name="q${i}" value="${oi}" onchange="setAnswer('${q.id}','${oi}');highlightOption(${i},${oi},${(q.options||[]).length})">
+        <span style="font-size:14px">${esc(opt)}</span>
+      </label>`).join('');
+  }
+  if(q.type==='true_false'){
+    return `<label class="quiz-option"><input type="radio" name="q${i}" value="true"  onchange="setAnswer('${q.id}','true')">  <span style="font-size:14px">সত্য</span></label>
+            <label class="quiz-option"><input type="radio" name="q${i}" value="false" onchange="setAnswer('${q.id}','false')"> <span style="font-size:14px">মিথ্যা</span></label>`;
+  }
+  if(q.type==='fill_blank'||q.type==='short_answer'){
+    return `<input class="quiz-answer-input" type="text" placeholder="${q.type==='fill_blank'?'উত্তর লিখুন...':'সংক্ষিপ্ত উত্তর...'}" oninput="setAnswer('${q.id}',this.value)">`;
+  }
+  if(q.type==='essay'){
+    return `<textarea class="quiz-answer-input" rows="4" placeholder="বিস্তারিত উত্তর লিখুন..." style="resize:vertical" oninput="setAnswer('${q.id}',this.value)"></textarea>`;
+  }
+  if(q.type==='file_upload'){
+    return `<p style="font-size:13px;color:var(--gray-500);padding:8px 0">${esc(q.uploadInstructions||'ফাইল আপলোড করুন।')}</p>
+            <input type="file" class="form-input" onchange="setAnswer('${q.id}',this.files[0]?.name||'')">`;
+  }
+  return '';
+}
+function highlightOption(qi,selected,count){ for(let i=0;i<count;i++){ const el=document.getElementById(`opt_${qi}_${i}`); if(el) el.classList.toggle('selected',i===selected); } }
+function setAnswer(qid,val){ quizAnswers[qid]=val; }
+function startQuizTimer(seconds){
+  quizSecondsLeft=seconds;
+  clearInterval(quizTimerInterval);
+  quizTimerInterval=setInterval(()=>{
+    quizSecondsLeft--;
+    const m=Math.floor(quizSecondsLeft/60); const s=quizSecondsLeft%60;
+    const el=document.getElementById('quizTimer');
+    el.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    el.classList.toggle('warning',quizSecondsLeft<=60);
+    if(quizSecondsLeft<=0){ clearInterval(quizTimerInterval); submitQuiz(); }
+  },1000);
+}
+function submitQuiz(){
+  clearInterval(quizTimerInterval);
+  if(!activeQuizId) return;
+  const answered=Object.keys(quizAnswers).length;
+  const quiz=API.Exams.getQuizById(activeQuizId);
+  const total=quiz?.questions?.length||0;
+  if(answered<total&&!confirm(`${answered}/${total}টি প্রশ্নের উত্তর দিয়েছেন। এখনই জমা দেবেন?`)) return;
+  const sub=API.Exams.submitQuiz(activeQuizId,me.id,quizAnswers);
+  exitQuiz();
+  if(sub.needsManualGrade){
+    showToast('✅ পরীক্ষা জমা হয়েছে! উস্তাদ নম্বর দেবেন।',4000);
+  } else {
+    showToast(`${sub.passed?'✅ পাস':'❌ ফেল'} · ${sub.score}/${sub.total} নম্বর`,4000);
+  }
+  renderExamList(); renderHome(); updateBadges();
+}
+function exitQuiz(){
+  clearInterval(quizTimerInterval); activeQuizId=null;
+  document.getElementById('quizView').classList.remove('open');
+  document.querySelector('.tab-bar').style.display='flex';
+  document.querySelector('.header').style.display='flex';
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-exams').classList.add('active');
+  document.getElementById('tab-exams').click();
+}
+
+function updateExamBadge(){
+  const n=API.Exams.getQuizzesForStudent(me?.id||'').filter(q=>!API.Exams.getSubmission(q.id,me?.id||'')).length;
+  const b=document.getElementById('examBadge'); b.textContent=n; b.classList.toggle('show',n>0);
+}
+
+// ══ DOCUMENTS ══════════════════════════════════════════════
+function handleFileSelect(input){
+  if(!input.files?.length) return;
+  pendingFile=input.files[0];
+  if(pendingFile.size>5*1024*1024){ showToast('❌ ফাইল 5MB এর বেশি হতে পারবে না!'); pendingFile=null; input.value=''; return; }
+  document.getElementById('uploadPreview').style.display='block';
+  showToast(`📎 নির্বাচিত: ${pendingFile.name}`);
+}
+function cancelUpload(){
+  pendingFile=null; document.getElementById('fileInput').value='';
+  document.getElementById('uploadPreview').style.display='none';
+}
+async function confirmUpload(){
+  if(!pendingFile||!me){ showToast('ফাইল নির্বাচন করুন!'); return; }
+  const cat=document.getElementById('uploadCat').value;
+  const note=document.getElementById('uploadNote').value.trim();
+  const progWrap=document.getElementById('uploadProgressWrap');
+  const progFill=document.getElementById('uploadProgressFill');
+  progWrap.style.display='block'; progFill.style.width='30%';
+  try {
+    const meta=await API.Docs.upload(me.id, pendingFile, { category:cat, note });
+    progFill.style.width='100%';
+    // Also add a doc message in chat
+    API.Messages.sendFromStudent(me.id, `📎 ${meta.fileName}`, 'doc', { fileName:meta.fileName, fileSize:meta.fileSize, docId:meta.id });
+    setTimeout(()=>{ progWrap.style.display='none'; progFill.style.width='0%'; },500);
+    cancelUpload();
+    renderSentDocs(); renderChat(); renderHome();
+    showToast('✅ ডকুমেন্ট পাঠানো হয়েছে!');
+  } catch(e){
+    progWrap.style.display='none';
+    if(e.message==='file_too_large') showToast('❌ ফাইল 5MB এর বেশি!');
+    else if(e.message==='storage_full') showToast('❌ স্টোরেজ পূর্ণ! পুরনো ফাইল মুছুন।');
+    else showToast('❌ আপলোড ব্যর্থ!');
+  }
+}
+function renderSentDocs(){
+  const docs=API.Docs.getForStudent(me.id);
+  const el=document.getElementById('sentDocsList');
+  if(!docs.length){ el.innerHTML='<div style="padding:16px;text-align:center;font-size:13px;color:var(--gray-400)">এখনো কোনো ফাইল পাঠাননি।</div>'; return; }
+  const catLabel={general:'সাধারণ',question:'প্রশ্ন',report:'রিপোর্ট'};
+  el.innerHTML=docs.map(d=>{
+    const icon=d.fileType?.startsWith('image/')?'🖼️':d.fileType==='application/pdf'?'📕':'📄';
+    return `<div class="doc-sent-item">
+      <div class="doc-sent-icon">${icon}</div>
+      <div class="doc-sent-info">
+        <div class="doc-sent-name">${esc(d.fileName)}</div>
+        <div class="doc-sent-meta"><span class="doc-cat-badge">${catLabel[d.category]||d.category||'সাধারণ'}</span>${formatBytes(d.fileSize)} · ${formatDate(d.uploadedAt)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══ GOALS ══════════════════════════════════════════════════
+function catIc(c){ return {quran:'📖',study:'📚',ibadah:'🕌',other:'🌟'}[c]||'🌟'; }
+function renderGoals(){
+  const goals=API.Goals.getAll(me.id); const el=document.getElementById('goalList'); const wp=document.getElementById('goalProgress');
+  const total=goals.length; const done=goals.filter(g=>g.done).length; const pct=total?Math.round(done/total*100):0;
+  wp.innerHTML=total?`<div style="margin:12px 12px 0"><div class="goal-progress-wrap"><div class="goal-progress-label"><span>🎯 আমার লক্ষ্য</span><span>${done}/${total} (${pct}%)</span></div><div class="goal-progress-bar"><div class="goal-progress-fill" style="width:${pct}%"></div></div></div></div>`:'' ;
+  const filtered=gFilter==='all'?goals:goals.filter(g=>g.cat===gFilter);
+  if(!filtered.length){ el.innerHTML='<div class="empty-state"><div class="icon">🎯</div><p>কোনো লক্ষ্য নেই।<br>উপরে লিখে Enter দিন।</p></div>'; return; }
+  const active=filtered.filter(g=>!g.done); const comp=filtered.filter(g=>g.done);
+  let h='';
+  if(active.length){ h+='<div class="goal-section">চলমান লক্ষ্য</div>'; h+=active.map(g=>gItem(g)).join(''); }
+  if(comp.length)  { h+='<div class="goal-section" style="margin-top:8px">সম্পন্ন লক্ষ্য ✅</div>'; h+=comp.map(g=>gItem(g)).join(''); }
+  el.innerHTML=h;
+}
+function gItem(g){ return `<div class="goal-item"><div class="goal-check ${g.done?'done':''}" onclick="toggleGoal('${g.id}')"></div><div style="flex:1"><div class="goal-text ${g.done?'done':''}">${esc(g.title)}</div><div class="goal-meta">${catIc(g.cat)} ${g.cat||''} ${g.deadline?'· 📅 '+g.deadline:''} ${g.note?'· '+esc(g.note):''}</div></div><button class="goal-del" onclick="delGoal('${g.id}')">🗑</button></div>`; }
+function fGoal(f,btn){ document.querySelectorAll('#screen-goals .filter-chip').forEach(c=>c.classList.remove('active')); btn.classList.add('active'); gFilter=f; renderGoals(); }
+function quickGoal(){ const t=document.getElementById('goalIn').value.trim(); if(!t) return; API.Goals.add(me.id,{title:t,cat:'other'}); document.getElementById('goalIn').value=''; renderGoals(); renderHome(); showToast('🎯 লক্ষ্য যোগ হয়েছে!'); }
+function addGoalModal(){ const t=document.getElementById('gm_title').value.trim(); if(!t){ showToast('লক্ষ্যের বিবরণ লিখুন!'); return; } API.Goals.add(me.id,{title:t,cat:document.getElementById('gm_cat').value,deadline:document.getElementById('gm_dl').value,note:document.getElementById('gm_note').value.trim()}); closeModal('addGoalModal'); ['gm_title','gm_note'].forEach(id=>document.getElementById(id).value=''); document.getElementById('gm_dl').value=''; renderGoals(); renderHome(); showToast('🎯 লক্ষ্য যোগ হয়েছে!'); }
+function toggleGoal(id){ const g=API.Goals.toggle(me.id,id); renderGoals(); renderHome(); if(g?.done) showToast('مَا شَاءَ اللّٰه! লক্ষ্য সম্পন্ন ✅'); }
+function delGoal(id){ API.Goals.delete(me.id,id); renderGoals(); renderHome(); }
+
+// ══ BADGES ═════════════════════════════════════════════════
+function updateBadges(){
+  if(!me) return;
+  const ur=API.Messages.unreadCount(me.id,'out'); const ub=document.getElementById('urBadge'); ub.textContent=ur; ub.classList.toggle('show',ur>0);
+  const pn=API.Tasks.pendingCount(me.id);          const tb=document.getElementById('tBadge');  tb.textContent=pn; tb.classList.toggle('show',pn>0);
+  updateExamBadge();
+}
+
+// ══ NAV ════════════════════════════════════════════════════
+function goTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+tab).classList.add('active');
+  if(tab==='chat'){ API.Messages.markRead(me.id,'out'); renderChat(); updateBadges(); setTimeout(()=>document.getElementById('chatMsgs').scrollTop=9e9,50); }
+  if(tab==='exams') renderExamList();
+}
+
+// Fix mobile viewport height (100vh bug on Android)
+function fixVH(){ document.documentElement.style.setProperty('--real-vh', window.innerHeight*0.01+'px'); }
+fixVH();
+window.addEventListener('resize', fixVH);
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#075E54">
+<title>মাদরাসাতুল মদিনা</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --t-dark:#075E54;--t-main:#128C7E;--t-light:#25D366;--t-pale:#DCF8C6;
+  --s-dark:#0D47A1;--s-main:#1565C0;--s-light:#42A5F5;--s-pale:#BBDEFB;
+  --font:'Hind Siliguri',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+body {
+  font-family: var(--font);
+  background: #0a0a0a;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* Animated background */
+.bg {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #0a1628 0%, #071a15 50%, #0a1628 100%);
+  z-index: 0;
+}
+.bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.025'%3E%3Cpath d='M50 50v-8h-4v8h-8v4h8v8h4v-8h8v-4h-8zm0-40V2h-4v8h-8v4h8v8h4v-8h8v-4h-8zM10 50v-8H6v8H-2v4h8v8h4v-8h8v-4h-8zM10 10V2H6v8H-2v4h8v8h4v-8h8v-4h-8z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Glow orbs */
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.18;
+  pointer-events: none;
+  animation: drift 8s ease-in-out infinite alternate;
+  z-index: 0;
+}
+.orb-green {
+  width: 340px; height: 340px;
+  background: var(--t-main);
+  top: -80px; left: -80px;
+  animation-delay: 0s;
+}
+.orb-blue {
+  width: 300px; height: 300px;
+  background: var(--s-main);
+  bottom: -60px; right: -60px;
+  animation-delay: -4s;
+}
+.orb-teal {
+  width: 200px; height: 200px;
+  background: var(--t-light);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.07;
+  animation-delay: -2s;
+}
+@keyframes drift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(20px, 20px) scale(1.08); }
+}
+.orb-blue { animation-direction: alternate-reverse; }
+
+/* Card */
+#card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 390px;
+  margin: 0 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+/* Logo section */
+.logo-section {
+  text-align: center;
+  margin-bottom: 36px;
+}
+.mosque-icon {
+  font-size: 64px;
+  display: block;
+  margin-bottom: 10px;
+  filter: drop-shadow(0 0 24px rgba(37,211,102,0.4));
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+.app-name {
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+  line-height: 1.3;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+}
+.app-name span {
+  display: block;
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* Divider */
+.divider {
+  width: 48px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--t-light), var(--s-light));
+  border-radius: 1px;
+  margin: 0 auto 36px;
+  opacity: 0.6;
+}
+
+/* Buttons */
+.panel-buttons {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.panel-btn {
+  position: relative;
+  width: 100%;
+  padding: 0;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  text-decoration: none;
+  display: block;
+  overflow: hidden;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.panel-btn:active {
+  transform: scale(0.97);
+}
+
+.panel-btn-inner {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 22px 24px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Green — Teacher */
+.btn-teacher {
+  box-shadow: 0 8px 32px rgba(7,94,84,0.55), 0 2px 8px rgba(0,0,0,0.3);
+}
+.btn-teacher .panel-btn-inner {
+  background: linear-gradient(135deg, var(--t-dark) 0%, var(--t-main) 100%);
+  border-radius: 20px;
+}
+.btn-teacher::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+  border-radius: 20px;
+  pointer-events: none;
+  z-index: 2;
+}
+.btn-teacher:active {
+  box-shadow: 0 4px 16px rgba(7,94,84,0.4), 0 1px 4px rgba(0,0,0,0.3);
+}
+
+/* Blue — Student */
+.btn-student {
+  box-shadow: 0 8px 32px rgba(13,71,161,0.55), 0 2px 8px rgba(0,0,0,0.3);
+}
+.btn-student .panel-btn-inner {
+  background: linear-gradient(135deg, var(--s-dark) 0%, var(--s-main) 100%);
+  border-radius: 20px;
+}
+.btn-student::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+  border-radius: 20px;
+  pointer-events: none;
+  z-index: 2;
+}
+.btn-student:active {
+  box-shadow: 0 4px 16px rgba(13,71,161,0.4), 0 1px 4px rgba(0,0,0,0.3);
+}
+
+/* Icon badge */
+.btn-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  flex-shrink: 0;
+}
+.btn-teacher .btn-icon {
+  background: rgba(255,255,255,0.15);
+}
+.btn-student .btn-icon {
+  background: rgba(255,255,255,0.15);
+}
+
+/* Text */
+.btn-text {
+  flex: 1;
+  text-align: left;
+}
+.btn-label {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  display: block;
+  line-height: 1.2;
+  letter-spacing: 0.3px;
+}
+.btn-sublabel {
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.65);
+  display: block;
+  margin-top: 3px;
+}
+
+/* Arrow */
+.btn-arrow {
+  font-size: 22px;
+  color: rgba(255,255,255,0.4);
+  flex-shrink: 0;
+  transition: transform 0.2s, color 0.2s;
+}
+.panel-btn:active .btn-arrow {
+  transform: translateX(4px);
+  color: rgba(255,255,255,0.7);
+}
+
+/* Version tag */
+.version-tag {
+  margin-top: 32px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.2);
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+/* Entry animation */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.logo-section { animation: fadeUp 0.5s ease 0.05s both; }
+.divider      { animation: fadeUp 0.5s ease 0.15s both; }
+.btn-teacher  { animation: fadeUp 0.5s ease 0.25s both; }
+.btn-student  { animation: fadeUp 0.5s ease 0.35s both; }
+.version-tag  { animation: fadeUp 0.5s ease 0.45s both; }
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="orb orb-green"></div>
+<div class="orb orb-blue"></div>
+<div class="orb orb-teal"></div>
+
+<div id="card">
+
+  <div class="logo-section">
+    <span class="mosque-icon">🕌</span>
+    <div class="app-name">
+      মাদরাসাতুল মদিনা
+      <span>v2.0 · ম্যানেজার</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="panel-buttons" id="panelButtons">
+
+    <a class="panel-btn btn-teacher" href="teacher.html" id="btnTeacher">
+      <div class="panel-btn-inner">
+        <div class="btn-icon">📖</div>
+        <div class="btn-text">
+          <span class="btn-label">শিক্ষক প্যানেল</span>
+          <span class="btn-sublabel">টাস্ক পরিচালনা · ছাত্র তদারকি</span>
+        </div>
+        <span class="btn-arrow">›</span>
+      </div>
+    </a>
+
+    <a class="panel-btn btn-student" href="student.html" id="btnStudent">
+      <div class="panel-btn-inner">
+        <div class="btn-icon">🎒</div>
+        <div class="btn-text">
+          <span class="btn-label">ছাত্র প্যানেল</span>
+          <span class="btn-sublabel">টাস্ক · লক্ষ্য · শিক্ষকের সাথে চ্যাট</span>
+        </div>
+        <span class="btn-arrow">›</span>
+      </div>
+    </a>
+
+  </div>
+
+  <div id="switchLink" style="display:none;margin-top:18px;text-align:center">
+    <a id="switchAnchor" href="#" style="color:rgba(255,255,255,.45);font-size:13px;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.2);padding-bottom:2px"></a>
+  </div>
+
+  <div class="version-tag">MADRASATUL MEDINA · MANAGER</div>
+
+</div>
+
+<script>
+(function(){
+  const last = localStorage.getItem('madrasa_lastPanel');
+  if(!last) return; // first time: show both buttons
+  const btnTeacher = document.getElementById('btnTeacher');
+  const btnStudent = document.getElementById('btnStudent');
+  const switchLink = document.getElementById('switchLink');
+  const switchAnchor = document.getElementById('switchAnchor');
+  if(last === 'teacher'){
+    btnStudent.style.display = 'none';
+    switchAnchor.textContent = '→ ছাত্র প্যানেলে যান';
+    switchAnchor.href = 'student.html';
+    switchLink.style.display = 'block';
+  } else if(last === 'student'){
+    btnTeacher.style.display = 'none';
+    switchAnchor.textContent = '→ শিক্ষক প্যানেলে যান';
+    switchAnchor.href = 'teacher.html';
+    switchLink.style.display = 'block';
+  }
+})();
+</script>
+</body>
+</html>
