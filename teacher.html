@@ -137,7 +137,12 @@
 
 <!-- ══ STUDENTS ═══════════════════════════════════════════ -->
 <div class="screen" id="screen-students">
-  <div class="search-bar"><input placeholder="🔍 ছাত্র খুঁজুন..." oninput="renderStudentList(this.value)"></div>
+  <div class="search-bar" style="display:flex;gap:8px;align-items:center">
+    <input placeholder="🔍 ছাত্র খুঁজুন..." oninput="renderStudentList(this.value)" style="flex:1">
+    <button onclick="document.getElementById('csvFileInput').click()" style="background:#128C7E;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">📂 ইমপোর্ট</button>
+    <input type="file" id="csvFileInput" accept=".csv,.txt" style="display:none" onchange="handleCSVImport(this)">
+  </div>
+  <div id="importResult" style="display:none"></div>
   <div class="list-scroll" id="studentList"></div>
 </div>
 
@@ -252,6 +257,19 @@
   </div>
 </div>
 
+<!-- ══ STUDENT PROFILE VIEW ═══════════════════════════════ -->
+<div class="profile-view" id="profileView">
+  <div class="profile-hd">
+    <button class="profile-hd-back" onclick="closeStudentProfile()">‹</button>
+    <div class="profile-hd-info">
+      <div class="profile-hd-name" id="profileHdName">ছাত্রের প্রোফাইল</div>
+      <div class="profile-hd-sub" id="profileHdSub">পরিচয় ও তথ্য</div>
+    </div>
+    <button class="profile-save-btn" onclick="saveProfileEdits()">💾 সেভ</button>
+  </div>
+  <div class="profile-body" id="profileBody"></div>
+</div>
+
 <!-- ══ CHAT VIEW ══════════════════════════════════════════ -->
 <div class="chat-view" id="chatView">
   <div class="bc-notice" id="bcNotice">📢 গ্রুপ বার্তা — সবাইকে পাঠানো হবে</div>
@@ -296,9 +314,23 @@
 <div class="modal-overlay" id="addStudentModal"><div class="modal-sheet">
   <div class="modal-handle"></div><div class="modal-title">নতুন ছাত্র যোগ</div>
   <div class="form-group"><label class="form-label">নাম *</label><input class="form-input" id="ns_name" placeholder="মুহাম্মাদ আব্দুল্লাহ"></div>
-  <div class="form-group"><label class="form-label">শ্রেণী</label><input class="form-input" id="ns_cls" placeholder="হিফজ ১ম বর্ষ"></div>
-  <div class="form-group"><label class="form-label">রোল</label><input class="form-input" id="ns_roll" placeholder="০১"></div>
-  <div class="form-group"><label class="form-label">পিন (৪ সংখ্যা) *</label><input class="form-input" id="ns_pin" type="number" placeholder="যেমন: 4444"><small style="color:var(--gray-400);font-size:11px;display:block;margin-top:4px">ছাত্র এই পিন দিয়ে student.html এ লগইন করবে</small></div>
+  <div class="form-group"><label class="form-label">পিতার নাম</label><input class="form-input" id="ns_father" placeholder="আব্দুর রহমান"></div>
+  <div style="display:flex;gap:10px">
+    <div class="form-group" style="flex:1"><label class="form-label">শ্রেণী</label><input class="form-input" id="ns_cls" placeholder="হিফজ ১ম বর্ষ"></div>
+    <div class="form-group" style="flex:1"><label class="form-label">রোল</label><input class="form-input" id="ns_roll" placeholder="০১"></div>
+  </div>
+  <div style="display:flex;gap:10px">
+    <div class="form-group" style="flex:1"><label class="form-label">মোবাইল</label><input class="form-input" id="ns_contact" type="tel" placeholder="017xxxxxxxx"></div>
+    <div class="form-group" style="flex:1"><label class="form-label">রক্তের গ্রুপ</label>
+      <select class="form-input" id="ns_blood"><option value="">-</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px">
+    <div class="form-group" style="flex:1"><label class="form-label">জেলা</label><input class="form-input" id="ns_district" placeholder="ঢাকা"></div>
+    <div class="form-group" style="flex:1"><label class="form-label">উপজেলা</label><input class="form-input" id="ns_upazila" placeholder="মিরপুর"></div>
+  </div>
+  <div class="form-group"><label class="form-label">ভর্তির তারিখ</label><input class="form-input" id="ns_enroll" type="date"></div>
+  <div class="form-group"><label class="form-label">পিন (৪ সংখ্যা) *</label><input class="form-input" id="ns_pin" type="number" placeholder="যেমন: 4444"><small style="color:var(--gray-400);font-size:11px;display:block;margin-top:4px">ছাত্র এই পিন দিয়ে লগইন করবে</small></div>
   <div class="form-group"><label class="form-label">নোট</label><input class="form-input" id="ns_note" placeholder="মেধাবী, সামনের সারি"></div>
   <button class="btn-primary" onclick="addStudent()">✅ যোগ করুন</button>
   <button class="btn-secondary" onclick="closeModal('addStudentModal')">বাতিল</button>
@@ -359,6 +391,7 @@ let examTab='list', docViewTab='received';
 let questions=[];
 let curPreviewDocId=null;
 let chatTeacherPendingFile=null;
+let curProfileSid=null;
 const C=['#128C7E','#1565C0','#6A1B9A','#BF360C','#1B5E20'];
 
 // ══ Init ═══════════════════════════════════════════════════
@@ -562,16 +595,25 @@ function sendMsg(){
 
 // ══ STUDENTS ═══════════════════════════════════════════════
 function renderStudentList(f=''){
-  const list=API.Students.getAll().filter(s=>!f||s.name.includes(f));
+  const list=API.Students.getAll().filter(s=>!f||s.name.toLowerCase().includes(f.toLowerCase())||s.waqfId?.includes(f));
   if(!list.length){ document.getElementById('studentList').innerHTML='<div class="empty-state"><div class="icon">👥</div><p>ছাত্র নেই।</p></div>'; return; }
-  document.getElementById('studentList').innerHTML=list.map(s=>`
-    <div class="student-item"><div class="s-avatar" style="background:${s.color||C[0]}">${s.name.charAt(0)}</div>
-    <div class="s-info"><div class="s-name">${esc(s.name)}</div><div class="s-meta">${esc(s.cls||'')} ${s.roll?'· রোল '+s.roll:''}</div><div class="s-pin">🔑 পিন: ${s.pin||'----'}</div></div>
-    <div class="s-actions">
-      <button class="s-btn chat" onclick="event.stopPropagation();goTab('chats');openChat('${s.id}')">💬</button>
-      <button class="s-btn task" onclick="event.stopPropagation();openAddTask('${s.id}')">📋</button>
-      <button class="s-btn pin"  onclick="event.stopPropagation();viewPin('${s.id}')">🔑</button>
-    </div></div>`).join('');
+  document.getElementById('studentList').innerHTML=list.map(s=>{
+    const batch=API.Students.getBatchYear(s.enrollmentDate);
+    const batchLabel=batch!=null?`· ${batch}য় বর্ষ`:'';
+    return `<div class="student-item" onclick="openStudentProfile('${s.id}')">
+      <div class="s-avatar" style="background:${s.color||C[0]}">${s.name.charAt(0)}</div>
+      <div class="s-info">
+        <div class="s-name">${esc(s.name)}</div>
+        <div class="s-meta">${s.waqfId?`<span style="color:#128C7E;font-weight:600">${s.waqfId}</span> · `:''}${esc(s.cls||'')} ${s.roll?'· রোল '+s.roll:''} ${batchLabel}</div>
+        <div class="s-pin">🔑 পিন: ${s.pin||'----'} ${s.contact?'· 📞 '+esc(s.contact):''}</div>
+      </div>
+      <div class="s-actions">
+        <button class="s-btn chat" onclick="event.stopPropagation();goTab('chats');openChat('${s.id}')">💬</button>
+        <button class="s-btn task" onclick="event.stopPropagation();openAddTask('${s.id}')">📋</button>
+        <button class="s-btn pin"  onclick="event.stopPropagation();viewPin('${s.id}')">🔑</button>
+      </div>
+    </div>`;
+  }).join('');
 }
 function addStudent(){
   const name=document.getElementById('ns_name').value.trim();
@@ -579,9 +621,23 @@ function addStudent(){
   if(!name){ showToast('নাম লিখুন!'); return; }
   if(!/^\d{4}$/.test(p)){ showToast('৪ সংখ্যার পিন দিন!'); return; }
   try{
-    const s=API.Students.add({name,pin:p,cls:document.getElementById('ns_cls').value.trim(),roll:document.getElementById('ns_roll').value.trim(),note:document.getElementById('ns_note').value.trim()});
-    closeModal('addStudentModal'); ['ns_name','ns_cls','ns_roll','ns_pin','ns_note'].forEach(id=>document.getElementById(id).value='');
-    renderAll(); showToast(`✅ ${s.name} যোগ হয়েছে · পিন: ${p}`);
+    const s=API.Students.add({
+      name, pin:p,
+      cls:document.getElementById('ns_cls').value.trim(),
+      roll:document.getElementById('ns_roll').value.trim(),
+      note:document.getElementById('ns_note').value.trim(),
+      fatherName:document.getElementById('ns_father').value.trim(),
+      contact:document.getElementById('ns_contact').value.trim(),
+      bloodGroup:document.getElementById('ns_blood').value,
+      district:document.getElementById('ns_district').value.trim(),
+      upazila:document.getElementById('ns_upazila').value.trim(),
+      enrollmentDate:document.getElementById('ns_enroll').value,
+    });
+    closeModal('addStudentModal');
+    ['ns_name','ns_cls','ns_roll','ns_pin','ns_note','ns_father','ns_contact','ns_district','ns_upazila'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('ns_blood').value='';
+    document.getElementById('ns_enroll').value='';
+    renderAll(); showToast(`✅ ${s.name} যোগ হয়েছে · ID: ${s.waqfId}`);
   } catch(e){ showToast(e.message==='pin_exists'?'এই পিন আগে থেকে আছে!':'ত্রুটি!'); }
 }
 function viewPin(id){ editSid=id; const s=API.Students.getById(id); document.getElementById('pinMTitle').textContent=s.name+'-এর পিন'; document.getElementById('pinDisp').textContent=s.pin||'----'; document.getElementById('newSPin').value=''; openModal('pinModal'); }
@@ -978,6 +1034,235 @@ function fabClick(){
   else openModal('fabMenu');
 }
 function toggleSearch(){ const b=document.getElementById('searchBar'); b.style.display=b.style.display==='none'?'block':'none'; if(b.style.display==='block') b.querySelector('input').focus(); }
+
+// ══ STUDENT PROFILE ════════════════════════════════════════
+function openStudentProfile(sid){
+  curProfileSid=sid;
+  const s=API.Students.getById(sid); if(!s) return;
+  const batch=API.Students.getBatchYear(s.enrollmentDate);
+  document.getElementById('profileHdName').textContent=s.name;
+  document.getElementById('profileHdSub').textContent=(s.waqfId||'')+(batch!=null?' · '+batch+'য় বর্ষ':'');
+  renderProfileBody(s);
+  document.getElementById('profileView').classList.add('open');
+  document.getElementById('tabBar').style.display='none';
+  document.getElementById('fab').style.display='none';
+}
+function closeStudentProfile(){
+  document.getElementById('profileView').classList.remove('open');
+  document.getElementById('tabBar').style.display='flex';
+  document.getElementById('fab').style.display='flex';
+  curProfileSid=null;
+}
+function renderProfileBody(s){
+  const batch=API.Students.getBatchYear(s.enrollmentDate);
+  const academic=API.AcademicHistory.getAll(s.id);
+  const notes=API.TeacherNotes.getAll(s.id);
+  document.getElementById('profileBody').innerHTML=`
+    <!-- Avatar row -->
+    <div class="profile-avatar-row">
+      <div class="profile-avatar" style="background:${s.color||C[0]}">${s.name.charAt(0)}</div>
+      <div>
+        <div class="profile-id-badge">${s.waqfId||'—'}</div>
+        ${batch!=null?`<div class="profile-batch-badge">📅 ${batch}য় বর্ষ${s.enrollmentDate?' ('+s.enrollmentDate.slice(0,4)+')':''}${' → '+(new Date().getFullYear()+'সাল')}</div>`:''}
+      </div>
+    </div>
+    <!-- Basic info -->
+    <div class="profile-section">
+      <div class="profile-sec-hd">মূল তথ্য</div>
+      ${pField('নাম','p_name',s.name)}
+      ${pField('পিতার নাম','p_father',s.fatherName||'')}
+      ${pField('পিতার পেশা','p_focc',s.fatherOccupation||'')}
+      ${pField('মোবাইল','p_contact',s.contact||'')}
+      ${pField('রক্তের গ্রুপ','p_blood',s.bloodGroup||'')}
+    </div>
+    <!-- Address -->
+    <div class="profile-section">
+      <div class="profile-sec-hd">ঠিকানা</div>
+      ${pField('জেলা','p_district',s.district||'')}
+      ${pField('উপজেলা','p_upazila',s.upazila||'')}
+    </div>
+    <!-- Academic info -->
+    <div class="profile-section">
+      <div class="profile-sec-hd">একাডেমিক</div>
+      ${pField('শ্রেণী','p_cls',s.cls||'')}
+      ${pField('রোল','p_roll',s.roll||'')}
+      ${pField('ভর্তির তারিখ','p_enroll',s.enrollmentDate||'',' type="date"')}
+    </div>
+    <!-- PIN reset -->
+    <div class="profile-section">
+      <div class="profile-sec-hd">লগইন পিন <button onclick="showPinResetInProfile()" style="background:none;border:1px solid var(--gray-300);border-radius:6px;padding:2px 10px;font-size:11px;cursor:pointer;color:var(--gray-600)">পরিবর্তন</button></div>
+      <div class="profile-field"><label>বর্তমান পিন</label><div style="font-size:22px;font-weight:700;letter-spacing:6px;color:#075E54;padding:4px 0" id="profilePinDisplay">${s.pin||'----'}</div></div>
+      <div id="profilePinReset" style="display:none;padding:10px 14px;border-top:1px solid var(--gray-100)">
+        <div style="display:flex;gap:8px">
+          <input class="form-input" id="profileNewPin" type="number" placeholder="নতুন ৪ সংখ্যার পিন" style="flex:1">
+          <button onclick="saveProfilePin()" style="background:#075E54;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer">✅</button>
+        </div>
+      </div>
+    </div>
+    <!-- Academic History -->
+    <div class="profile-section">
+      <div class="profile-sec-hd">পূর্ববর্তী একাডেমিক ফলাফল</div>
+      <div id="acadList">${academic.length?academic.map(r=>`
+        <div class="acad-item" id="acad_${r.id}">
+          <div class="acad-year">${esc(r.yearClass)}</div>
+          <div class="acad-grade">${esc(r.grade)}</div>
+          <button class="acad-del" onclick="deleteAcadRec('${r.id}')">🗑</button>
+        </div>`).join(''):'<div style="padding:12px 14px;font-size:13px;color:var(--gray-400)">কোনো রেকর্ড নেই।</div>'}</div>
+      <div class="acad-add-row">
+        <input id="acadYear" placeholder="বছর / শ্রেণী (যেমন: ২০২২ - জামাতে খামেছা)" style="flex:2">
+        <input id="acadGrade" placeholder="নম্বর / গ্রেড" style="flex:1">
+        <button class="acad-add-btn" onclick="addAcadRec()">যোগ</button>
+      </div>
+    </div>
+    <!-- Teacher Notes -->
+    <div class="profile-section" style="margin-bottom:24px">
+      <div class="profile-sec-hd">শিক্ষকের নোট <span style="font-size:11px;font-weight:400;color:var(--gray-400)">(ছাত্র দেখতে পাবে না)</span></div>
+      <div id="notesList">${renderNotesList(notes)}</div>
+      <div class="note-add-row">
+        <textarea id="noteInput" placeholder="নতুন নোট লিখুন..." rows="2"></textarea>
+        <button onclick="addNote()" style="background:#075E54;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;align-self:flex-end">📝 যোগ</button>
+      </div>
+    </div>
+  `;
+}
+function pField(label,id,val,extra=''){
+  return `<div class="profile-field"><label>${label}</label><input id="${id}" value="${esc(val)}"${extra} placeholder="${label}..."></div>`;
+}
+function renderNotesList(notes){
+  if(!notes.length) return '<div style="padding:12px 14px;font-size:13px;color:var(--gray-400)">এখনো কোনো নোট নেই।</div>';
+  return notes.map(n=>`<div class="note-item" id="note_${n.id}">
+    <div class="note-date"><span>📅 ${n.date} ${n.time||''}</span>${n.edited?`<span style="color:var(--gray-400)">(সম্পাদিত ${n.edited})</span>`:''}</div>
+    <div class="note-text" id="notetext_${n.id}">${esc(n.text)}</div>
+    <div class="note-actions">
+      <button class="note-btn" onclick="editNoteInline('${n.id}')">✏️ সম্পাদন</button>
+      <button class="note-btn del" onclick="deleteNote('${n.id}')">🗑 মুছুন</button>
+    </div>
+  </div>`).join('');
+}
+function saveProfileEdits(){
+  if(!curProfileSid) return;
+  const g=id=>document.getElementById(id)?.value.trim()||'';
+  API.Students.update(curProfileSid,{
+    name:g('p_name'), fatherName:g('p_father'), fatherOccupation:g('p_focc'),
+    contact:g('p_contact'), bloodGroup:g('p_blood'),
+    district:g('p_district'), upazila:g('p_upazila'),
+    cls:g('p_cls'), roll:g('p_roll'), enrollmentDate:g('p_enroll'),
+  });
+  const s=API.Students.getById(curProfileSid);
+  const batch=API.Students.getBatchYear(s.enrollmentDate);
+  document.getElementById('profileHdName').textContent=s.name;
+  document.getElementById('profileHdSub').textContent=(s.waqfId||'')+(batch!=null?' · '+batch+'য় বর্ষ':'');
+  renderAll(); showToast('✅ প্রোফাইল সেভ হয়েছে');
+}
+function showPinResetInProfile(){
+  const el=document.getElementById('profilePinReset');
+  el.style.display=el.style.display==='none'?'block':'none';
+}
+function saveProfilePin(){
+  if(!curProfileSid) return;
+  const p=String(document.getElementById('profileNewPin').value).trim();
+  if(!/^\d{4}$/.test(p)){ showToast('৪ সংখ্যার পিন দিন!'); return; }
+  try{
+    API.Students.updatePin(curProfileSid,p);
+    document.getElementById('profilePinDisplay').textContent=p;
+    document.getElementById('profileNewPin').value='';
+    document.getElementById('profilePinReset').style.display='none';
+    showToast('✅ পিন পরিবর্তন হয়েছে · নতুন পিন: '+p);
+  } catch{ showToast('এই পিন অন্যের!'); }
+}
+// Academic history
+function addAcadRec(){
+  if(!curProfileSid) return;
+  const yearClass=document.getElementById('acadYear').value.trim();
+  const grade=document.getElementById('acadGrade').value.trim();
+  if(!yearClass||!grade){ showToast('বছর এবং নম্বর দুটোই লিখুন!'); return; }
+  const rec=API.AcademicHistory.add(curProfileSid,{yearClass,grade});
+  document.getElementById('acadYear').value='';
+  document.getElementById('acadGrade').value='';
+  const list=document.getElementById('acadList');
+  if(list.querySelector('[style*="color:var(--gray-400)"]')) list.innerHTML='';
+  list.insertAdjacentHTML('beforeend',`<div class="acad-item" id="acad_${rec.id}">
+    <div class="acad-year">${esc(rec.yearClass)}</div>
+    <div class="acad-grade">${esc(rec.grade)}</div>
+    <button class="acad-del" onclick="deleteAcadRec('${rec.id}')">🗑</button>
+  </div>`);
+  showToast('✅ রেকর্ড যোগ হয়েছে');
+}
+function deleteAcadRec(rid){
+  if(!curProfileSid) return;
+  API.AcademicHistory.delete(curProfileSid,rid);
+  document.getElementById('acad_'+rid)?.remove();
+  if(!document.getElementById('acadList').children.length)
+    document.getElementById('acadList').innerHTML='<div style="padding:12px 14px;font-size:13px;color:var(--gray-400)">কোনো রেকর্ড নেই।</div>';
+}
+// Teacher notes
+function addNote(){
+  if(!curProfileSid) return;
+  const text=document.getElementById('noteInput').value.trim();
+  if(!text){ showToast('নোট লিখুন!'); return; }
+  const note=API.TeacherNotes.add(curProfileSid,text);
+  document.getElementById('noteInput').value='';
+  const list=document.getElementById('notesList');
+  const empty=list.querySelector('[style*="color:var(--gray-400)"]');
+  if(empty) empty.remove();
+  list.insertAdjacentHTML('afterbegin',`<div class="note-item" id="note_${note.id}">
+    <div class="note-date"><span>📅 ${note.date} ${note.time||''}</span></div>
+    <div class="note-text" id="notetext_${note.id}">${esc(note.text)}</div>
+    <div class="note-actions">
+      <button class="note-btn" onclick="editNoteInline('${note.id}')">✏️ সম্পাদন</button>
+      <button class="note-btn del" onclick="deleteNote('${note.id}')">🗑 মুছুন</button>
+    </div>
+  </div>`);
+  showToast('📝 নোট যোগ হয়েছে');
+}
+function editNoteInline(nid){
+  if(!curProfileSid) return;
+  const el=document.getElementById('notetext_'+nid);
+  const cur=el.textContent;
+  el.outerHTML=`<textarea id="noteedit_${nid}" style="width:100%;border:1.5px solid #075E54;border-radius:8px;padding:6px 10px;font-family:var(--font);font-size:14px;outline:none;resize:none;min-height:60px">${esc(cur)}</textarea>
+  <div style="display:flex;gap:6px;margin-top:4px">
+    <button onclick="saveNoteEdit('${nid}')" style="background:#075E54;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-family:var(--font);font-size:12px;cursor:pointer">✅ সেভ</button>
+    <button onclick="cancelNoteEdit('${nid}','${esc(cur)}')" style="background:var(--gray-100);border:none;border-radius:6px;padding:4px 12px;font-family:var(--font);font-size:12px;cursor:pointer">বাতিল</button>
+  </div>`;
+}
+function saveNoteEdit(nid){
+  if(!curProfileSid) return;
+  const text=document.getElementById('noteedit_'+nid)?.value.trim();
+  if(!text) return;
+  API.TeacherNotes.update(curProfileSid,nid,text);
+  // re-render notes section
+  document.getElementById('notesList').innerHTML=renderNotesList(API.TeacherNotes.getAll(curProfileSid));
+}
+function cancelNoteEdit(nid,orig){
+  document.getElementById('notesList').innerHTML=renderNotesList(API.TeacherNotes.getAll(curProfileSid));
+}
+function deleteNote(nid){
+  if(!curProfileSid) return;
+  API.TeacherNotes.delete(curProfileSid,nid);
+  document.getElementById('note_'+nid)?.remove();
+}
+// ══ CSV IMPORT ══════════════════════════════════════════════
+function handleCSVImport(input){
+  if(!input.files?.length) return;
+  const file=input.files[0]; input.value='';
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const results=API.Students.importFromCSV(e.target.result);
+      const el=document.getElementById('importResult');
+      el.style.display='block';
+      el.innerHTML=`<div class="import-result">
+        <div class="import-ok">✅ ${results.success} জন ছাত্র যোগ হয়েছে</div>
+        ${results.errors.length?`<div class="import-err">⚠️ ${results.errors.length} টি ত্রুটি:<br>${results.errors.map(e=>'• '+e).join('<br>')}</div>`:''}
+        <button onclick="document.getElementById('importResult').style.display='none'" style="background:none;border:none;color:var(--gray-400);font-size:12px;cursor:pointer;margin-top:8px">বন্ধ করুন ✕</button>
+      </div>`;
+      renderAll();
+    } catch(err){
+      showToast('❌ ফাইল পড়া যায়নি: '+err.message);
+    }
+  };
+  reader.readAsText(file);
+}
 
 // Fix mobile viewport height (100vh bug on Android)
 function fixVH(){ document.documentElement.style.setProperty('--real-vh', window.innerHeight*0.01+'px'); }

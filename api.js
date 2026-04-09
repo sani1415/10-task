@@ -75,19 +75,122 @@ const API = (() => {
 
   // ── STUDENTS ──────────────────────────────────────────────
   const Students = {
-    getAll()  { return DB.get().students||[]; },
+    getAll()   { return DB.get().students||[]; },
     getById(id){ return DB.get().students.find(s=>s.id===id)||null; },
-    add({ name, cls, roll, note, pin }) {
+
+    getNextWaqfId() {
+      const nums = this.getAll()
+        .map(s=>parseInt((s.waqfId||'waqf_000').split('_')[1]||'0'))
+        .filter(n=>!isNaN(n));
+      const max = nums.length ? Math.max(...nums) : 0;
+      return 'waqf_' + String(max+1).padStart(3,'0');
+    },
+
+    getBatchYear(enrollmentDate) {
+      if(!enrollmentDate) return null;
+      const ey = new Date(enrollmentDate).getFullYear();
+      return new Date().getFullYear() - ey;
+    },
+
+    add({ name, cls, roll, note, pin, fatherName='', fatherOccupation='', contact='', district='', upazila='', bloodGroup='', enrollmentDate='' }) {
       const db = DB.get();
-      if (db.students.some(s=>s.pin===pin)) throw new Error('pin_exists');
+      if(db.students.some(s=>s.pin===pin)) throw new Error('pin_exists');
       const colors=['#128C7E','#1565C0','#6A1B9A','#BF360C','#1B5E20','#E65100','#004D40','#880E4F'];
-      const s = { id:uid('s'), name, cls, roll, note, pin, color:colors[db.students.length%colors.length] };
+      const s = {
+        id:uid('s'), waqfId:this.getNextWaqfId(),
+        name, cls, roll, note, pin, color:colors[db.students.length%colors.length],
+        fatherName, fatherOccupation, contact, district, upazila, bloodGroup, enrollmentDate,
+      };
       db.students.push(s); db.chats[s.id]=[]; DB.save(db); return s;
     },
+
+    update(sid, data) {
+      const db=DB.get(); const s=db.students.find(s=>s.id===sid); if(!s) return null;
+      // Don't overwrite id, waqfId, color
+      const { id:_, waqfId:__, color:___, ...rest } = data;
+      Object.assign(s, rest); DB.save(db); return s;
+    },
+
     updatePin(sid, pin) {
       const db=DB.get();
-      if (db.students.some(s=>s.id!==sid&&s.pin===pin)) throw new Error('pin_exists');
+      if(db.students.some(s=>s.id!==sid&&s.pin===pin)) throw new Error('pin_exists');
       const s=db.students.find(s=>s.id===sid); if(s){ s.pin=pin; DB.save(db); } return s;
+    },
+
+    importFromCSV(csvText) {
+      const lines = csvText.replace(/\r/g,'').trim().split('\n');
+      if(lines.length < 2) throw new Error('empty_file');
+      // Support quoted CSV
+      const parseRow = row => row.split(',').map(c=>c.trim().replace(/^"|"$/g,''));
+      const header = parseRow(lines[0]).map(h=>h.toLowerCase());
+      const col = k => header.indexOf(k);
+      const results = { success:0, errors:[] };
+      const db = DB.get();
+      for(let i=1;i<lines.length;i++){
+        if(!lines[i].trim()) continue;
+        const r = parseRow(lines[i]);
+        const name = r[col('name')]||''; const pin = (r[col('pin')]||'').trim();
+        if(!name){ results.errors.push(`Row ${i+1}: name missing`); continue; }
+        if(!/^\d{4}$/.test(pin)){ results.errors.push(`Row ${i+1} (${name}): invalid PIN`); continue; }
+        if(db.students.some(s=>s.pin===pin)){ results.errors.push(`Row ${i+1} (${name}): PIN ${pin} already exists`); continue; }
+        const colors=['#128C7E','#1565C0','#6A1B9A','#BF360C','#1B5E20','#E65100','#004D40','#880E4F'];
+        const s = {
+          id:uid('s'), waqfId:this.getNextWaqfId(),
+          name, pin, color:colors[db.students.length%colors.length],
+          cls:r[col('class')]||r[col('cls')]||'',
+          roll:r[col('roll')]||'',
+          fatherName:r[col('father_name')]||'',
+          fatherOccupation:r[col('father_occupation')]||'',
+          contact:r[col('contact')]||'',
+          district:r[col('district')]||'',
+          upazila:r[col('upazila')]||'',
+          bloodGroup:r[col('blood_group')]||'',
+          enrollmentDate:r[col('enrollment_date')]||'',
+          note:r[col('note')]||'',
+        };
+        db.students.push(s); db.chats[s.id]=[]; results.success++;
+      }
+      DB.save(db); return results;
+    },
+  };
+
+  // ── ACADEMIC HISTORY ──────────────────────────────────────
+  const AcademicHistory = {
+    _key:'madrasa_academic',
+    _read(){ try{ return JSON.parse(localStorage.getItem(this._key)||'{}'); }catch{ return {}; } },
+    _write(d){ localStorage.setItem(this._key,JSON.stringify(d)); },
+    getAll(sid){ return this._read()[sid]||[]; },
+    add(sid,{yearClass,grade}){
+      const all=this._read(); if(!all[sid]) all[sid]=[];
+      const rec={id:uid('ah'),yearClass,grade,addedAt:today()};
+      all[sid].push(rec); this._write(all); return rec;
+    },
+    delete(sid,rid){
+      const all=this._read();
+      if(all[sid]) all[sid]=all[sid].filter(r=>r.id!==rid);
+      this._write(all);
+    },
+  };
+
+  // ── TEACHER NOTES ─────────────────────────────────────────
+  const TeacherNotes = {
+    _key:'madrasa_tnotes',
+    _read(){ try{ return JSON.parse(localStorage.getItem(this._key)||'{}'); }catch{ return {}; } },
+    _write(d){ localStorage.setItem(this._key,JSON.stringify(d)); },
+    getAll(sid){ return this._read()[sid]||[]; },
+    add(sid,text){
+      const all=this._read(); if(!all[sid]) all[sid]=[];
+      const note={id:uid('tn'),text,date:today(),time:nowTime()};
+      all[sid].unshift(note); this._write(all); return note;
+    },
+    update(sid,nid,text){
+      const all=this._read(); const n=(all[sid]||[]).find(x=>x.id===nid);
+      if(n){ n.text=text; n.edited=today(); this._write(all); } return n;
+    },
+    delete(sid,nid){
+      const all=this._read();
+      if(all[sid]) all[sid]=all[sid].filter(n=>n.id!==nid);
+      this._write(all);
     },
   };
 
@@ -432,7 +535,7 @@ const API = (() => {
     },
   };
 
-  return { Auth, DB, Students, Messages, Tasks, Goals, Exams, Docs, today, nowTime, nextDate, uid };
+  return { Auth, DB, Students, Messages, Tasks, Goals, Exams, Docs, AcademicHistory, TeacherNotes, today, nowTime, nextDate, uid };
 })();
 
 // ── Global helpers ────────────────────────────────────────
