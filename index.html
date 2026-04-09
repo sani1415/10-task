@@ -293,7 +293,7 @@ body {
 <div class="orb orb-blue"></div>
 <div class="orb orb-teal"></div>
 
-<div id="card">
+<div id="card" style="opacity:0;transition:opacity .15s">
 
   <div class="logo-section">
     <span class="mosque-icon">🕌</span>
@@ -342,22 +342,15 @@ body {
 <script>
 (function(){
   const last = localStorage.getItem('madrasa_lastPanel');
-  if(!last) return; // first time: show both buttons
-  const btnTeacher = document.getElementById('btnTeacher');
-  const btnStudent = document.getElementById('btnStudent');
-  const switchLink = document.getElementById('switchLink');
-  const switchAnchor = document.getElementById('switchAnchor');
-  if(last === 'teacher'){
-    btnStudent.style.display = 'none';
-    switchAnchor.textContent = '→ ছাত্র প্যানেলে যান';
-    switchAnchor.href = 'student.html';
-    switchLink.style.display = 'block';
-  } else if(last === 'student'){
-    btnTeacher.style.display = 'none';
-    switchAnchor.textContent = '→ শিক্ষক প্যানেলে যান';
-    switchAnchor.href = 'teacher.html';
-    switchLink.style.display = 'block';
+  if(!last) {
+    // First time — reveal the card
+    document.getElementById('card').style.opacity = '1';
+    return;
   }
+  // Auto-redirect instantly — card stays hidden so no flash
+  if(last === 'teacher') { location.replace('teacher.html'); return; }
+  if(last === 'student') { location.replace('student.html'); return; }
+  document.getElementById('card').style.opacity = '1';
 })();
 </script>
 <script>
