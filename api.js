@@ -1,4 +1,4 @@
-/* মাদরাসাতুল মদিনা · api.js · v3.0
+/* Waqful Madinah · api.js · v3.0
    Backend বদলাতে শুধু এই ফাইল বদলান।
    এখন: LocalStorage | পরে: Firebase / Supabase
 
@@ -26,7 +26,7 @@ const API = (() => {
   function seedDemo() {
     const colors=['#128C7E','#1565C0','#6A1B9A','#BF360C','#1B5E20'];
     const db = {
-      teacher: { name:'উস্তাজ', madrasa:'মাদরাসাতুল মদিনা' },
+      teacher: { name:'উস্তাজ', madrasa:'Waqful Madinah' },
       students: [
         { id:'s1', waqfId:'waqf_001', name:'মুহাম্মাদ রাফি',      cls:'হিফজ ১ম',   roll:'০১', note:'',  color:colors[0], pin:'1111', fatherName:'আব্দুর রহমান',   contact:'01711000001', enrollmentDate:'2024-01-10' },
         { id:'s2', waqfId:'waqf_002', name:'আব্দুল্লাহ মাহমুদ',   cls:'হিফজ ১ম',   roll:'০২', note:'',  color:colors[1], pin:'2222', fatherName:'মোহাম্মদ হানিফ', contact:'01711000002', enrollmentDate:'2024-01-10' },
@@ -75,15 +75,20 @@ const API = (() => {
       return 'waqf_' + String(max+1).padStart(3,'0');
     },
 
-    // Returns "001" from a student object (short display ID)
+    // Public login/display id, e.g. "waqf_001" (same as waqfId)
     getShortId(s) {
-      if(!s?.waqfId) return null;
-      return s.waqfId.split('_')[1]||null;
+      return s?.waqfId||null;
     },
 
-    // Find student by short numeric ID ("001" → student with waqfId "waqf_001")
-    getByWaqfShortId(shortId) {
-      const padded='waqf_'+String(parseInt(shortId)||0).padStart(3,'0');
+    // Login lookup: accepts "001" or "waqf_001" (case-insensitive waqf_)
+    getByWaqfShortId(raw) {
+      const t=String(raw||'').trim().replace(/\s/g,'');
+      if(!t) return null;
+      let n;
+      if(/^waqf_/i.test(t)) n=parseInt(t.slice(5),10);
+      else n=parseInt(t,10);
+      if(Number.isNaN(n)||n<0) return null;
+      const padded='waqf_'+String(n).padStart(3,'0');
       return this.getAll().find(s=>s.waqfId===padded)||null;
     },
 

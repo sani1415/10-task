@@ -1,4 +1,4 @@
-/* মাদরাসাতুল মদিনা · style.css · v2.0 */
+/* Waqful Madinah · style.css · v2.0 */
 :root {
   --t-dark:#075E54;--t-main:#128C7E;--t-light:#25D366;--t-pale:#DCF8C6;
   --s-dark:#0D47A1;--s-main:#1565C0;--s-light:#42A5F5;--s-pale:#BBDEFB;
@@ -52,6 +52,7 @@ body{font-family:var(--font);background:var(--gray-200);height:100vh;height:calc
 .chat-body{flex:1;min-width:0}.chat-row1{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .chat-name{font-size:16px;font-weight:600;color:var(--gray-700)}.chat-time{font-size:11px;color:var(--gray-400);flex-shrink:0}
 .chat-row2{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:2px}
+.chat-waqf{font-size:12px;font-weight:600;color:#128C7E;flex-shrink:0}
 .chat-preview{font-size:13px;color:var(--gray-500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
 .chat-badge{font-size:11px;font-weight:700;min-width:20px;height:20px;border-radius:10px;padding:0 5px;display:flex;align-items:center;justify-content:center}
 /* Chat view */

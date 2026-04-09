@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#1565C0">
-<title>ছাত্র প্যানেল · মাদরাসাতুল মদিনা</title>
+<title>ছাত্র প্যানেল · Waqful Madinah</title>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
@@ -83,6 +83,7 @@
 .pending-item:active{background:rgba(255,255,255,.25)}
 .pending-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0}
 .pending-name{flex:1;font-size:14px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pending-waqf{display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,.85);margin-top:3px;letter-spacing:.3px}
 .pending-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;flex-shrink:0}
 .pending-badge.msg{background:#42A5F5;color:#0D47A1}
 .pending-badge.task{background:#FFE082;color:#E65100}
@@ -94,6 +95,7 @@
 .login-input{width:100%;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);border-radius:10px;color:#fff;font-family:var(--font);font-size:22px;font-weight:600;padding:10px 14px;outline:none;letter-spacing:4px;text-align:center;-webkit-appearance:none;appearance:none}
 .login-input::placeholder{color:rgba(255,255,255,.35);letter-spacing:normal;font-size:16px}
 .login-input:focus{border-color:rgba(255,255,255,.7);background:rgba(255,255,255,.22)}
+.login-input-waqf{letter-spacing:.5px;font-size:17px}
 .login-err{color:#FF8A80;font-size:13px;min-height:18px;margin:-4px 0 8px;text-align:center}
 .login-btn{width:100%;background:#fff;color:#1565C0;border:none;border-radius:12px;padding:13px;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s;margin-top:4px}
 .login-btn:active{opacity:.85}
@@ -106,7 +108,7 @@
 <div id="lockScreen">
   <div class="lock-logo">📖</div>
   <div class="lock-title">ছাত্র প্যানেল</div>
-  <div class="lock-sub" id="lockName">মাদরাসাতুল মদিনা</div>
+  <div class="lock-sub" id="lockName">Waqful Madinah</div>
 
   <!-- Section 1: Students with pending messages or tasks -->
   <div id="pendingSection" style="display:none;width:100%;max-width:340px;padding:0 16px">
@@ -117,9 +119,9 @@
   <!-- Section 2: Login form (ID + PIN) -->
   <div class="login-box">
     <div class="login-field">
-      <label class="login-lbl">আইডি নম্বর</label>
-      <input id="loginId" class="login-input" type="tel" inputmode="numeric" maxlength="3"
-             placeholder="001" autocomplete="off" onkeydown="if(event.key==='Enter')document.getElementById('loginPin').focus()">
+      <label class="login-lbl">ওয়াকফ আইডি</label>
+      <input id="loginId" class="login-input login-input-waqf" type="text" inputmode="text" maxlength="16" spellcheck="false"
+             placeholder="waqf_001" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('loginPin').focus()">
     </div>
     <div class="login-field">
       <label class="login-lbl">পিন কোড</label>
@@ -293,7 +295,7 @@ let pendingFile=null, chatPendingFile=null;
 function init(){
   API.DB.init();
   API.Tasks.resetDailyForToday();
-  document.getElementById('lockName').textContent=API.DB.getTeacher().madrasa||'মাদরাসাতুল মদিনা';
+  document.getElementById('lockName').textContent=API.DB.getTeacher().madrasa||'Waqful Madinah';
   document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); }));
   renderPendingSection();
 }
@@ -308,10 +310,10 @@ function renderPendingSection(){
   sec.style.display='block';
   document.getElementById('pendingList').innerHTML=pending.map(s=>{
     const msgCnt=API.Messages.unreadCount(s.id,'out');
-    const shortId=API.Students.getShortId(s)||'---';
-    return `<button class="pending-item" onclick="prefillId('${esc(shortId)}')">
+    const waqf=API.Students.getShortId(s)||'---';
+    return `<button class="pending-item" onclick="prefillId('${esc(waqf)}')">
       <div class="pending-avatar" style="background:${s.color||'#1565C0'}">${s.name.charAt(0)}</div>
-      <div class="pending-name">${esc(s.name)}</div>
+      <div class="pending-name">${esc(s.name)}<span class="pending-waqf">${esc(s.waqfId||'')}</span></div>
       ${msgCnt>0?`<span class="pending-badge msg">💬 ${msgCnt}</span>`:''}
     </button>`;
   }).join('');
@@ -328,11 +330,11 @@ function prefillId(shortId){
 function doLogin(){
   const rawId=document.getElementById('loginId').value.trim();
   const pin=document.getElementById('loginPin').value.trim();
-  if(!rawId){ showLoginErr('আইডি নম্বর দিন'); return; }
+  if(!rawId){ showLoginErr('ওয়াকফ আইডি দিন'); return; }
   if(!pin){ showLoginErr('পিন কোড দিন'); return; }
-  // Auto-convert "001" → waqf_001 lookup
+  // Accepts "001" or "waqf_001"
   const student=API.Students.getByWaqfShortId(rawId);
-  if(!student){ showLoginErr('❌ আইডি পাওয়া যায়নি'); return; }
+  if(!student){ showLoginErr('❌ ওয়াকফ আইডি পাওয়া যায়নি'); return; }
   if(pin!==student.pin){ showLoginErr('❌ পিন ভুল হয়েছে'); document.getElementById('loginPin').value=''; return; }
   me=student;
   document.getElementById('lockScreen').style.display='none';
@@ -347,10 +349,11 @@ function showLoginErr(msg){
 function onLogin(){
   localStorage.setItem('madrasa_lastPanel','student');
   document.getElementById('hAvatar').textContent=me.name.charAt(0); document.getElementById('hAvatar').style.background=me.color||'#1565C0';
-  document.getElementById('hTitle').textContent=me.name; document.getElementById('hSub').textContent=me.cls||'ছাত্র';
+  document.getElementById('hTitle').textContent=me.name;
+  { const p=[]; if(me.waqfId) p.push(me.waqfId); if(me.cls) p.push(me.cls); document.getElementById('hSub').textContent=p.length?p.join(' · '):'ছাত্র'; }
   document.getElementById('wAvatar').textContent=me.name.charAt(0);
   document.getElementById('wName').textContent='আস-সালামু আলাইকুম, '+me.name.split(' ')[0];
-  document.getElementById('wCls').textContent=(me.cls||'')+(me.roll?' · রোল '+me.roll:'');
+  document.getElementById('wCls').textContent=(me.waqfId?me.waqfId+' · ':'')+(me.cls||'')+(me.roll?' · রোল '+me.roll:'');
   renderAll();
   goTab('chat');
 }

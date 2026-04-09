@@ -1,4 +1,4 @@
-# মাদরাসাতুল মদিনা — CLAUDE.md
+# Waqful Madinah — CLAUDE.md
 
 ## Architecture Rules
 - ALL data logic in `api.js` only — HTML files just call `API.*`
@@ -19,9 +19,9 @@
 - Any new `.js` file → max 400 lines
 
 ## Git Rules
-- Before ANY change: `git add . && git commit -m "before: [description]"`
-- After completing: `git add . && git commit -m "done: [description]"`
-- After editing, always give the summary of changes FIRST — then ask about / proceed with the commit
+- **Do not run `git commit` or `git push` unless the user explicitly asks.** The maintainer commits locally.
+- After editing, give a **summary of changes first** (what/why, files touched). The user will stage and commit.
+- **Optional** commit message style when you commit yourself: `before: [short description]` / `done: [short description]` for checkpoints around a change.
 
 ## Deployment Context
 - Teacher uses ONE device, students use SEPARATE devices
@@ -32,4 +32,4 @@
 - Do NOT add notification logic that depends on push/server events
 
 ## Self-Maintenance
-After every feature, update this CLAUDE.md if any rule changed, then include it in the same commit.
+After every feature, update this CLAUDE.md if any rule changed; include that update in your own commit when you commit.
