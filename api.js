@@ -96,7 +96,8 @@ const API = (() => {
       }
       return RS.bootstrap().then(async () => {
         let c = RS.mem.core;
-        if (!c || !c.students?.length) {
+        const needSeed = !c || (!c.students?.length && !c.allowEmptyStudents);
+        if (needSeed) {
           c = buildSeedDemo();
           ensureChatsShape(c);
           RS.mem.core = c;
@@ -117,7 +118,8 @@ const API = (() => {
         return RS.mem.core;
       }
       let db=readDB();
-      if(!db||!db.students?.length) db=seedDemo();
+      if(!db) db=seedDemo();
+      else if(!db.students?.length && !db.allowEmptyStudents) db=seedDemo();
       else ensureChatsShape(db);
       return db;
     },
@@ -134,6 +136,7 @@ const API = (() => {
     },
     importJSON(json){
       const p=JSON.parse(json); if(!p.db?.students) throw new Error('invalid');
+      if (p.db.students.length) delete p.db.allowEmptyStudents;
       writeDB(p.db);
       if (_useRemote) {
         RS.mem.core = p.db;
@@ -150,6 +153,31 @@ const API = (() => {
       if(p.academic) localStorage.setItem('madrasa_academic',JSON.stringify(p.academic));
       if(p.tnotes) localStorage.setItem('madrasa_tnotes',JSON.stringify(p.tnotes));
       return Promise.resolve(p.db);
+    },
+    /** সব ছাত্র + টাস্ক/পরীক্ষা/ডক/লক্ষ্য/নোট খালি; শিক্ষক তথ্য ও গ্রুপ ব্রডকাস্ট চ্যাট রাখে। */
+    resetForNewRoster() {
+      const db = this.get();
+      const bc = (db.chats && Array.isArray(db.chats._bc)) ? db.chats._bc.slice() : [];
+      db.students = [];
+      db.chats = { _bc: bc };
+      db.tasks = [];
+      db.allowEmptyStudents = true;
+      this.save(db);
+      if (_useRemote) {
+        RS.mem.goals = {};
+        RS.mem.exams = { quizzes: [], submissions: [] };
+        RS.mem.docs = [];
+        RS.mem.academic = {};
+        RS.mem.tnotes = {};
+        return RS.flushAllFromMem();
+      }
+      localStorage.setItem(GOALS_KEY, '{}');
+      localStorage.setItem(EXAMS_KEY, JSON.stringify({ quizzes: [], submissions: [] }));
+      localStorage.setItem(DOCS_KEY, '[]');
+      localStorage.setItem('madrasa_academic', '{}');
+      localStorage.setItem('madrasa_tnotes', '{}');
+      Object.keys(localStorage).filter(k => k.startsWith('madrasa_doc_')).forEach(k => localStorage.removeItem(k));
+      return Promise.resolve();
     },
   };
 
@@ -198,7 +226,9 @@ const API = (() => {
         name, cls, roll, note, pin, color:colors[db.students.length%colors.length],
         fatherName, fatherOccupation, contact, district, upazila, bloodGroup, enrollmentDate,
       };
-      db.students.push(s); db.chats[s.id]=[]; DB.save(db); return s;
+      db.students.push(s); db.chats[s.id]=[];
+      delete db.allowEmptyStudents;
+      DB.save(db); return s;
     },
 
     update(sid, data) {
@@ -263,6 +293,7 @@ const API = (() => {
         };
         db.students.push(s); db.chats[s.id]=[]; results.success++;
       }
+      if (results.success > 0) delete db.allowEmptyStudents;
       DB.save(db); return results;
     },
   };
