@@ -833,9 +833,10 @@ const API = (() => {
     resolveFileUrl(id) {
       const meta = this.getById(id);
       if (!meta) return Promise.resolve(null);
-      if (meta.fileUrl) return Promise.resolve(meta.fileUrl);
+      /* Private bucket: upload-time fileUrl expires; always refresh from storage_path when remote. */
       if (_useRemote && meta.storage_path && RS.getSignedUrlForPath)
         return RS.getSignedUrlForPath(meta.storage_path);
+      if (meta.fileUrl) return Promise.resolve(meta.fileUrl);
       return Promise.resolve(this.getFileData(id));
     },
 
@@ -933,6 +934,18 @@ const API = (() => {
       return RS.unlockStudentWithWaqfPin(waqf, pin);
     },
     refreshStudentLockHints() { return _useRemote && RS.refreshStudentLockHints ? RS.refreshStudentLockHints() : Promise.resolve(); },
+    Pwa: {
+      registerServiceWorker() {
+        const win = typeof window !== 'undefined' ? window : null;
+        if (!win || !win.MadrasaPwa) return Promise.resolve(null);
+        return win.MadrasaPwa.register();
+      },
+      enableNotificationsAfterAuth(role, opts) {
+        const win = typeof window !== 'undefined' ? window : null;
+        if (!win || !win.MadrasaPwa) return Promise.resolve();
+        return win.MadrasaPwa.enableAfterAuth(role, opts || {});
+      },
+    },
   };
 })();
 

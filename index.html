@@ -364,7 +364,7 @@ body {
 (function () {
   if (!('serviceWorker' in navigator)) return;
   window.addEventListener('load', function () {
-    navigator.serviceWorker.register('sw-entry.js').catch(function () {});
+    navigator.serviceWorker.register('sw.js').catch(function () {});
   });
 })();
 </script>

@@ -1,6 +1,8 @@
 {
+  "id": "./index.html",
   "name": "Waqful Madinah — ওয়াক্‌ফুল মদিনাহ",
   "short_name": "Waqful",
+  "categories": ["education", "productivity"],
   "description": "মাদরাসা ম্যানেজার — শিক্ষক ও ছাত্র প্যানেল",
   "start_url": "./index.html",
   "scope": "./",

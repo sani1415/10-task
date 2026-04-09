@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#1565C0">
+<meta name="description" content="ছাত্র প্যানেল — Waqful Madinah">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ছাত্র">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>ছাত্র প্যানেল · Waqful Madinah</title>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
@@ -76,7 +83,6 @@
 .doc-cat-badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:8px;background:var(--gray-200);color:var(--gray-600);margin-right:4px}
 .upload-progress{height:4px;background:var(--gray-200);border-radius:2px;margin:4px 0;overflow:hidden}
 .upload-progress-fill{height:100%;background:#1565C0;border-radius:2px;transition:width .3s}
-.student-chat-doc-view{margin-top:8px;background:#E3F2FD;border:1px solid #90CAF9;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:600;color:#0D47A1;cursor:pointer;font-family:var(--font)}
 
 /* ── Pending notifications (lock screen) ── */
 .pending-sec-label{color:rgba(255,255,255,.6);font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;text-align:center}
@@ -296,10 +302,12 @@
 <script>window.__MADRASA_ROLE__='student';</script>
 <script src="https://unpkg.com/@supabase/supabase-js@2.49.8/dist/umd/supabase.js"></script>
 <script src="supabase-config.js"></script>
+<script src="pwa-config.js"></script>
 <script src="remote-sync.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <script src="pdf-merge.js"></script>
 <script src="api.js"></script>
+<script src="pwa-notify.js"></script>
 <script>
 // ══ State ══════════════════════════════════════════════════
 let me=null, tFilter='all', gFilter='all';
@@ -320,6 +328,7 @@ function showUploadPrepError(e){
 // ══ Init ═══════════════════════════════════════════════════
 function init(){
   Promise.resolve(API.DB.init()).then(()=>{
+    void API.Pwa.registerServiceWorker();
     API.Tasks.resetDailyForToday();
     document.getElementById('lockName').textContent=API.DB.getTeacher().madrasa||'Waqful Madinah';
     document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); }));
@@ -394,6 +403,7 @@ function onLogin(){
   document.getElementById('wCls').textContent=(me.waqfId?me.waqfId+' · ':'')+(me.cls||'')+(me.roll?' · রোল '+me.roll:'');
   renderAll();
   goTab('chat');
+  void API.Pwa.enableNotificationsAfterAuth('student', { waqfId: me && me.waqfId });
 }
 function logout(){
   me=null;
@@ -480,7 +490,7 @@ function renderChat(){
       h+=`<div class="msg-wrap in"><div class="task-bubble"><div class="task-bubble-hd">📋 উস্তাদ টাস্ক দিয়েছেন · ${tLabel}</div><div class="task-bubble-bd"><div class="task-bubble-title">${esc(m.task.title)}</div><div class="task-bubble-desc">${esc(m.task.desc)}</div>${m.task.deadline?`<div class="task-bubble-dl">📅 শেষ তারিখ: ${m.task.deadline}</div>`:''}</div></div><div style="font-size:11px;color:var(--gray-400);text-align:left;margin-top:2px;padding-left:4px">${m.time}</div></div>`;
     } else if(m.type==='doc'){
       const ic=fileIcon(m.fileType);
-      const viewBtn=m.docId?`<button type="button" class="student-chat-doc-view" onclick="previewStudentChatDoc('${m.docId}')">👁 দেখুন</button>`:'';
+      const viewBtn=m.docId?`<button type="button" class="chat-doc-view-btn" onclick="previewStudentChatDoc('${m.docId}')">👁 দেখুন</button>`:'';
       if(m.role==='in'){
         // Student sent this file (shown right side, with tick)
         h+=`<div class="msg-wrap out"><div class="msg-doc-bubble"><div class="msg-doc-icon">${ic}</div><div class="msg-doc-info"><div class="msg-doc-name">${esc(m.fileName)}</div><div class="msg-doc-size">${m.fileSize?formatBytes(m.fileSize):''}</div>${viewBtn}</div></div><div class="msg-meta" style="position:static;display:flex;gap:3px;justify-content:flex-end;margin-top:3px;padding-right:4px"><span class="msg-time">${m.time}</span>${tickHtml(m)}</div></div>`;
