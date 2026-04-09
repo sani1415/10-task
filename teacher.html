@@ -345,9 +345,7 @@
   <div class="modal-title" id="docPreviewTitle">ডকুমেন্ট</div>
   <div id="docPreviewMeta" style="font-size:13px;color:var(--gray-500);margin-bottom:12px"></div>
   <div id="docPreviewContent" style="text-align:center;margin-bottom:12px"></div>
-  <a id="docDownloadLink" download style="display:none">
-    <button class="btn-primary" style="margin-bottom:8px" onclick="triggerDocDownload()">⬇️ ডাউনলোড</button>
-  </a>
+  <button class="btn-primary" id="docDownloadBtn" style="margin-bottom:8px;display:none" onclick="triggerDocDownload()">⬇️ ডাউনলোড</button>
   <button class="btn-secondary" onclick="closeModal('docPreviewModal')">বন্ধ করুন</button>
 </div></div>
 
@@ -493,24 +491,27 @@ function renderMsgs(id){
   el.innerHTML=h; setTimeout(()=>el.scrollTop=9e9,50);
 }
 
-function teacherPreviewChatDoc(docId){
-  if(!docId) return;
+function openDocPreview(docId, markAsRead){
   const meta=API.Docs.getById(docId); if(!meta){ showToast('ফাইল পাওয়া যায়নি!'); return; }
   curPreviewDocId=docId;
   const data=API.Docs.getFileData(docId);
   document.getElementById('docPreviewTitle').textContent=meta.fileName;
-  document.getElementById('docPreviewMeta').textContent=`${formatBytes(meta.fileSize)} · ${meta.studentName} · ${formatDate(meta.uploadedAt)}`;
+  document.getElementById('docPreviewMeta').textContent=`${formatBytes(meta.fileSize)}${meta.studentName?' · '+meta.studentName:''} · ${formatDate(meta.uploadedAt)}`;
   const content=document.getElementById('docPreviewContent');
-  if(meta.fileType?.startsWith('image/')&&data){
-    content.innerHTML=`<img src="${data}" style="max-width:100%;max-height:260px;border-radius:8px;object-fit:contain">`;
+  if(meta.fileType?.startsWith('image/') && data){
+    content.innerHTML=`<img src="${data}" style="max-width:100%;max-height:300px;border-radius:8px;object-fit:contain;display:block;margin:0 auto">`;
+  } else if(meta.fileType==='application/pdf' && data){
+    content.innerHTML=`<iframe src="${data}" style="width:100%;height:340px;border:none;border-radius:8px;background:var(--gray-100)" title="${esc(meta.fileName)}"></iframe>`;
   } else {
-    content.innerHTML=`<div style="padding:20px;background:var(--gray-100);border-radius:8px;color:var(--gray-600)">${fileIcon(meta.fileType)} ${esc(meta.fileName)}</div>`;
+    const icon=fileIcon(meta.fileType);
+    content.innerHTML=`<div style="padding:24px 16px;background:var(--gray-100);border-radius:8px;display:flex;flex-direction:column;align-items:center;gap:8px"><span style="font-size:40px">${icon}</span><span style="font-size:14px;font-weight:600;color:var(--gray-700);word-break:break-all">${esc(meta.fileName)}</span><span style="font-size:12px;color:var(--gray-500)">${formatBytes(meta.fileSize)}</span><span style="font-size:12px;color:var(--gray-400)">পূর্বরূপ সম্ভব নয় — ডাউনলোড করুন</span></div>`;
   }
-  const link=document.getElementById('docDownloadLink');
-  if(data){ link.href=data; link.download=meta.fileName; link.style.display='block'; } else { link.style.display='none'; }
-  API.Docs.markRead(docId); updateDocBadge();
+  const btn=document.getElementById('docDownloadBtn');
+  btn.style.display=data?'block':'none';
+  if(markAsRead){ API.Docs.markRead(docId); updateDocBadge(); }
   openModal('docPreviewModal');
 }
+function teacherPreviewChatDoc(docId){ if(docId) openDocPreview(docId, true); }
 // ── Teacher chat file functions ───────────────────────────
 function onTeacherChatFileChosen(input){
   if(!input.files?.length) return;
@@ -907,26 +908,13 @@ function toggleDocGroup(grpId, sid){
     updateDocBadge();
   }
 }
-function previewDoc(id){
-  const meta=API.Docs.getById(id); if(!meta){ showToast('ডকুমেন্ট পাওয়া যায়নি!'); return; }
-  const data=API.Docs.getFileData(id);
-  curPreviewDocId=id;
-  document.getElementById('docPreviewTitle').textContent=meta.fileName;
-  document.getElementById('docPreviewMeta').textContent=`${formatBytes(meta.fileSize)} · ${meta.studentName} · ${formatDate(meta.uploadedAt)}`;
-  const content=document.getElementById('docPreviewContent');
-  if(meta.fileType?.startsWith('image/')&&data){
-    content.innerHTML=`<img src="${data}" style="max-width:100%;max-height:260px;border-radius:8px;object-fit:contain">`;
-  } else if(meta.fileType==='application/pdf'){
-    content.innerHTML=`<div style="padding:20px;background:var(--gray-100);border-radius:8px;color:var(--gray-600)">📕 PDF ফাইল — ডাউনলোড করে দেখুন</div>`;
-  } else {
-    content.innerHTML=`<div style="padding:20px;background:var(--gray-100);border-radius:8px;color:var(--gray-600)">📄 ${esc(meta.fileName)}</div>`;
-  }
-  const link=document.getElementById('docDownloadLink');
-  if(data){ link.href=data; link.download=meta.fileName; link.style.display='block'; } else { link.style.display='none'; }
-  API.Docs.markRead(id); updateDocBadge();
-  openModal('docPreviewModal');
+function previewDoc(id){ openDocPreview(id, true); }
+function triggerDocDownload(){
+  const data=API.Docs.getFileData(curPreviewDocId);
+  const meta=API.Docs.getById(curPreviewDocId);
+  if(!data||!meta) return;
+  const a=document.createElement('a'); a.href=data; a.download=meta.fileName; a.click();
 }
-function triggerDocDownload(){ document.getElementById('docDownloadLink').click(); }
 function deleteDoc(id){ if(!confirm('এই ডকুমেন্ট মুছবেন?')) return; API.Docs.delete(id); renderDocsGrouped(); updateDocBadge(); showToast('🗑 মুছে ফেলা হয়েছে'); }
 
 function renderStorageTree(){
