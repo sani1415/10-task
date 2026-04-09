@@ -140,15 +140,15 @@
 
 <!-- ══ TAB BAR ═══════════════════════════════════════════ -->
 <div class="tab-bar">
-  <button class="tab-btn active" onclick="goTab('home')"  id="tab-home">🏠 হোম</button>
-  <button class="tab-btn"        onclick="goTab('chat')"  id="tab-chat">💬 চ্যাট<span class="tab-badge" id="urBadge"></span></button>
+  <button class="tab-btn active" onclick="goTab('chat')"  id="tab-chat">💬 চ্যাট<span class="tab-badge" id="urBadge"></span></button>
+  <button class="tab-btn"        onclick="goTab('home')"  id="tab-home">🏠 হোম</button>
   <button class="tab-btn"        onclick="goTab('tasks')" id="tab-tasks">📋 টাস্ক<span class="tab-badge" id="tBadge"></span></button>
   <button class="tab-btn"        onclick="goTab('exams')" id="tab-exams">📝 পরীক্ষা<span class="tab-badge" id="examBadge"></span></button>
   <button class="tab-btn"        onclick="goTab('goals')" id="tab-goals">🎯 লক্ষ্য</button>
 </div>
 
 <!-- ══ HOME ══════════════════════════════════════════════ -->
-<div class="screen active" id="screen-home">
+<div class="screen" id="screen-home">
   <div class="list-scroll">
     <div class="welcome-card"><div class="welcome-avatar" id="wAvatar">?</div><div class="welcome-text"><h2 id="wName">আস-সালামু আলাইকুম</h2><p id="wCls">লোড হচ্ছে...</p></div></div>
     <div class="stats-row">
@@ -167,7 +167,7 @@
 </div>
 
 <!-- ══ CHAT ══════════════════════════════════════════════ -->
-<div class="screen" id="screen-chat">
+<div class="screen active" id="screen-chat">
   <div class="chat-messages" id="chatMsgs"></div>
   <!-- File preview before sending -->
   <div class="chat-file-preview" id="chatFilePreview" style="display:none">
@@ -352,6 +352,7 @@ function onLogin(){
   document.getElementById('wName').textContent='আস-সালামু আলাইকুম, '+me.name.split(' ')[0];
   document.getElementById('wCls').textContent=(me.cls||'')+(me.roll?' · রোল '+me.roll:'');
   renderAll();
+  goTab('chat');
 }
 function logout(){
   me=null;
@@ -360,7 +361,7 @@ function logout(){
   document.getElementById('loginPin').value='';
   document.getElementById('loginErr').textContent='';
   renderPendingSection();
-  goTab('home');
+  goTab('chat');
 }
 function renderAll(){ renderHome(); renderChat(); renderTaskList(); renderExamList(); renderSentDocs(); renderGoals(); updateBadges(); }
 
@@ -726,7 +727,7 @@ function goTab(tab){
   document.getElementById('tab-'+tab).classList.add('active');
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+tab).classList.add('active');
-  if(tab==='chat'){ API.Messages.markRead(me.id,'out'); renderChat(); updateBadges(); setTimeout(()=>document.getElementById('chatMsgs').scrollTop=9e9,50); }
+  if(tab==='chat' && me){ API.Messages.markRead(me.id,'out'); renderChat(); updateBadges(); setTimeout(()=>document.getElementById('chatMsgs').scrollTop=9e9,50); }
   if(tab==='exams') renderExamList();
 }
 
