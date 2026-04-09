@@ -284,6 +284,7 @@
 </div></div>
 
 <div class="toast" id="toast"></div>
+<script>window.__MADRASA_ROLE__='student';</script>
 <script src="https://unpkg.com/@supabase/supabase-js@2.49.8/dist/umd/supabase.js"></script>
 <script src="supabase-config.js"></script>
 <script src="remote-sync.js"></script>
@@ -331,12 +332,24 @@ function prefillId(shortId){
 }
 
 // ══ LOGIN (ID + PIN form) ═══════════════════════════════════
-function doLogin(){
+async function doLogin(){
   const rawId=document.getElementById('loginId').value.trim();
   const pin=document.getElementById('loginPin').value.trim();
   if(!rawId){ showLoginErr('ওয়াকফ আইডি দিন'); return; }
   if(!pin){ showLoginErr('পিন কোড দিন'); return; }
-  // Accepts "001" or "waqf_001"
+  if(window.RemoteSync && RemoteSync.isRemote() && RemoteSync.usesSecureKv()){
+    try{
+      await API.loginStudentRemote(rawId, pin);
+      me=API.Students.getByWaqfShortId(rawId);
+      if(!me){ showLoginErr('❌ লগইন ব্যর্থ'); return; }
+      document.getElementById('lockScreen').style.display='none';
+      onLogin();
+    } catch(e){
+      showLoginErr('❌ পিন বা আইডি ভুল');
+      document.getElementById('loginPin').value='';
+    }
+    return;
+  }
   const student=API.Students.getByWaqfShortId(rawId);
   if(!student){ showLoginErr('❌ ওয়াকফ আইডি পাওয়া যায়নি'); return; }
   if(pin!==student.pin){ showLoginErr('❌ পিন ভুল হয়েছে'); document.getElementById('loginPin').value=''; return; }

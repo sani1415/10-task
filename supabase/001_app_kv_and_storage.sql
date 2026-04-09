@@ -1,5 +1,4 @@
--- Run this in Supabase → SQL Editor (once).
--- MVP: anon can read/write everything. Tighten RLS before any public deployment.
+-- Run this in Supabase → SQL Editor (once), then apply supabase/002_production_rpc_rls.sql for production.
 
 create table if not exists public.app_kv (
   key text primary key,

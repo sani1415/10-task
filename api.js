@@ -1,15 +1,4 @@
-/* Waqful Madinah · api.js · v3.0
-   Backend বদলাতে শুধু এই ফাইল বদলান।
-   LocalStorage অথবা Supabase (remote-sync.js + supabase-config.js)।
-
-   ───── Storage keys ─────
-   madrasa_db        → main DB (teacher, students, chats, tasks)
-   madrasa_goals     → per-student goals
-   madrasa_exams     → quizzes + submissions
-   madrasa_docs      → document metadata (file content stored separately)
-   madrasa_doc_<id>  → base64 file content for each document
-   teacher_pin       → teacher PIN override
-*/
+/* Waqful Madinah · api.js — সব ডেটা লজিক এখানে। LocalStorage বা remote-sync + supabase-config। */
 const API = (() => {
   const DB_KEY='madrasa_db', GOALS_KEY='madrasa_goals',
         EXAMS_KEY='madrasa_exams', DOCS_KEY='madrasa_docs',
@@ -96,6 +85,11 @@ const API = (() => {
       }
       return RS.bootstrap().then(async () => {
         let c = RS.mem.core;
+        const secure = RS.usesSecureKv?.();
+        if (secure) {
+          ensureChatsShape(c);
+          return c;
+        }
         const needSeed = !c || (!c.students?.length && !c.allowEmptyStudents);
         if (needSeed) {
           c = buildSeedDemo();
@@ -177,6 +171,28 @@ const API = (() => {
       localStorage.setItem('madrasa_academic', '{}');
       localStorage.setItem('madrasa_tnotes', '{}');
       Object.keys(localStorage).filter(k => k.startsWith('madrasa_doc_')).forEach(k => localStorage.removeItem(k));
+      return Promise.resolve();
+    },
+    finalizeRemoteTeacherAfterUnlock() {
+      if (!_useRemote || !RS.usesSecureKv?.() || typeof window === 'undefined' || window.__MADRASA_ROLE__ !== 'teacher') return Promise.resolve();
+      let c = RS.mem.core;
+      const needSeed = !c || (!c.students?.length && !c.allowEmptyStudents);
+      if (needSeed) {
+        c = buildSeedDemo();
+        ensureChatsShape(c);
+        RS.mem.core = c;
+        return RS.flushKey('core', c).then(() => {
+          if (RS.mem.teacherPin == null || RS.mem.teacherPin === '') {
+            RS.mem.teacherPin = DEF_PIN;
+            return RS.flushKey('teacher_pin', { pin: DEF_PIN });
+          }
+        });
+      }
+      ensureChatsShape(c);
+      if (RS.mem.teacherPin == null || RS.mem.teacherPin === '') {
+        RS.mem.teacherPin = DEF_PIN;
+        return RS.flushKey('teacher_pin', { pin: DEF_PIN });
+      }
       return Promise.resolve();
     },
   };
@@ -382,12 +398,13 @@ const API = (() => {
         if (_useRemote) {
           const docId=uid('doc');
           const path=`${sid}/${docId}_${safeFilePart(file.name)}`;
-          RS.uploadFile(path, file).then(fileUrl=>{
+          RS.uploadFile(path, file).then(res=>{
+            const { fileUrl, storagePath } = RS.consumeUploadResult(res);
             const meta={
               id:docId, studentId:sid, studentName:student.name,
               fileName:file.name, fileType:file.type, fileSize:file.size,
               category, note, uploadedAt:new Date().toISOString(), read:false,
-              fileUrl, storage_path: path,
+              fileUrl, storage_path: storagePath || path,
             };
             const list=RS.mem.docs||[];
             list.unshift(meta);
@@ -395,7 +412,7 @@ const API = (() => {
             RS.schedule('docs_meta', ()=>JSON.parse(JSON.stringify(RS.mem.docs)));
             const db=DB.get(); if(!db.chats[sid]) db.chats[sid]=[];
             const m={id:uid('m'),role:'in',type:'doc',text:file.name,time:nowTime(),read:false,
-                     fileName:file.name, fileType:file.type, fileSize:file.size, docId, fileUrl};
+                     fileName:file.name, fileType:file.type, fileSize:file.size, docId, fileUrl, storage_path: storagePath || path};
             db.chats[sid].push(m); DB.save(db);
             resolve({ meta, msg: m });
           }).catch(err=>reject(err));
@@ -430,12 +447,13 @@ const API = (() => {
           const docId=uid('tdoc');
           const path=`teacher/${sid}/${docId}_${safeFilePart(file.name)}`;
           const st=Students.getById(sid);
-          RS.uploadFile(path, file).then(fileUrl=>{
+          RS.uploadFile(path, file).then(res=>{
+            const { fileUrl, storagePath } = RS.consumeUploadResult(res);
             const meta={
               id:docId, studentId:sid, studentName:st?.name||'',
               fileName:file.name, fileType:file.type, fileSize:file.size,
               category:'general', note:'', uploadedAt:new Date().toISOString(), read:true,
-              fileUrl, storage_path: path,
+              fileUrl, storage_path: storagePath || path,
             };
             const list=RS.mem.docs||[];
             list.unshift(meta);
@@ -443,7 +461,7 @@ const API = (() => {
             RS.schedule('docs_meta', ()=>JSON.parse(JSON.stringify(RS.mem.docs)));
             const db=DB.get(); if(!db.chats[sid]) db.chats[sid]=[];
             const m={id:uid('m'),role:'out',type:'doc',text:file.name,time:nowTime(),read:false,
-                     fileName:file.name, fileType:file.type, fileSize:file.size, docId, fileUrl};
+                     fileName:file.name, fileType:file.type, fileSize:file.size, docId, fileUrl, storage_path: storagePath || path};
             db.chats[sid].push(m); DB.save(db);
             resolve({ msg: m });
           }).catch(err=>reject(err));
@@ -726,6 +744,14 @@ const API = (() => {
       if (_useRemote) return null;
       return localStorage.getItem('madrasa_doc_'+id)||null;
     },
+    resolveFileUrl(id) {
+      const meta = this.getById(id);
+      if (!meta) return Promise.resolve(null);
+      if (meta.fileUrl) return Promise.resolve(meta.fileUrl);
+      if (_useRemote && meta.storage_path && RS.getSignedUrlForPath)
+        return RS.getSignedUrlForPath(meta.storage_path);
+      return Promise.resolve(this.getFileData(id));
+    },
 
     // Upload: file is a File object, read as base64 (local) or Storage (remote)
     upload(sid, file, { category='general', note='' } = {}) {
@@ -737,12 +763,13 @@ const API = (() => {
         if (_useRemote) {
           const id=uid('doc');
           const path=`${sid}/${id}_${safeFilePart(file.name)}`;
-          RS.uploadFile(path, file).then(fileUrl=>{
+          RS.uploadFile(path, file).then(res=>{
+            const { fileUrl, storagePath } = RS.consumeUploadResult(res);
             const meta={
               id, studentId:sid, studentName:student.name,
               fileName:file.name, fileType:file.type, fileSize:file.size,
               category, note, uploadedAt:new Date().toISOString(), read:false,
-              fileUrl, storage_path: path,
+              fileUrl, storage_path: storagePath || path,
             };
             const list=this._readMeta(); list.unshift(meta); this._writeMeta(list);
             resolve(meta);
@@ -796,7 +823,17 @@ const API = (() => {
     },
   };
 
-  return { Auth, DB, Students, Messages, Tasks, Goals, Exams, Docs, AcademicHistory, TeacherNotes, today, nowTime, nextDate, uid };
+  return {
+    Auth, DB, Students, Messages, Tasks, Goals, Exams, Docs, AcademicHistory, TeacherNotes, today, nowTime, nextDate, uid,
+    unlockTeacherRemote(pin) {
+      if (!_useRemote || !RS.unlockTeacherWithPin) return Promise.reject(new Error('not_remote'));
+      return RS.unlockTeacherWithPin(pin);
+    },
+    loginStudentRemote(waqf, pin) {
+      if (!_useRemote || !RS.unlockStudentWithWaqfPin) return Promise.reject(new Error('not_remote'));
+      return RS.unlockStudentWithWaqfPin(waqf, pin);
+    },
+  };
 })();
 
 // ── Global helpers ────────────────────────────────────────

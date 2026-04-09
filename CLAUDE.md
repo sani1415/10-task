@@ -10,7 +10,7 @@
 - Always use `esc()` for user data rendered in HTML
 - All user-facing text must be in Bengali
 - Supabase client must always be named `supabaseClient`
-- No npm, no React/Vue — Vanilla JS only
+- Vanilla JS only (no React/Vue). **Exception:** minimal `package.json` + `npm run build` for Vercel config injection only.
 
 ## File Size Limits
 - `api.js` → max 800 lines, split into modules if exceeded
@@ -26,8 +26,11 @@
 ## Deployment Context
 - Teacher uses ONE device, students use SEPARATE devices
 - **Backend:** With `supabase-config.js` (URL + anon key) + scripts in HTML, data syncs via **Supabase** (`app_kv` JSON + Storage bucket `waqf-files`). Without that file, the app falls back to **LocalStorage** (single-browser).
-- Run `supabase/001_app_kv_and_storage.sql` once in the Supabase SQL Editor. **MVP RLS allows anon read/write — tighten before production.** PIN login stays client-side (same trust model as LocalStorage demo).
-- `supabase-config.js` is **gitignored**; copy from `supabase-config.example.js`. Never commit real keys.
+- **Production DB:** Run `supabase/001_app_kv_and_storage.sql` then **`supabase/002_production_rpc_rls.sql`**. After 002, direct `app_kv` REST access is denied; the app uses PIN-gated RPCs (`madrasa_*`). `teacher.html` / `student.html` set `window.__MADRASA_ROLE__` — required for secure remote mode. Omitting the role flag keeps legacy direct KV (dev only).
+- **Vercel:** Set env `SUPABASE_URL` and `SUPABASE_ANON_KEY`. Build runs `npm run build` → writes `supabase-config.js`. If env is missing and `supabase-config.js` already exists locally, the script leaves it unchanged.
+- **Storage:** Bucket `waqf-files` is private after 002; uploads use signed URLs (short TTL). Document previews use `API.Docs.resolveFileUrl()`.
+- **Security note:** PINs are verified on the server for KV RPCs, but anyone with the anon key can still call student/teacher RPCs by brute force — protect the anon key, use HTTPS, and treat this as appropriate for a small trusted cohort (not open internet anonymity).
+- `supabase-config.js` is **gitignored**; copy from `supabase-config.example.js` for local dev. Never commit real keys.
 - Real-time tab sync is not implemented yet (no Supabase Realtime subscription).
 - Do NOT add notification logic that depends on push/server events until explicitly requested
 

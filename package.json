@@ -1,0 +1,7 @@
+{
+  "name": "waqful-madinah",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/inject-supabase-config.mjs"
+  }
+}

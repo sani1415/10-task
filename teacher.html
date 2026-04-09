@@ -387,6 +387,7 @@
 </div></div>
 
 <div class="toast" id="toast"></div>
+<script>window.__MADRASA_ROLE__='teacher';</script>
 <script src="https://unpkg.com/@supabase/supabase-js@2.49.8/dist/umd/supabase.js"></script>
 <script src="supabase-config.js"></script>
 <script src="remote-sync.js"></script>
@@ -420,7 +421,22 @@ function init(){
 function pk(k){ if(!k||pin.length>=4) return; pin+=k; dots(); if(pin.length===4) setTimeout(chkPin,150); }
 function pd(){ pin=pin.slice(0,-1); dots(); }
 function dots(){ [0,1,2,3].forEach(i=>document.getElementById('d'+i).classList.toggle('filled',i<pin.length)); }
-function chkPin(){
+async function chkPin(){
+  if(window.RemoteSync && RemoteSync.isRemote() && RemoteSync.usesSecureKv()){
+    try{
+      await API.unlockTeacherRemote(pin);
+      await API.DB.finalizeRemoteTeacherAfterUnlock();
+      localStorage.setItem('madrasa_lastPanel','teacher');
+      document.getElementById('lockScreen').style.display='none';
+      pin=''; dots();
+      renderAll();
+    } catch(e){
+      document.getElementById('pinErr').textContent='❌ পিন ভুল হয়েছে';
+      pin=''; dots();
+      setTimeout(()=>document.getElementById('pinErr').textContent='',2000);
+    }
+    return;
+  }
   if(API.Auth.checkTeacherPin(pin)){ localStorage.setItem('madrasa_lastPanel','teacher'); document.getElementById('lockScreen').style.display='none'; renderAll(); }
   else { document.getElementById('pinErr').textContent='❌ পিন ভুল হয়েছে'; pin=''; dots(); setTimeout(()=>document.getElementById('pinErr').textContent='',2000); }
 }
@@ -468,13 +484,15 @@ function openChat(id){
   if(!isBC){
     const studentDocs=API.Docs.getForStudent(id);
     if(studentDocs.length){
-      const thumbs=studentDocs.slice(0,3).map(d=>{
-        const data=API.Docs.getFileData(d.id);
-        return data&&d.fileType?.startsWith('image/')
-          ? `<span><img src="${data}"></span>`
-          : `<span>${d.fileType==='application/pdf'?'📕':d.fileType?.includes('word')?'📝':'📎'}</span>`;
-      }).join('');
-      document.getElementById('chatDocsThumbs').innerHTML=thumbs;
+      void (async ()=>{
+        const thumbs=(await Promise.all(studentDocs.slice(0,3).map(async d=>{
+          const data=await API.Docs.resolveFileUrl(d.id);
+          return data&&d.fileType?.startsWith('image/')
+            ? `<span><img src=${JSON.stringify(data)} alt=""></span>`
+            : `<span>${d.fileType==='application/pdf'?'📕':d.fileType?.includes('word')?'📝':'📎'}</span>`;
+        }))).join('');
+        document.getElementById('chatDocsThumbs').innerHTML=thumbs;
+      })();
       document.getElementById('chatDocsLabel').textContent=`📎 ${studentDocs.length}টি ডকুমেন্ট`;
       document.getElementById('chatDocsSub').textContent=`${s?.waqfId?s.waqfId+' · ':''}${s?.name||''}-এর পাঠানো ফাইল — ক্লিক করে দেখুন`;
       docsBar.style.display='flex';
@@ -515,8 +533,7 @@ function renderMsgs(id){
       h+=`<div class="msg-wrap out"><div class="task-bubble"><div class="task-bubble-hd">📋 টাস্ক · ${tLabel}</div><div class="task-bubble-bd"><div class="task-bubble-title">${esc(m.task.title)}</div><div class="task-bubble-desc">${esc(m.task.desc)}</div>${m.task.deadline?`<div class="task-bubble-dl">📅 ${m.task.deadline}</div>`:''}</div></div><div style="font-size:11px;color:var(--gray-400);text-align:right;margin-top:2px">${m.time}</div></div>`;
     } else if(m.type==='doc'){
       const ic=fileIcon(m.fileType);
-      const docData=m.fileUrl||API.Docs.getFileData(m.docId||'');
-      const previewBtn=docData?`<button onclick="teacherPreviewChatDoc('${m.docId||''}')" style="background:none;border:1px solid var(--gray-300);border-radius:8px;padding:3px 8px;font-size:11px;cursor:pointer;color:var(--gray-600);margin-top:4px">👁 দেখুন</button>`:'';
+      const previewBtn=m.docId?`<button onclick="teacherPreviewChatDoc('${m.docId}')" style="background:none;border:1px solid var(--gray-300);border-radius:8px;padding:3px 8px;font-size:11px;cursor:pointer;color:var(--gray-600);margin-top:4px">👁 দেখুন</button>`:'';
       if(m.role==='in'){
         // Student sent file → shown on left (incoming)
         h+=`<div class="msg-wrap in"><div class="msg-sender">${esc(id==='_broadcast'?'ছাত্র':API.Students.getById(id)?.name||'ছাত্র')}</div><div class="msg-doc-bubble"><div class="msg-doc-icon">${ic}</div><div class="msg-doc-info"><div class="msg-doc-name">${esc(m.fileName)}</div><div class="msg-doc-size">${m.fileSize?formatBytes(m.fileSize):''}</div>${previewBtn}</div></div><div style="font-size:11px;color:var(--gray-400);margin-top:2px;padding-left:4px">${m.time}</div></div>`;
@@ -531,19 +548,19 @@ function renderMsgs(id){
   el.innerHTML=h; setTimeout(()=>el.scrollTop=9e9,50);
 }
 
-function openDocPreview(docId, markAsRead){
+async function openDocPreview(docId, markAsRead){
   const meta=API.Docs.getById(docId); if(!meta){ showToast('ফাইল পাওয়া যায়নি!'); return; }
   curPreviewDocId=docId;
-  const data=API.Docs.getFileData(docId);
+  const data=await API.Docs.resolveFileUrl(docId);
   document.getElementById('docPreviewTitle').textContent=meta.fileName;
   { const st=meta.studentId?API.Students.getById(meta.studentId):null;
     document.getElementById('docPreviewMeta').textContent=`${formatBytes(meta.fileSize)}${st?.waqfId?' · '+st.waqfId:''}${meta.studentName?' · '+meta.studentName:''} · ${formatDate(meta.uploadedAt)}`;
   }
   const content=document.getElementById('docPreviewContent');
   if(meta.fileType?.startsWith('image/') && data){
-    content.innerHTML=`<img src="${data}" style="max-width:100%;max-height:300px;border-radius:8px;object-fit:contain;display:block;margin:0 auto">`;
+    content.innerHTML=`<img src=${JSON.stringify(data)} style="max-width:100%;max-height:300px;border-radius:8px;object-fit:contain;display:block;margin:0 auto" alt="">`;
   } else if(meta.fileType==='application/pdf' && data){
-    content.innerHTML=`<iframe src="${data}" style="width:100%;height:340px;border:none;border-radius:8px;background:var(--gray-100)" title="${esc(meta.fileName)}"></iframe>`;
+    content.innerHTML=`<iframe src=${JSON.stringify(data)} style="width:100%;height:340px;border:none;border-radius:8px;background:var(--gray-100)" title="${esc(meta.fileName)}"></iframe>`;
   } else {
     const icon=fileIcon(meta.fileType);
     content.innerHTML=`<div style="padding:24px 16px;background:var(--gray-100);border-radius:8px;display:flex;flex-direction:column;align-items:center;gap:8px"><span style="font-size:40px">${icon}</span><span style="font-size:14px;font-weight:600;color:var(--gray-700);word-break:break-all">${esc(meta.fileName)}</span><span style="font-size:12px;color:var(--gray-500)">${formatBytes(meta.fileSize)}</span><span style="font-size:12px;color:var(--gray-400)">পূর্বরূপ সম্ভব নয় — ডাউনলোড করুন</span></div>`;
@@ -975,10 +992,11 @@ function toggleDocGroup(grpId, sid){
   }
 }
 function previewDoc(id){ openDocPreview(id, true); }
-function triggerDocDownload(){
-  const data=API.Docs.getFileData(curPreviewDocId);
+async function triggerDocDownload(){
   const meta=API.Docs.getById(curPreviewDocId);
-  if(!data||!meta) return;
+  if(!meta) return;
+  const data=await API.Docs.resolveFileUrl(curPreviewDocId);
+  if(!data) return;
   const a=document.createElement('a'); a.href=data; a.download=meta.fileName; a.click();
 }
 function deleteDoc(id){ if(!confirm('এই ডকুমেন্ট মুছবেন?')) return; API.Docs.delete(id); renderDocsGrouped(); updateDocBadge(); showToast('🗑 মুছে ফেলা হয়েছে'); }
@@ -1003,8 +1021,7 @@ function renderStorageTree(){
       <div class="doc-group-hd" style="cursor:default"><span style="font-size:18px">📁</span><span class="doc-group-name">${esc(name)}</span><span class="doc-group-count">${files.length} ফাইল</span></div>
       ${files.map(d=>{
         const icon=d.fileType?.startsWith('image/')?'🖼️':d.fileType==='application/pdf'?'📕':'📄';
-        const data=API.Docs.getFileData(d.id);
-        const sizeKB=Math.round((data?.length||0)*0.75/1024);
+        const sizeKB=d.fileSize?Math.round(d.fileSize/1024):0;
         return `<div class="doc-item">
           <div class="doc-icon" style="font-size:18px">${icon}</div>
           <div class="doc-info"><div class="doc-name">${esc(d.fileName)}</div><div class="doc-meta">${sizeKB} KB · ${formatDate(d.uploadedAt)}</div></div>
