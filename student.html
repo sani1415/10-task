@@ -301,22 +301,18 @@ function init(){
 // ══ PENDING SECTION (lock screen) ══════════════════════════
 function renderPendingSection(){
   const students=API.Students.getAll();
-  // Students with unread teacher→student messages OR pending tasks
-  const pending=students.filter(s=>
-    API.Messages.unreadCount(s.id,'out')>0 || API.Tasks.pendingCount(s.id)>0
-  );
+  // Students with unread teacher→student messages only
+  const pending=students.filter(s=>API.Messages.unreadCount(s.id,'out')>0);
   const sec=document.getElementById('pendingSection');
   if(!pending.length){ sec.style.display='none'; return; }
   sec.style.display='block';
   document.getElementById('pendingList').innerHTML=pending.map(s=>{
     const msgCnt=API.Messages.unreadCount(s.id,'out');
-    const taskCnt=API.Tasks.pendingCount(s.id);
     const shortId=API.Students.getShortId(s)||'---';
     return `<button class="pending-item" onclick="prefillId('${esc(shortId)}')">
       <div class="pending-avatar" style="background:${s.color||'#1565C0'}">${s.name.charAt(0)}</div>
       <div class="pending-name">${esc(s.name)}</div>
       ${msgCnt>0?`<span class="pending-badge msg">💬 ${msgCnt}</span>`:''}
-      ${taskCnt>0?`<span class="pending-badge task">📋 ${taskCnt}</span>`:''}
     </button>`;
   }).join('');
 }
@@ -740,6 +736,23 @@ fixVH();
 window.addEventListener('resize', fixVH);
 
 init();
+
+// ── Live sync: re-render when data changes ─────────────────
+// Fires when teacher (or any other tab) writes to localStorage
+window.addEventListener('storage', e => {
+  if(!e.key || e.key.startsWith('madrasa_') || e.key==='teacher_pin') {
+    if(me) renderAll();
+    else renderPendingSection();
+  }
+});
+// Fires when user switches back to this tab / app (same device)
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState==='visible') {
+    API.Tasks.resetDailyForToday();
+    if(me) renderAll();
+    else renderPendingSection();
+  }
+});
 </script>
 </body>
 </html>

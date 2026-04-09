@@ -425,18 +425,16 @@ function renderChatList(f=''){
     h+=`<div class="chat-item" onclick="openChat('_broadcast')"><div class="chat-avatar" style="background:#7B1FA2">📢</div><div class="chat-body"><div class="chat-row1"><span class="chat-name">📢 সবাইকে বার্তা</span><span class="chat-time">${last?.time||''}</span></div><div class="chat-row2"><span class="chat-preview">${esc(last?.text||'গ্রুপ বার্তা')}</span></div></div></div>`; }
   students.forEach(s=>{
     const msgs=API.Messages.getThread(s.id); const last=msgs[msgs.length-1];
-    const ur=API.Messages.unreadCount(s.id,'in');   // messages from student (teacher hasn't read)
-    const sentUnread=API.Messages.unreadCount(s.id,'out'); // messages to student (student hasn't read)
+    const ur=API.Messages.unreadCount(s.id,'in'); // messages from student (teacher hasn't read)
     // For teacher's outgoing messages: show ✓ if student hasn't seen, ✓✓ if seen
     let tickPrefix='';
     if(last?.role==='out'){
       tickPrefix=last.read?'<span style="color:#25D366;font-size:13px">✓✓</span> ':'<span style="color:var(--gray-400);font-size:13px">✓</span> ';
     }
     const preview=last?(tickPrefix+(last.type==='doc'?`📎 ${esc(last.fileName||last.text)}`:esc(last.text.slice(0,40)))):esc(s.cls||'নতুন');
-    // Badge: green = from student (unread by teacher), gray = sent to student (unread by student)
+    // Badge: green = student sent a message teacher hasn't read yet
     let badgeHtml='';
     if(ur) badgeHtml+=`<span class="chat-badge">${ur}</span>`;
-    else if(sentUnread) badgeHtml+=`<span class="chat-sent-badge">${sentUnread}</span>`;
     h+=`<div class="chat-item" onclick="openChat('${s.id}')"><div class="chat-avatar" style="background:${s.color||C[0]}">${s.name.charAt(0)}</div><div class="chat-body"><div class="chat-row1"><span class="chat-name">${esc(s.name)}</span><span class="chat-time">${last?.time||''}</span></div><div class="chat-row2"><span class="chat-preview">${preview}</span>${badgeHtml}</div></div></div>`;
   });
   document.getElementById('chatList').innerHTML=h||'<div class="empty-state"><div class="icon">💬</div><p>ছাত্র যোগ করুন।</p></div>';

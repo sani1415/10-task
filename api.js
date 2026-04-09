@@ -26,29 +26,18 @@ const API = (() => {
   function seedDemo() {
     const colors=['#128C7E','#1565C0','#6A1B9A','#BF360C','#1B5E20'];
     const db = {
-      teacher: { name:'শিক্ষক', madrasa:'মাদরাসাতুল মদিনা' },
+      teacher: { name:'উস্তাজ', madrasa:'মাদরাসাতুল মদিনা' },
       students: [
-        { id:'s1', waqfId:'waqf_001', name:'মুহাম্মাদ আব্দুল্লাহ', cls:'হিফজ ১ম', roll:'০১', note:'মেধাবী', color:colors[0], pin:'1111' },
-        { id:'s2', waqfId:'waqf_002', name:'আহমাদ উমর',           cls:'হিফজ ১ম', roll:'০২', note:'',       color:colors[1], pin:'2222' },
-        { id:'s3', waqfId:'waqf_003', name:'ইউসুফ হাসান',          cls:'নাজেরা ২য়', roll:'০৩', note:'',    color:colors[2], pin:'3333' },
+        { id:'s1', waqfId:'waqf_001', name:'মুহাম্মাদ রাফি',      cls:'হিফজ ১ম',   roll:'০১', note:'',  color:colors[0], pin:'1111', fatherName:'আব্দুর রহমান',   contact:'01711000001', enrollmentDate:'2024-01-10' },
+        { id:'s2', waqfId:'waqf_002', name:'আব্দুল্লাহ মাহমুদ',   cls:'হিফজ ১ম',   roll:'০২', note:'',  color:colors[1], pin:'2222', fatherName:'মোহাম্মদ হানিফ', contact:'01711000002', enrollmentDate:'2024-01-10' },
+        { id:'s3', waqfId:'waqf_003', name:'উমর ফারুক',           cls:'হিফজ ২য়',   roll:'০৩', note:'',  color:colors[2], pin:'3333', fatherName:'ইব্রাহীম খলিল', contact:'01711000003', enrollmentDate:'2024-03-05' },
+        { id:'s4', waqfId:'waqf_004', name:'ইয়াহইয়া নাদিম',      cls:'নাজেরা ১ম', roll:'০৪', note:'',  color:colors[3], pin:'4444', fatherName:'সালেহ আহমাদ',   contact:'01711000004', enrollmentDate:'2024-06-01' },
+        { id:'s5', waqfId:'waqf_005', name:'হামজা আব্দুল আজিজ',  cls:'নাজেরা ২য়', roll:'০৫', note:'',  color:colors[4], pin:'5555', fatherName:'জামালুদ্দিন',   contact:'01711000005', enrollmentDate:'2025-01-15' },
       ],
       chats: {
-        's1': [{ id:uid('m'), role:'out', text:'আস-সালামু আলাইকুম। পাঠ তৈরি?', time:'১০:০০', read:true, type:'text' }],
-        's2': [{ id:uid('m'), role:'out', text:'উমর, তেলাওয়াত কেমন গেল?',     time:'০৯:৩০', read:true, type:'text' }],
-        '_bc':[{ id:uid('m'), role:'out', text:'📢 কাল সকাল ৮টায় বিশেষ দরস।', time:'০৮:০০', read:true, type:'text' }],
+        's1': [{ id:uid('m'), role:'out', text:'আস-সালামু আলাইকুম রাফি! আজকের সবক তৈরি করো।', time:nowTime(), read:false, type:'text' }],
       },
-      tasks: [
-        {
-          id:'t1', title:'সূরা মুলক মুখস্থ', desc:'আগামী শুক্রবারের মধ্যে সম্পূর্ণ।',
-          type:'onetime', deadline:nextDate(5), created:today(),
-          assignees:{ s1:'pending', s2:'done', s3:'pending' }, completedBy:{}
-        },
-        {
-          id:'t2', title:'প্রতিদিন ১ পারা তেলাওয়াত', desc:'প্রতিদিন কমপক্ষে ১ পারা।',
-          type:'daily', deadline:'', created:today(),
-          assignees:{ s1:'pending', s2:'pending', s3:'pending' }, completedBy:{}
-        },
-      ],
+      tasks: [],
     };
     writeDB(db);
     return db;
