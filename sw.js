@@ -1,5 +1,5 @@
 /* Waqful Madinah — full-app shell cache + Web Push display */
-var CACHE = 'waqful-full-v2';
+var CACHE = 'waqful-full-v3';
 
 var CDN_ASSETS = [
   'https://unpkg.com/@supabase/supabase-js@2.49.8/dist/umd/supabase.js',
@@ -139,13 +139,18 @@ self.addEventListener('push', function (e) {
       badge: absLocal('icons/icon-192.png'),
       tag: tag,
       renotify: true,
+      silent: false,
+      vibrate: [200, 100, 200],
       data: { url: openUrl },
+    }).then(function () {
+      if ('setAppBadge' in navigator) return navigator.setAppBadge(1);
     })
   );
 });
 
 self.addEventListener('notificationclick', function (e) {
   e.notification.close();
+  if ('clearAppBadge' in navigator) navigator.clearAppBadge();
   var url = (e.notification.data && e.notification.data.url) || absLocal('index.html');
   e.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (list) {

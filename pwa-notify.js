@@ -73,11 +73,29 @@
     if (now - lastForegroundNotify < MIN_GAP_MS) return;
     lastForegroundNotify = now;
     try {
-      new Notification('নতুন আপডেট', {
-        body: 'রিমোট ডেটা আপডেট হয়েছে। অ্যাপ খুলুন।',
-        icon: new URL('icons/icon-192.png', w.location.href).href,
-        tag: 'madrasa-sync',
-      });
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.ready.then(function (reg) {
+          return reg.showNotification('নতুন আপডেট', {
+            body: 'রিমোট ডেটা আপডেট হয়েছে। অ্যাপ খুলুন।',
+            icon: new URL('icons/icon-192.png', w.location.href).href,
+            badge: new URL('icons/icon-192.png', w.location.href).href,
+            tag: 'madrasa-sync',
+            renotify: true,
+            silent: false,
+            vibrate: [200, 100, 200],
+          });
+        }).then(function () {
+          if ('setAppBadge' in navigator) navigator.setAppBadge(1);
+        }).catch(function () {});
+      } else {
+        new Notification('নতুন আপডেট', {
+          body: 'রিমোট ডেটা আপডেট হয়েছে। অ্যাপ খুলুন।',
+          icon: new URL('icons/icon-192.png', w.location.href).href,
+          tag: 'madrasa-sync',
+          silent: false,
+        });
+        if ('setAppBadge' in navigator) navigator.setAppBadge(1);
+      }
     } catch (e) {}
   }
 

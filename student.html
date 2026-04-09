@@ -837,6 +837,7 @@ window.addEventListener('storage', e => {
 // Fires when user switches back to this tab / app (same device)
 document.addEventListener('visibilitychange', () => {
   if(document.visibilityState==='visible') {
+    if('clearAppBadge' in navigator) navigator.clearAppBadge();
     API.Tasks.resetDailyForToday();
     if(me) renderAll();
     else Promise.resolve(API.refreshStudentLockHints()).then(()=>renderPendingSection());

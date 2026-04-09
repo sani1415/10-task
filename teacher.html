@@ -1368,6 +1368,12 @@ function fixVH(){ document.documentElement.style.setProperty('--real-vh', window
 fixVH();
 window.addEventListener('resize', fixVH);
 
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState==='visible') {
+    if('clearAppBadge' in navigator) navigator.clearAppBadge();
+  }
+});
+
 init();
 </script>
 </body>
