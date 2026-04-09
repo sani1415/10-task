@@ -26,13 +26,13 @@
 ## Deployment Context
 - Teacher uses ONE device, students use SEPARATE devices
 - **Backend:** With `supabase-config.js` (URL + anon key) + scripts in HTML, data syncs via **Supabase** (`app_kv` JSON + Storage bucket `waqf-files`). Without that file, the app falls back to **LocalStorage** (single-browser).
-- **Production DB:** Run `supabase/001_app_kv_and_storage.sql` then **`supabase/002_production_rpc_rls.sql`**. After 002, direct `app_kv` REST access is denied; the app uses PIN-gated RPCs (`madrasa_*`). `teacher.html` / `student.html` set `window.__MADRASA_ROLE__` — required for secure remote mode. Omitting the role flag keeps legacy direct KV (dev only).
+- **Production DB:** Run `supabase/001_app_kv_and_storage.sql`, **`002_production_rpc_rls.sql`**, **`003_madrasa_student_lock_hints.sql`**, then optionally **`004_device_push_tokens.sql`** (placeholder for future FCM). After 002, direct `app_kv` REST access is denied; the app uses PIN-gated RPCs (`madrasa_*`). Student lock screen “অপেক্ষারত” uses **`madrasa_student_lock_hints`** (names + waqf + unread counts only, no PINs). `teacher.html` / `student.html` set `window.__MADRASA_ROLE__` — required for secure remote mode. Omitting the role flag keeps legacy direct KV (dev only).
 - **Vercel:** Set env `SUPABASE_URL` and `SUPABASE_ANON_KEY`. Build runs `npm run build` → writes `supabase-config.js`. If env is missing and `supabase-config.js` already exists locally, the script leaves it unchanged.
 - **Storage:** Bucket `waqf-files` is private after 002; uploads use signed URLs (short TTL). Document previews use `API.Docs.resolveFileUrl()`.
 - **Security note:** PINs are verified on the server for KV RPCs, but anyone with the anon key can still call student/teacher RPCs by brute force — protect the anon key, use HTTPS, and treat this as appropriate for a small trusted cohort (not open internet anonymity).
 - `supabase-config.js` is **gitignored**; copy from `supabase-config.example.js` for local dev. Never commit real keys.
-- Real-time tab sync is not implemented yet (no Supabase Realtime subscription).
-- Do NOT add notification logic that depends on push/server events until explicitly requested
+- **In-app instant sync:** `remote-sync.js` subscribes to Supabase Realtime **Broadcast** on channel `madrasa_kv_sync` (event `kv`). After remote saves it pings the channel; other tabs/devices run `pullRemoteSnapshot` and dispatch `madrasa-remote-sync`. This is not OS push — it requires the page open and online.
+- **Future lock-screen / background alerts:** Requires **FCM** (or similar) + **Capacitor** `@capacitor/push-notifications`, token storage (see **`004_device_push_tokens.sql`**), and a **server sender** (e.g. Supabase Edge Function with service role) triggered when `core` / messages change. Not implemented in the web app yet.
 
 ## Self-Maintenance
 After every feature, update this CLAUDE.md if any rule changed; include that update in your own commit when you commit.

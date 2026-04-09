@@ -84,6 +84,7 @@ const API = (() => {
         return Promise.resolve(db);
       }
       return RS.bootstrap().then(async () => {
+        if (RS.startRealtimeSync) RS.startRealtimeSync();
         let c = RS.mem.core;
         const secure = RS.usesSecureKv?.();
         if (secure) {
@@ -214,6 +215,7 @@ const API = (() => {
     getShortId(s) {
       return s?.waqfId||null;
     },
+    getPendingForLockScreen(){ return _useRemote&&RS.mem&&Array.isArray(RS.mem.lockHints)?RS.mem.lockHints:this.getAll().filter(s=>Messages.unreadCount(s.id,'out')>0); },
 
     // Login lookup: accepts "001" or "waqf_001" (case-insensitive waqf_)
     getByWaqfShortId(raw) {
@@ -229,10 +231,8 @@ const API = (() => {
 
     getBatchYear(enrollmentDate) {
       if(!enrollmentDate) return null;
-      const ey = new Date(enrollmentDate).getFullYear();
-      return new Date().getFullYear() - ey;
+      return new Date().getFullYear() - new Date(enrollmentDate).getFullYear();
     },
-
     add({ name, cls, roll, note, pin, fatherName='', fatherOccupation='', contact='', district='', upazila='', bloodGroup='', enrollmentDate='' }) {
       const db = DB.get();
       if(db.students.some(s=>s.pin===pin)) throw new Error('pin_exists');
@@ -833,6 +833,7 @@ const API = (() => {
       if (!_useRemote || !RS.unlockStudentWithWaqfPin) return Promise.reject(new Error('not_remote'));
       return RS.unlockStudentWithWaqfPin(waqf, pin);
     },
+    refreshStudentLockHints() { return _useRemote && RS.refreshStudentLockHints ? RS.refreshStudentLockHints() : Promise.resolve(); },
   };
 })();
 

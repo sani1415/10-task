@@ -8,6 +8,13 @@
   let _teacherPin = '';
   let _studentWaqf = '';
   let _studentPin = '';
+  let syncChannel = null;
+  let syncReady = false;
+  let suppressBroadcast = 0;
+  let broadcastDebounceTimer = null;
+  let pullDebounceTimer = null;
+  /** Prevents pull from overwriting local state while a debounced or in-flight KV save runs (Realtime race). */
+  const kvSaveInFlight = {};
 
   const mem = {
     core: null,
@@ -17,6 +24,7 @@
     academic: {},
     tnotes: {},
     teacherPin: null,
+    lockHints: [],
     loaded: false,
   };
 
@@ -58,35 +66,124 @@
     return data ? data.value : undefined;
   }
 
-  async function saveKVImpl(sb, key, value) {
-    const v = value === undefined ? {} : value;
-    if (!usesSecureKv()) {
-      const { error } = await sb.from('app_kv').upsert(
-        { key, value: v, updated_at: new Date().toISOString() },
-        { onConflict: 'key' }
-      );
-      if (error) throw error;
+  function scheduleAfterRemoteSave() {
+    if (suppressBroadcast > 0) return;
+    clearTimeout(broadcastDebounceTimer);
+    broadcastDebounceTimer = setTimeout(() => void broadcastKvPing(), 200);
+  }
+
+  async function broadcastKvPing() {
+    if (!isRemote() || !syncChannel || !syncReady) return;
+    try {
+      const { error } = await syncChannel.send({ type: 'broadcast', event: 'kv', payload: { t: Date.now() } });
+      if (error) console.warn('Realtime broadcast:', error);
+    } catch (e) {
+      console.warn('Realtime broadcast failed', e);
+    }
+  }
+
+  function debouncedPullFromOthers() {
+    clearTimeout(pullDebounceTimer);
+    pullDebounceTimer = setTimeout(() => void pullRemoteSnapshot(), 200);
+  }
+
+  function hasPendingOrInFlightSave() {
+    for (const k in timers) {
+      if (timers[k] != null) return true;
+    }
+    for (const k in kvSaveInFlight) {
+      if (kvSaveInFlight[k]) return true;
+    }
+    return false;
+  }
+
+  async function pullRemoteSnapshot() {
+    if (!isRemote() || !mem.loaded) return;
+    if (hasPendingOrInFlightSave()) {
+      debouncedPullFromOthers();
       return;
     }
-    if (role() === 'teacher') {
-      const { error } = await sb.rpc('madrasa_teacher_save_kv', {
-        p_teacher_pin: _teacherPin,
+    const sb = getClient();
+    if (!sb) return;
+    try {
+      if (usesSecureKv() && role() === 'teacher') {
+        if (!_teacherPin) return;
+        const { data, error } = await sb.rpc('madrasa_teacher_bootstrap', { p_teacher_pin: _teacherPin });
+        if (error) return;
+        applyBundle(data);
+        _teacherPin = mem.teacherPin != null && mem.teacherPin !== '' ? mem.teacherPin : _teacherPin;
+      } else if (usesSecureKv() && role() === 'student') {
+        if (_studentWaqf && _studentPin) {
+          const { data, error } = await sb.rpc('madrasa_student_bootstrap', {
+            p_waqf: _studentWaqf,
+            p_pin: _studentPin,
+          });
+          if (error) return;
+          applyBundle(data);
+          mem.teacherPin = null;
+        } else {
+          await refreshStudentLockHints();
+        }
+      } else {
+        await bootstrapLegacy();
+      }
+    } catch (e) {
+      console.warn('pullRemoteSnapshot', e);
+    }
+    if (w.dispatchEvent) w.dispatchEvent(new CustomEvent('madrasa-remote-sync'));
+  }
+
+  function startRealtimeSync() {
+    if (!isRemote()) return;
+    const sb = getClient();
+    if (!sb || syncChannel) return;
+    syncReady = false;
+    syncChannel = sb
+      .channel('madrasa_kv_sync', { config: { broadcast: { self: false } } })
+      .on('broadcast', { event: 'kv' }, () => debouncedPullFromOthers())
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') syncReady = true;
+        else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') syncReady = false;
+      });
+  }
+
+  async function saveKVImpl(sb, key, value) {
+    kvSaveInFlight[key] = true;
+    const v = value === undefined ? {} : value;
+    try {
+      if (!usesSecureKv()) {
+        const { error } = await sb.from('app_kv').upsert(
+          { key, value: v, updated_at: new Date().toISOString() },
+          { onConflict: 'key' }
+        );
+        if (error) throw error;
+        scheduleAfterRemoteSave();
+        return;
+      }
+      if (role() === 'teacher') {
+        const { error } = await sb.rpc('madrasa_teacher_save_kv', {
+          p_teacher_pin: _teacherPin,
+          p_key: key,
+          p_value: v,
+        });
+        if (error) throw error;
+        if (key === 'teacher_pin' && v && typeof v === 'object' && v.pin != null) {
+          _teacherPin = String(v.pin);
+        }
+        scheduleAfterRemoteSave();
+        return;
+      }
+      const { error } = await sb.rpc('madrasa_student_save_kv', {
+        p_waqf: _studentWaqf,
+        p_pin: _studentPin,
         p_key: key,
         p_value: v,
       });
       if (error) throw error;
-      if (key === 'teacher_pin' && v && typeof v === 'object' && v.pin != null) {
-        _teacherPin = String(v.pin);
-      }
-      return;
+      scheduleAfterRemoteSave();
+    } finally {
+      kvSaveInFlight[key] = false;
     }
-    const { error } = await sb.rpc('madrasa_student_save_kv', {
-      p_waqf: _studentWaqf,
-      p_pin: _studentPin,
-      p_key: key,
-      p_value: v,
-    });
-    if (error) throw error;
   }
 
   function applyBundle(bundle) {
@@ -108,6 +205,7 @@
     if (!sb) return;
     clearTimeout(timers[key]);
     timers[key] = setTimeout(async () => {
+      delete timers[key];
       try {
         const val = typeof getter === 'function' ? getter() : getter;
         await saveKVImpl(sb, key, val);
@@ -121,6 +219,7 @@
     const sb = getClient();
     if (!sb) return;
     clearTimeout(timers[key]);
+    delete timers[key];
     await saveKVImpl(sb, key, value);
   }
 
@@ -140,6 +239,7 @@
       teacherPinRow && typeof teacherPinRow === 'object' && teacherPinRow.pin != null
         ? String(teacherPinRow.pin)
         : null;
+    mem.lockHints = [];
     mem.loaded = true;
   }
 
@@ -162,6 +262,7 @@
     mem.academic = {};
     mem.tnotes = {};
     mem.teacherPin = null;
+    mem.lockHints = [];
     _teacherPin = '';
     mem.loaded = true;
   }
@@ -191,7 +292,27 @@
     mem.teacherPin = null;
     _studentWaqf = '';
     _studentPin = '';
+    const { data: hints, error: hErr } = await sb.rpc('madrasa_student_lock_hints');
+    if (hErr) {
+      console.error('madrasa_student_lock_hints:', hErr);
+      mem.lockHints = [];
+    } else {
+      mem.lockHints = Array.isArray(hints) ? hints : [];
+    }
     mem.loaded = true;
+  }
+
+  async function refreshStudentLockHints() {
+    if (!usesSecureKv() || role() !== 'student') return;
+    const sb = getClient();
+    if (!sb) return;
+    const { data, error } = await sb.rpc('madrasa_student_lock_hints');
+    if (error) {
+      console.error('refreshStudentLockHints:', error);
+      mem.lockHints = [];
+      return;
+    }
+    mem.lockHints = Array.isArray(data) ? data : [];
   }
 
   async function unlockStudentWithWaqfPin(waqfRaw, pin) {
@@ -219,21 +340,28 @@
     const hit = stu.find((s) => s.waqfId === norm && String(s.pin) === String(pin));
     _studentWaqf = hit ? hit.waqfId : norm || String(waqfRaw || '').trim();
     _studentPin = String(pin || '');
+    mem.lockHints = [];
     mem.loaded = true;
   }
 
   async function flushAllFromMem() {
     const sb = getClient();
     if (!sb) return;
-    await Promise.all([
-      saveKVImpl(sb, 'core', mem.core),
-      saveKVImpl(sb, 'goals', mem.goals),
-      saveKVImpl(sb, 'exams', mem.exams),
-      saveKVImpl(sb, 'docs_meta', mem.docs),
-      saveKVImpl(sb, 'academic', mem.academic),
-      saveKVImpl(sb, 'tnotes', mem.tnotes),
-      saveKVImpl(sb, 'teacher_pin', { pin: mem.teacherPin || '' }),
-    ]);
+    suppressBroadcast++;
+    try {
+      await Promise.all([
+        saveKVImpl(sb, 'core', mem.core),
+        saveKVImpl(sb, 'goals', mem.goals),
+        saveKVImpl(sb, 'exams', mem.exams),
+        saveKVImpl(sb, 'docs_meta', mem.docs),
+        saveKVImpl(sb, 'academic', mem.academic),
+        saveKVImpl(sb, 'tnotes', mem.tnotes),
+        saveKVImpl(sb, 'teacher_pin', { pin: mem.teacherPin || '' }),
+      ]);
+    } finally {
+      suppressBroadcast--;
+    }
+    await broadcastKvPing();
   }
 
   async function uploadFile(path, file) {
@@ -282,6 +410,7 @@
     bootstrapStudentIdle,
     unlockTeacherWithPin,
     unlockStudentWithWaqfPin,
+    refreshStudentLockHints,
     schedule,
     flushKey,
     flushAllFromMem,
@@ -289,5 +418,6 @@
     getSignedUrlForPath,
     consumeUploadResult,
     BUCKET,
+    startRealtimeSync,
   };
 })(typeof window !== 'undefined' ? window : globalThis);

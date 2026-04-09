@@ -76,6 +76,7 @@
 .doc-cat-badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:8px;background:var(--gray-200);color:var(--gray-600);margin-right:4px}
 .upload-progress{height:4px;background:var(--gray-200);border-radius:2px;margin:4px 0;overflow:hidden}
 .upload-progress-fill{height:100%;background:#1565C0;border-radius:2px;transition:width .3s}
+.student-chat-doc-view{margin-top:8px;background:#E3F2FD;border:1px solid #90CAF9;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:600;color:#0D47A1;cursor:pointer;font-family:var(--font)}
 
 /* ── Pending notifications (lock screen) ── */
 .pending-sec-label{color:rgba(255,255,255,.6);font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;text-align:center}
@@ -283,6 +284,14 @@
   <button class="btn-secondary" onclick="closeModal('addGoalModal')">বাতিল</button>
 </div></div>
 
+<div class="modal-overlay" id="chatDocPreviewModal"><div class="modal-sheet" style="max-width:min(100%,380px)">
+  <div class="modal-handle"></div>
+  <div class="modal-title" id="chatDocPreviewTitle">ফাইল</div>
+  <div id="chatDocPreviewBody" style="margin-top:8px;min-height:60px"></div>
+  <button class="btn-primary" id="chatDocPreviewDl" style="margin-top:12px;width:100%;display:none" onclick="downloadStudentChatDoc()">⬇️ ডাউনলোড</button>
+  <button class="btn-secondary" style="width:100%;margin-top:8px" onclick="closeModal('chatDocPreviewModal')">বন্ধ করুন</button>
+</div></div>
+
 <div class="toast" id="toast"></div>
 <script>window.__MADRASA_ROLE__='student';</script>
 <script src="https://unpkg.com/@supabase/supabase-js@2.49.8/dist/umd/supabase.js"></script>
@@ -294,6 +303,7 @@
 let me=null, tFilter='all', gFilter='all';
 let activeQuizId=null, quizAnswers={}, quizTimerInterval=null, quizSecondsLeft=0;
 let pendingFile=null, chatPendingFile=null;
+let studentChatPreviewDocId=null;
 
 // ══ Init ═══════════════════════════════════════════════════
 function init(){
@@ -304,21 +314,20 @@ function init(){
     renderPendingSection();
   }).catch(e=>{ console.error(e); document.getElementById('lockName').textContent='সার্ভার সংযোগ ব্যর্থ'; });
 }
+window.addEventListener('madrasa-remote-sync',()=>{ try{ const u=document.getElementById('lockScreen').style.display==='none'; if(u&&me) renderAll(); else renderPendingSection(); }catch(e){ console.error(e); } });
 
 // ══ PENDING SECTION (lock screen) ══════════════════════════
 function renderPendingSection(){
-  const students=API.Students.getAll();
-  // Students with unread teacher→student messages only
-  const pending=students.filter(s=>API.Messages.unreadCount(s.id,'out')>0);
+  const pending=API.Students.getPendingForLockScreen();
   const sec=document.getElementById('pendingSection');
   if(!pending.length){ sec.style.display='none'; return; }
   sec.style.display='block';
   document.getElementById('pendingList').innerHTML=pending.map(s=>{
-    const msgCnt=API.Messages.unreadCount(s.id,'out');
-    const waqf=API.Students.getShortId(s)||'---';
+    const msgCnt=s.unread!=null?s.unread:API.Messages.unreadCount(s.id,'out');
+    const waqf=s.waqfId||API.Students.getShortId(s)||'---';
     return `<button class="pending-item" onclick="prefillId('${esc(waqf)}')">
-      <div class="pending-avatar" style="background:${s.color||'#1565C0'}">${s.name.charAt(0)}</div>
-      <div class="pending-name">${esc(s.name)}<span class="pending-waqf">${esc(s.waqfId||'')}</span></div>
+      <div class="pending-avatar" style="background:${s.color||'#1565C0'}">${(s.name||'?').charAt(0)}</div>
+      <div class="pending-name">${esc(s.name||'')}<span class="pending-waqf">${esc(s.waqfId||'')}</span></div>
       ${msgCnt>0?`<span class="pending-badge msg">💬 ${msgCnt}</span>`:''}
     </button>`;
   }).join('');
@@ -380,7 +389,7 @@ function logout(){
   document.getElementById('loginId').value='';
   document.getElementById('loginPin').value='';
   document.getElementById('loginErr').textContent='';
-  renderPendingSection();
+  Promise.resolve(API.refreshStudentLockHints()).then(()=>renderPendingSection());
   goTab('chat');
 }
 function renderAll(){ renderHome(); renderChat(); renderTaskList(); renderExamList(); renderSentDocs(); renderGoals(); updateBadges(); }
@@ -421,6 +430,32 @@ function tickHtml(msg){
 }
 function fileIcon(type){ return type?.startsWith('image/')?'🖼️':type==='application/pdf'?'📕':type?.includes('word')||type?.includes('doc')?'📝':type?.includes('sheet')||type?.includes('excel')?'📊':'📎'; }
 
+async function previewStudentChatDoc(docId){
+  studentChatPreviewDocId=docId;
+  const meta=API.Docs.getById(docId);
+  if(!meta){ showToast('ফাইল পাওয়া যায়নি'); return; }
+  const data=await API.Docs.resolveFileUrl(docId);
+  document.getElementById('chatDocPreviewTitle').textContent=meta.fileName||'ফাইল';
+  const box=document.getElementById('chatDocPreviewBody');
+  if(meta.fileType?.startsWith('image/') && data){
+    box.innerHTML=`<img src=${JSON.stringify(data)} style="max-width:100%;max-height:55vh;border-radius:8px;display:block;margin:0 auto" alt="">`;
+  } else if(meta.fileType==='application/pdf' && data){
+    box.innerHTML=`<iframe src=${JSON.stringify(data)} style="width:100%;height:50vh;border:none;border-radius:8px;background:var(--gray-100)" title="${esc(meta.fileName)}"></iframe>`;
+  } else {
+    const ic=fileIcon(meta.fileType);
+    box.innerHTML=`<div style="padding:16px;text-align:center;background:var(--gray-50);border-radius:8px"><span style="font-size:40px">${ic}</span><p style="margin:8px 0 0;font-size:13px;color:var(--gray-600)">${esc(meta.fileName)}</p><p style="font-size:12px;color:var(--gray-400)">${formatBytes(meta.fileSize||0)}</p></div>`;
+  }
+  document.getElementById('chatDocPreviewDl').style.display=data?'block':'none';
+  openModal('chatDocPreviewModal');
+}
+async function downloadStudentChatDoc(){
+  if(!studentChatPreviewDocId) return;
+  const meta=API.Docs.getById(studentChatPreviewDocId);
+  const data=await API.Docs.resolveFileUrl(studentChatPreviewDocId);
+  if(!data||!meta) return;
+  const a=document.createElement('a'); a.href=data; a.download=meta.fileName||'file'; a.rel='noopener'; a.click();
+}
+
 function renderChat(){
   const msgs=API.Messages.getThread(me.id); const el=document.getElementById('chatMsgs');
   if(!msgs.length){ el.innerHTML='<div style="text-align:center;padding:40px;color:var(--gray-400);font-size:14px">📖 উস্তাদকে সালাম দিন! 👋</div>'; return; }
@@ -433,12 +468,13 @@ function renderChat(){
       h+=`<div class="msg-wrap in"><div class="task-bubble"><div class="task-bubble-hd">📋 উস্তাদ টাস্ক দিয়েছেন · ${tLabel}</div><div class="task-bubble-bd"><div class="task-bubble-title">${esc(m.task.title)}</div><div class="task-bubble-desc">${esc(m.task.desc)}</div>${m.task.deadline?`<div class="task-bubble-dl">📅 শেষ তারিখ: ${m.task.deadline}</div>`:''}</div></div><div style="font-size:11px;color:var(--gray-400);text-align:left;margin-top:2px;padding-left:4px">${m.time}</div></div>`;
     } else if(m.type==='doc'){
       const ic=fileIcon(m.fileType);
+      const viewBtn=m.docId?`<button type="button" class="student-chat-doc-view" onclick="previewStudentChatDoc('${m.docId}')">👁 দেখুন</button>`:'';
       if(m.role==='in'){
         // Student sent this file (shown right side, with tick)
-        h+=`<div class="msg-wrap out"><div class="msg-doc-bubble"><div class="msg-doc-icon">${ic}</div><div class="msg-doc-info"><div class="msg-doc-name">${esc(m.fileName)}</div><div class="msg-doc-size">${m.fileSize?formatBytes(m.fileSize):''}</div></div></div><div class="msg-meta" style="position:static;display:flex;gap:3px;justify-content:flex-end;margin-top:3px;padding-right:4px"><span class="msg-time">${m.time}</span>${tickHtml(m)}</div></div>`;
+        h+=`<div class="msg-wrap out"><div class="msg-doc-bubble"><div class="msg-doc-icon">${ic}</div><div class="msg-doc-info"><div class="msg-doc-name">${esc(m.fileName)}</div><div class="msg-doc-size">${m.fileSize?formatBytes(m.fileSize):''}</div>${viewBtn}</div></div><div class="msg-meta" style="position:static;display:flex;gap:3px;justify-content:flex-end;margin-top:3px;padding-right:4px"><span class="msg-time">${m.time}</span>${tickHtml(m)}</div></div>`;
       } else {
         // Teacher sent a file (shown left side)
-        h+=`<div class="msg-wrap in"><div class="msg-sender">${esc(API.DB.getTeacher().name||'উস্তাদ')}</div><div class="msg-doc-bubble"><div class="msg-doc-icon">${ic}</div><div class="msg-doc-info"><div class="msg-doc-name">${esc(m.fileName)}</div><div class="msg-doc-size">${m.fileSize?formatBytes(m.fileSize):''}</div></div></div><div style="font-size:11px;color:var(--gray-400);margin-top:2px;padding-left:4px">${m.time}</div></div>`;
+        h+=`<div class="msg-wrap in"><div class="msg-sender">${esc(API.DB.getTeacher().name||'উস্তাদ')}</div><div class="msg-doc-bubble"><div class="msg-doc-icon">${ic}</div><div class="msg-doc-info"><div class="msg-doc-name">${esc(m.fileName)}</div><div class="msg-doc-size">${m.fileSize?formatBytes(m.fileSize):''}</div>${viewBtn}</div></div><div style="font-size:11px;color:var(--gray-400);margin-top:2px;padding-left:4px">${m.time}</div></div>`;
       }
     } else {
       if(m.role==='in'){
@@ -771,7 +807,7 @@ document.addEventListener('visibilitychange', () => {
   if(document.visibilityState==='visible') {
     API.Tasks.resetDailyForToday();
     if(me) renderAll();
-    else renderPendingSection();
+    else Promise.resolve(API.refreshStudentLockHints()).then(()=>renderPendingSection());
   }
 });
 </script>
