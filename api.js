@@ -50,6 +50,10 @@ const API = (() => {
     if (_useRemote) return RS.mem.core;
     try { return JSON.parse(localStorage.getItem(DB_KEY))||null; } catch { return null; }
   };
+  // Stamps _notifyAt on db so the Edge Function knows this write contains a new chat message.
+  // Call only when a message is actually sent — NOT for markRead, task completions, or resets.
+  function stampNotify(db) { db._notifyAt = new Date().toISOString(); }
+
   const writeDB = db => {
     if (_useRemote) {
       RS.mem.core = db;
@@ -467,13 +471,13 @@ const API = (() => {
       const db=DB.get(); if(!db.chats[threadId]) db.chats[threadId]=[];
       // read:false = student hasn't seen it yet (shows single tick; double tick after student opens chat)
       const m={id:uid('m'),role:'out',text,type,time:nowTime(),read:false,...extra};
-      db.chats[threadId].push(m); DB.save(db); return m;
+      db.chats[threadId].push(m); stampNotify(db); DB.save(db); return m;
     },
     sendFromStudent(sid,text,type='text',extra={}) {
       const db=DB.get(); if(!db.chats[sid]) db.chats[sid]=[];
       // read:false = teacher hasn't seen it yet (single tick on student side)
       const m={id:uid('m'),role:'in',text,type,time:nowTime(),read:false,...extra};
-      db.chats[sid].push(m); DB.save(db); return m;
+      db.chats[sid].push(m); stampNotify(db); DB.save(db); return m;
     },
     // Send a file directly from chat (student → teacher)
     sendFileFromStudent(sid, file, { category='general', note='' } = {}) {
@@ -499,7 +503,7 @@ const API = (() => {
             const db=DB.get(); if(!db.chats[sid]) db.chats[sid]=[];
             const m={id:uid('m'),role:'in',type:'doc',text:file.name,time:nowTime(),read:false,
                      fileName:file.name, fileType:file.type, fileSize:file.size, docId, fileUrl, storage_path: storagePath || path};
-            db.chats[sid].push(m); DB.save(db);
+            db.chats[sid].push(m); stampNotify(db); DB.save(db);
             resolve({ meta, msg: m });
           }).catch(err=>reject(err));
           return;
@@ -548,7 +552,7 @@ const API = (() => {
             const db=DB.get(); if(!db.chats[sid]) db.chats[sid]=[];
             const m={id:uid('m'),role:'out',type:'doc',text:file.name,time:nowTime(),read:false,
                      fileName:file.name, fileType:file.type, fileSize:file.size, docId, fileUrl, storage_path: storagePath || path};
-            db.chats[sid].push(m); DB.save(db);
+            db.chats[sid].push(m); stampNotify(db); DB.save(db);
             resolve({ msg: m });
           }).catch(err=>reject(err));
           return;
@@ -573,12 +577,12 @@ const API = (() => {
       if(!db.chats['_bc']) db.chats['_bc']=[];
       db.chats['_bc'].push({...m});
       db.students.forEach(s=>{ if(!db.chats[s.id]) db.chats[s.id]=[]; db.chats[s.id].push({...m,id:uid('m')}); });
-      DB.save(db); return m;
+      stampNotify(db); DB.save(db); return m;
     },
     sendTask(sid,task) {
       const db=DB.get(); if(!db.chats[sid]) db.chats[sid]=[];
       const m={id:uid('m'),role:'out',type:'task',text:task.title,task:{title:task.title,desc:task.desc,deadline:task.deadline,taskType:task.type},time:nowTime(),read:true};
-      db.chats[sid].push(m); DB.save(db); return m;
+      db.chats[sid].push(m); stampNotify(db); DB.save(db); return m;
     },
     markRead(threadId,role='in') {
       const db=DB.get(); (db.chats[threadId]||[]).forEach(m=>{ if(m.role===role) m.read=true; }); DB.save(db);

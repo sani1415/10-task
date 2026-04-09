@@ -100,6 +100,22 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ ok: true, skipped: "subscription_key" });
   }
 
+  // Only notify for the 'core' key (chat messages). All other keys — docs_meta,
+  // goals, exams, academic, tnotes, teacher_pin — are silent background writes.
+  if (key !== "core") {
+    return jsonResponse({ ok: true, skipped: "non_chat_key" });
+  }
+
+  // Within 'core', only notify when _notifyAt changed — prevents spurious
+  // notifications from silent writes like markRead or resetDailyForToday.
+  const oldVal = (body.old_record as Record<string, unknown> | undefined)?.value as Record<string, unknown> | undefined;
+  const newVal = record?.value as Record<string, unknown> | undefined;
+  const oldNAt = oldVal?._notifyAt ?? null;
+  const newNAt = newVal?._notifyAt ?? null;
+  if (!newNAt || newNAt === oldNAt) {
+    return jsonResponse({ ok: true, skipped: "no_notify_event" });
+  }
+
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const sb = createClient(supabaseUrl, serviceKey);
@@ -143,8 +159,16 @@ Deno.serve(async (req: Request) => {
     }
   }
 
+  // Deduplicate: if teacher's push endpoint is also stored under a student key
+  // (happens when teacher opened student.html on the same device), skip that
+  // student entry so the teacher device doesn't receive two notifications.
+  const teacherEndpoint = teacherSub?.endpoint ?? null;
+  const dedupedStudentSubs = studentSubs.filter(
+    (s) => !teacherEndpoint || s.endpoint !== teacherEndpoint
+  );
+
   if (audience === "both" || audience === "students_only") {
-    for (const sub of studentSubs) await trySend(sub, studentPayload);
+    for (const sub of dedupedStudentSubs) await trySend(sub, studentPayload);
   }
   if (audience === "both" || audience === "teacher_only") {
     if (teacherSub) await trySend(teacherSub, teacherPayload);
@@ -152,7 +176,7 @@ Deno.serve(async (req: Request) => {
 
   return jsonResponse({ ok: true, sent, failed,
     teacher_targets: teacherSub ? 1 : 0,
-    student_targets: studentSubs.length,
+    student_targets: dedupedStudentSubs.length,
     audience,
   });
 });
