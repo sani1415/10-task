@@ -1,2 +1,4 @@
 # Local Supabase credentials (never commit)
 supabase-config.js
+supabase/.secrets.local.env
+supabase/.secrets.vapid.env
