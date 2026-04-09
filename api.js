@@ -1,6 +1,6 @@
 /* Waqful Madinah · api.js · v3.0
    Backend বদলাতে শুধু এই ফাইল বদলান।
-   এখন: LocalStorage | পরে: Firebase / Supabase
+   LocalStorage অথবা Supabase (remote-sync.js + supabase-config.js)।
 
    ───── Storage keys ─────
    madrasa_db        → main DB (teacher, students, chats, tasks)
@@ -15,17 +15,38 @@ const API = (() => {
         EXAMS_KEY='madrasa_exams', DOCS_KEY='madrasa_docs',
         T_PIN_KEY='teacher_pin', DEF_PIN='1234';
 
+  const _useRemote = typeof window !== 'undefined' && window.RemoteSync && window.RemoteSync.isRemote();
+  const RS = typeof window !== 'undefined' ? window.RemoteSync : null;
+
   const today  = () => new Date().toISOString().split('T')[0];
   const nowTime= () => { const d=new Date(); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; };
   const nextDate= d => { const dt=new Date(); dt.setDate(dt.getDate()+d); return dt.toISOString().split('T')[0]; };
   const uid    = p => (p||'id')+Date.now()+Math.random().toString(36).slice(2,5);
-  const readDB = () => { try { return JSON.parse(localStorage.getItem(DB_KEY))||null; } catch { return null; } };
-  const writeDB= db => localStorage.setItem(DB_KEY, JSON.stringify(db));
+  const safeFilePart = name => String(name||'file').replace(/[^a-zA-Z0-9._-]/g,'_').slice(0,80);
+
+  function ensureChatsShape(db) {
+    if (!db.chats) db.chats = {};
+    (db.students || []).forEach(s => { if (!db.chats[s.id]) db.chats[s.id] = []; });
+    if (!db.chats._bc) db.chats._bc = [];
+  }
+
+  const readDB = () => {
+    if (_useRemote) return RS.mem.core;
+    try { return JSON.parse(localStorage.getItem(DB_KEY))||null; } catch { return null; }
+  };
+  const writeDB = db => {
+    if (_useRemote) {
+      RS.mem.core = db;
+      RS.schedule('core', () => JSON.parse(JSON.stringify(RS.mem.core)));
+      return;
+    }
+    localStorage.setItem(DB_KEY, JSON.stringify(db));
+  };
 
   // ── Seed ──────────────────────────────────────────────────
-  function seedDemo() {
+  function buildSeedDemo() {
     const colors=['#128C7E','#1565C0','#6A1B9A','#BF360C','#1B5E20'];
-    const db = {
+    return {
       teacher: { name:'উস্তাজ', madrasa:'Waqful Madinah' },
       students: [
         { id:'s1', waqfId:'waqf_001', name:'মুহাম্মাদ রাফি',      cls:'হিফজ ১ম',   roll:'০১', note:'',  color:colors[0], pin:'1111', fatherName:'আব্দুর রহমান',   contact:'01711000001', enrollmentDate:'2024-01-10' },
@@ -39,27 +60,97 @@ const API = (() => {
       },
       tasks: [],
     };
+  }
+  function seedDemo() {
+    const db = buildSeedDemo();
     writeDB(db);
     return db;
   }
 
   // ── AUTH ──────────────────────────────────────────────────
   const Auth = {
-    getTeacherPin()     { return localStorage.getItem(T_PIN_KEY)||DEF_PIN; },
-    setTeacherPin(p)    { localStorage.setItem(T_PIN_KEY, p); },
+    getTeacherPin() {
+      if (_useRemote) return RS.mem.teacherPin || DEF_PIN;
+      return localStorage.getItem(T_PIN_KEY)||DEF_PIN;
+    },
+    setTeacherPin(p) {
+      if (_useRemote) {
+        RS.mem.teacherPin = p;
+        RS.schedule('teacher_pin', () => ({ pin: RS.mem.teacherPin || '' }));
+        return;
+      }
+      localStorage.setItem(T_PIN_KEY, p);
+    },
     checkTeacherPin(p)  { return p === this.getTeacherPin(); },
     findStudentByPin(p) { return readDB()?.students?.find(s=>s.pin===p)||null; },
   };
 
   // ── DB ────────────────────────────────────────────────────
   const DB = {
-    init()          { let db=readDB(); if(!db||!db.students?.length) db=seedDemo(); return db; },
-    get()           { return readDB()||this.init(); },
+    init() {
+      if (!_useRemote) {
+        let db=readDB();
+        if(!db||!db.students?.length) db=seedDemo();
+        else ensureChatsShape(db);
+        return Promise.resolve(db);
+      }
+      return RS.bootstrap().then(async () => {
+        let c = RS.mem.core;
+        if (!c || !c.students?.length) {
+          c = buildSeedDemo();
+          ensureChatsShape(c);
+          RS.mem.core = c;
+          await RS.flushKey('core', c);
+        } else {
+          ensureChatsShape(c);
+        }
+        if (RS.mem.teacherPin == null || RS.mem.teacherPin === '') {
+          RS.mem.teacherPin = DEF_PIN;
+          await RS.flushKey('teacher_pin', { pin: DEF_PIN });
+        }
+        return c;
+      });
+    },
+    get() {
+      if (_useRemote) {
+        if (!RS.mem.loaded || !RS.mem.core) throw new Error('API not ready — await API.DB.init()');
+        return RS.mem.core;
+      }
+      let db=readDB();
+      if(!db||!db.students?.length) db=seedDemo();
+      else ensureChatsShape(db);
+      return db;
+    },
     save(db)        { writeDB(db); },
     getTeacher()    { return this.get().teacher; },
     saveTeacher(data){ const db=this.get(); db.teacher={...db.teacher,...data}; this.save(db); },
-    exportJSON()    { return JSON.stringify({ db:this.get(), goals:JSON.parse(localStorage.getItem(GOALS_KEY)||'{}'), exams:JSON.parse(localStorage.getItem(EXAMS_KEY)||'{}'), docs:JSON.parse(localStorage.getItem(DOCS_KEY)||'[]') }, null, 2); },
-    importJSON(json){ const p=JSON.parse(json); if(!p.db?.students) throw new Error('invalid'); this.save(p.db); if(p.goals) localStorage.setItem(GOALS_KEY,JSON.stringify(p.goals)); if(p.exams) localStorage.setItem(EXAMS_KEY,JSON.stringify(p.exams)); if(p.docs) localStorage.setItem(DOCS_KEY,JSON.stringify(p.docs)); return p.db; },
+    exportJSON() {
+      const goals = _useRemote ? RS.mem.goals : JSON.parse(localStorage.getItem(GOALS_KEY)||'{}');
+      const exams = _useRemote ? RS.mem.exams : JSON.parse(localStorage.getItem(EXAMS_KEY)||'{}');
+      const docs = _useRemote ? RS.mem.docs : JSON.parse(localStorage.getItem(DOCS_KEY)||'[]');
+      const academic = _useRemote ? RS.mem.academic : JSON.parse(localStorage.getItem('madrasa_academic')||'{}');
+      const tnotes = _useRemote ? RS.mem.tnotes : JSON.parse(localStorage.getItem('madrasa_tnotes')||'{}');
+      return JSON.stringify({ db:this.get(), goals, exams, docs, academic, tnotes }, null, 2);
+    },
+    importJSON(json){
+      const p=JSON.parse(json); if(!p.db?.students) throw new Error('invalid');
+      writeDB(p.db);
+      if (_useRemote) {
+        RS.mem.core = p.db;
+        RS.mem.goals = p.goals || {};
+        RS.mem.exams = p.exams || { quizzes: [], submissions: [] };
+        RS.mem.docs = Array.isArray(p.docs) ? p.docs : [];
+        RS.mem.academic = p.academic || {};
+        RS.mem.tnotes = p.tnotes || {};
+        return RS.flushAllFromMem().then(()=>p.db);
+      }
+      if(p.goals) localStorage.setItem(GOALS_KEY,JSON.stringify(p.goals));
+      if(p.exams) localStorage.setItem(EXAMS_KEY,JSON.stringify(p.exams));
+      if(p.docs) localStorage.setItem(DOCS_KEY,JSON.stringify(p.docs));
+      if(p.academic) localStorage.setItem('madrasa_academic',JSON.stringify(p.academic));
+      if(p.tnotes) localStorage.setItem('madrasa_tnotes',JSON.stringify(p.tnotes));
+      return Promise.resolve(p.db);
+    },
   };
 
   // ── STUDENTS ──────────────────────────────────────────────
@@ -126,15 +217,31 @@ const API = (() => {
     importFromCSV(csvText) {
       const lines = csvText.replace(/\r/g,'').trim().split('\n');
       if(lines.length < 2) throw new Error('empty_file');
-      // Support quoted CSV
-      const parseRow = row => row.split(',').map(c=>c.trim().replace(/^"|"$/g,''));
-      const header = parseRow(lines[0]).map(h=>h.toLowerCase());
+      const parseCSVLine = line => {
+        const out = []; let cur = ''; let i = 0; let inQ = false;
+        while (i < line.length) {
+          const c = line[i];
+          if (inQ) {
+            if (c === '"') {
+              if (line[i + 1] === '"') { cur += '"'; i += 2; continue; }
+              inQ = false; i++; continue;
+            }
+            cur += c; i++; continue;
+          }
+          if (c === '"') { inQ = true; i++; continue; }
+          if (c === ',') { out.push(cur.trim()); cur = ''; i++; continue; }
+          cur += c; i++;
+        }
+        out.push(cur.trim());
+        return out.map(x => x.replace(/^"|"$/g, '').replace(/""/g, '"'));
+      };
+      const header = parseCSVLine(lines[0]).map(h => h.toLowerCase());
       const col = k => header.indexOf(k);
       const results = { success:0, errors:[] };
       const db = DB.get();
       for(let i=1;i<lines.length;i++){
         if(!lines[i].trim()) continue;
-        const r = parseRow(lines[i]);
+        const r = parseCSVLine(lines[i]);
         const name = r[col('name')]||''; const pin = (r[col('pin')]||'').trim();
         if(!name){ results.errors.push(`Row ${i+1}: name missing`); continue; }
         if(!/^\d{4}$/.test(pin)){ results.errors.push(`Row ${i+1} (${name}): invalid PIN`); continue; }
@@ -163,8 +270,18 @@ const API = (() => {
   // ── ACADEMIC HISTORY ──────────────────────────────────────
   const AcademicHistory = {
     _key:'madrasa_academic',
-    _read(){ try{ return JSON.parse(localStorage.getItem(this._key)||'{}'); }catch{ return {}; } },
-    _write(d){ localStorage.setItem(this._key,JSON.stringify(d)); },
+    _read(){
+      if (_useRemote) return RS.mem.academic || {};
+      try{ return JSON.parse(localStorage.getItem(this._key)||'{}'); }catch{ return {}; }
+    },
+    _write(d){
+      if (_useRemote) {
+        RS.mem.academic = d;
+        RS.schedule('academic', () => JSON.parse(JSON.stringify(RS.mem.academic)));
+        return;
+      }
+      localStorage.setItem(this._key,JSON.stringify(d));
+    },
     getAll(sid){ return this._read()[sid]||[]; },
     add(sid,{yearClass,grade}){
       const all=this._read(); if(!all[sid]) all[sid]=[];
@@ -181,8 +298,18 @@ const API = (() => {
   // ── TEACHER NOTES ─────────────────────────────────────────
   const TeacherNotes = {
     _key:'madrasa_tnotes',
-    _read(){ try{ return JSON.parse(localStorage.getItem(this._key)||'{}'); }catch{ return {}; } },
-    _write(d){ localStorage.setItem(this._key,JSON.stringify(d)); },
+    _read(){
+      if (_useRemote) return RS.mem.tnotes || {};
+      try{ return JSON.parse(localStorage.getItem(this._key)||'{}'); }catch{ return {}; }
+    },
+    _write(d){
+      if (_useRemote) {
+        RS.mem.tnotes = d;
+        RS.schedule('tnotes', () => JSON.parse(JSON.stringify(RS.mem.tnotes)));
+        return;
+      }
+      localStorage.setItem(this._key,JSON.stringify(d));
+    },
     getAll(sid){ return this._read()[sid]||[]; },
     add(sid,text){
       const all=this._read(); if(!all[sid]) all[sid]=[];
@@ -221,6 +348,28 @@ const API = (() => {
         const student=Students.getById(sid);
         if(!student){ reject(new Error('student_not_found')); return; }
         if(file.size > 5*1024*1024){ reject(new Error('file_too_large')); return; }
+        if (_useRemote) {
+          const docId=uid('doc');
+          const path=`${sid}/${docId}_${safeFilePart(file.name)}`;
+          RS.uploadFile(path, file).then(fileUrl=>{
+            const meta={
+              id:docId, studentId:sid, studentName:student.name,
+              fileName:file.name, fileType:file.type, fileSize:file.size,
+              category, note, uploadedAt:new Date().toISOString(), read:false,
+              fileUrl, storage_path: path,
+            };
+            const list=RS.mem.docs||[];
+            list.unshift(meta);
+            RS.mem.docs=list;
+            RS.schedule('docs_meta', ()=>JSON.parse(JSON.stringify(RS.mem.docs)));
+            const db=DB.get(); if(!db.chats[sid]) db.chats[sid]=[];
+            const m={id:uid('m'),role:'in',type:'doc',text:file.name,time:nowTime(),read:false,
+                     fileName:file.name, fileType:file.type, fileSize:file.size, docId, fileUrl};
+            db.chats[sid].push(m); DB.save(db);
+            resolve({ meta, msg: m });
+          }).catch(err=>reject(err));
+          return;
+        }
         const reader=new FileReader();
         reader.onload=e=>{
           const docId=uid('doc');
@@ -233,7 +382,6 @@ const API = (() => {
           catch { reject(new Error('storage_full')); return; }
           const list=JSON.parse(localStorage.getItem('madrasa_docs')||'[]');
           list.unshift(meta); localStorage.setItem('madrasa_docs', JSON.stringify(list));
-          // Also create a chat message referencing this doc
           const db=DB.get(); if(!db.chats[sid]) db.chats[sid]=[];
           const m={id:uid('m'),role:'in',type:'doc',text:file.name,time:nowTime(),read:false,
                    fileName:file.name, fileType:file.type, fileSize:file.size, docId};
@@ -244,10 +392,32 @@ const API = (() => {
         reader.readAsDataURL(file);
       });
     },
-    // Send a file from teacher → student
     sendFileFromTeacher(sid, file) {
       return new Promise((resolve, reject) => {
         if(file.size > 5*1024*1024){ reject(new Error('file_too_large')); return; }
+        if (_useRemote) {
+          const docId=uid('tdoc');
+          const path=`teacher/${sid}/${docId}_${safeFilePart(file.name)}`;
+          const st=Students.getById(sid);
+          RS.uploadFile(path, file).then(fileUrl=>{
+            const meta={
+              id:docId, studentId:sid, studentName:st?.name||'',
+              fileName:file.name, fileType:file.type, fileSize:file.size,
+              category:'general', note:'', uploadedAt:new Date().toISOString(), read:true,
+              fileUrl, storage_path: path,
+            };
+            const list=RS.mem.docs||[];
+            list.unshift(meta);
+            RS.mem.docs=list;
+            RS.schedule('docs_meta', ()=>JSON.parse(JSON.stringify(RS.mem.docs)));
+            const db=DB.get(); if(!db.chats[sid]) db.chats[sid]=[];
+            const m={id:uid('m'),role:'out',type:'doc',text:file.name,time:nowTime(),read:false,
+                     fileName:file.name, fileType:file.type, fileSize:file.size, docId, fileUrl};
+            db.chats[sid].push(m); DB.save(db);
+            resolve({ msg: m });
+          }).catch(err=>reject(err));
+          return;
+        }
         const reader=new FileReader();
         reader.onload=e=>{
           const docId=uid('tdoc');
@@ -377,8 +547,20 @@ const API = (() => {
 
   // ── GOALS ─────────────────────────────────────────────────
   const Goals = {
-    getAll(sid)  { const all=JSON.parse(localStorage.getItem(GOALS_KEY)||'{}'); return all[sid]||[]; },
-    _save(sid,g) { const all=JSON.parse(localStorage.getItem(GOALS_KEY)||'{}'); all[sid]=g; localStorage.setItem(GOALS_KEY,JSON.stringify(all)); },
+    _all() {
+      if (_useRemote) return RS.mem.goals || (RS.mem.goals = {});
+      try { return JSON.parse(localStorage.getItem(GOALS_KEY)||'{}'); } catch { return {}; }
+    },
+    getAll(sid)  { const all=this._all(); return all[sid]||[]; },
+    _save(sid,g) {
+      const all=this._all();
+      all[sid]=g;
+      if (_useRemote) {
+        RS.schedule('goals', () => JSON.parse(JSON.stringify(RS.mem.goals)));
+        return;
+      }
+      localStorage.setItem(GOALS_KEY,JSON.stringify(all));
+    },
     add(sid,{title,cat='other',deadline='',note=''}) {
       const goals=this.getAll(sid);
       const g={id:uid('g'),title,cat,deadline,note,done:false,created:today()};
@@ -404,8 +586,18 @@ const API = (() => {
     }
   */
   const Exams = {
-    _readAll() { try { return JSON.parse(localStorage.getItem(EXAMS_KEY))||{quizzes:[],submissions:[]}; } catch { return {quizzes:[],submissions:[]}; } },
-    _write(data) { localStorage.setItem(EXAMS_KEY, JSON.stringify(data)); },
+    _readAll() {
+      if (_useRemote) return RS.mem.exams || (RS.mem.exams = { quizzes: [], submissions: [] });
+      try { return JSON.parse(localStorage.getItem(EXAMS_KEY))||{quizzes:[],submissions:[]}; } catch { return {quizzes:[],submissions:[]}; }
+    },
+    _write(data) {
+      if (_useRemote) {
+        RS.mem.exams = data;
+        RS.schedule('exams', () => JSON.parse(JSON.stringify(RS.mem.exams)));
+        return;
+      }
+      localStorage.setItem(EXAMS_KEY, JSON.stringify(data));
+    },
 
     getQuizzes()                { return this._readAll().quizzes||[]; },
     getQuizById(qid)            { return this.getQuizzes().find(q=>q.id===qid)||null; },
@@ -481,22 +673,51 @@ const API = (() => {
     File content stored in: madrasa_doc_<id> as base64 data-URL
   */
   const Docs = {
-    _readMeta() { try { return JSON.parse(localStorage.getItem(DOCS_KEY))||[]; } catch { return []; } },
-    _writeMeta(list) { localStorage.setItem(DOCS_KEY, JSON.stringify(list)); },
+    _readMeta() {
+      if (_useRemote) return RS.mem.docs || (RS.mem.docs = []);
+      try { return JSON.parse(localStorage.getItem(DOCS_KEY))||[]; } catch { return []; }
+    },
+    _writeMeta(list) {
+      if (_useRemote) {
+        RS.mem.docs = list;
+        RS.schedule('docs_meta', () => JSON.parse(JSON.stringify(RS.mem.docs)));
+        return;
+      }
+      localStorage.setItem(DOCS_KEY, JSON.stringify(list));
+    },
 
     getAll()                { return this._readMeta(); },
     getForStudent(sid)      { return this._readMeta().filter(d=>d.studentId===sid); },
     getById(id)             { return this._readMeta().find(d=>d.id===id)||null; },
-    getFileData(id)         { return localStorage.getItem('madrasa_doc_'+id)||null; },
+    getFileData(id) {
+      const meta = this.getById(id);
+      if (meta && meta.fileUrl) return meta.fileUrl;
+      if (_useRemote) return null;
+      return localStorage.getItem('madrasa_doc_'+id)||null;
+    },
 
-    // Upload: file is a File object, read as base64
+    // Upload: file is a File object, read as base64 (local) or Storage (remote)
     upload(sid, file, { category='general', note='' } = {}) {
       return new Promise((resolve, reject) => {
         const student=Students.getById(sid);
         if(!student){ reject(new Error('student_not_found')); return; }
-
-        // 5 MB limit
         if(file.size > 5*1024*1024){ reject(new Error('file_too_large')); return; }
+
+        if (_useRemote) {
+          const id=uid('doc');
+          const path=`${sid}/${id}_${safeFilePart(file.name)}`;
+          RS.uploadFile(path, file).then(fileUrl=>{
+            const meta={
+              id, studentId:sid, studentName:student.name,
+              fileName:file.name, fileType:file.type, fileSize:file.size,
+              category, note, uploadedAt:new Date().toISOString(), read:false,
+              fileUrl, storage_path: path,
+            };
+            const list=this._readMeta(); list.unshift(meta); this._writeMeta(list);
+            resolve(meta);
+          }).catch(err=>reject(err.message==='storage_full'?new Error('storage_full'):err));
+          return;
+        }
 
         const reader=new FileReader();
         reader.onload=e=>{
@@ -525,7 +746,7 @@ const API = (() => {
     },
 
     delete(id) {
-      localStorage.removeItem('madrasa_doc_'+id);
+      if (!_useRemote) localStorage.removeItem('madrasa_doc_'+id);
       this._writeMeta(this._readMeta().filter(d=>d.id!==id));
     },
 
@@ -534,8 +755,11 @@ const API = (() => {
     totalStorageKB() {
       let bytes=0;
       this._readMeta().forEach(d=>{
-        const data=localStorage.getItem('madrasa_doc_'+d.id);
-        if(data) bytes+=data.length*0.75; // base64 ≈ 75% of actual size
+        if (d.fileUrl) bytes += d.fileSize || 0;
+        else {
+          const data=localStorage.getItem('madrasa_doc_'+d.id);
+          if(data) bytes+=data.length*0.75;
+        }
       });
       return Math.round(bytes/1024);
     },

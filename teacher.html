@@ -382,6 +382,9 @@
 </div></div>
 
 <div class="toast" id="toast"></div>
+<script src="https://unpkg.com/@supabase/supabase-js@2.49.8/dist/umd/supabase.js"></script>
+<script src="supabase-config.js"></script>
+<script src="remote-sync.js"></script>
 <script src="api.js"></script>
 <script>
 // ══ State ══════════════════════════════════════════════════
@@ -396,15 +399,16 @@ const C=['#128C7E','#1565C0','#6A1B9A','#BF360C','#1B5E20'];
 
 // ══ Init ═══════════════════════════════════════════════════
 function init(){
-  API.DB.init();
-  API.Tasks.resetDailyForToday();
-  const t=API.DB.getTeacher();
-  document.getElementById('lockName').textContent=t.madrasa||'Waqful Madinah';
-  document.getElementById('tName').value=t.name||'';
-  document.getElementById('tMadrasa').value=t.madrasa||'';
-  document.getElementById('hTitle').textContent=t.madrasa||'Waqful Madinah';
-  document.getElementById('t_dl').value=API.nextDate(3);
-  document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); }));
+  Promise.resolve(API.DB.init()).then(()=>{
+    API.Tasks.resetDailyForToday();
+    const t=API.DB.getTeacher();
+    document.getElementById('lockName').textContent=t.madrasa||'Waqful Madinah';
+    document.getElementById('tName').value=t.name||'';
+    document.getElementById('tMadrasa').value=t.madrasa||'';
+    document.getElementById('hTitle').textContent=t.madrasa||'Waqful Madinah';
+    document.getElementById('t_dl').value=API.nextDate(3);
+    document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); }));
+  }).catch(e=>{ console.error(e); document.getElementById('lockName').textContent='সার্ভার সংযোগ ব্যর্থ'; });
 }
 
 // ══ PIN ════════════════════════════════════════════════════
@@ -506,7 +510,7 @@ function renderMsgs(id){
       h+=`<div class="msg-wrap out"><div class="task-bubble"><div class="task-bubble-hd">📋 টাস্ক · ${tLabel}</div><div class="task-bubble-bd"><div class="task-bubble-title">${esc(m.task.title)}</div><div class="task-bubble-desc">${esc(m.task.desc)}</div>${m.task.deadline?`<div class="task-bubble-dl">📅 ${m.task.deadline}</div>`:''}</div></div><div style="font-size:11px;color:var(--gray-400);text-align:right;margin-top:2px">${m.time}</div></div>`;
     } else if(m.type==='doc'){
       const ic=fileIcon(m.fileType);
-      const docData=API.Docs.getFileData(m.docId||'');
+      const docData=m.fileUrl||API.Docs.getFileData(m.docId||'');
       const previewBtn=docData?`<button onclick="teacherPreviewChatDoc('${m.docId||''}')" style="background:none;border:1px solid var(--gray-300);border-radius:8px;padding:3px 8px;font-size:11px;cursor:pointer;color:var(--gray-600);margin-top:4px">👁 দেখুন</button>`:'';
       if(m.role==='in'){
         // Student sent file → shown on left (incoming)
@@ -1013,7 +1017,7 @@ function sendBC(){ const text=document.getElementById('bcText').value.trim(); if
 function saveInfo(){ API.DB.saveTeacher({name:document.getElementById('tName').value.trim()||'শিক্ষক',madrasa:document.getElementById('tMadrasa').value.trim()||'Waqful Madinah'}); document.getElementById('hTitle').textContent=API.DB.getTeacher().madrasa; showToast('✅ সংরক্ষিত'); }
 function changeTPin(){ const p=String(document.getElementById('newTPin').value).trim(); if(!/^\d{4}$/.test(p)){ showToast('৪ সংখ্যার পিন দিন!'); return; } API.Auth.setTeacherPin(p); document.getElementById('newTPin').value=''; showToast('✅ পিন পরিবর্তন হয়েছে'); }
 function doExport(){ const b=new Blob([API.DB.exportJSON()],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`madrasa_${API.today()}.json`; a.click(); showToast('✅ ব্যাকআপ হচ্ছে'); }
-function doImport(input){ const r=new FileReader(); r.onload=e=>{ try{ API.DB.importJSON(e.target.result); renderAll(); showToast('✅ পুনরুদ্ধার সম্পন্ন!'); }catch{ showToast('❌ ফাইল সঠিক নয়!'); } }; r.readAsText(input.files[0]); input.value=''; }
+function doImport(input){ const r=new FileReader(); r.onload=e=>{ try{ API.DB.importJSON(e.target.result).then(()=>{ renderAll(); showToast('✅ পুনরুদ্ধার সম্পন্ন!'); }).catch(()=>showToast('❌ পুনরুদ্ধার ব্যর্থ!')); }catch{ showToast('❌ ফাইল সঠিক নয়!'); } }; r.readAsText(input.files[0]); input.value=''; }
 
 // ══ NAV ════════════════════════════════════════════════════
 function goTab(tab){

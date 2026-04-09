@@ -284,6 +284,9 @@
 </div></div>
 
 <div class="toast" id="toast"></div>
+<script src="https://unpkg.com/@supabase/supabase-js@2.49.8/dist/umd/supabase.js"></script>
+<script src="supabase-config.js"></script>
+<script src="remote-sync.js"></script>
 <script src="api.js"></script>
 <script>
 // ══ State ══════════════════════════════════════════════════
@@ -293,11 +296,12 @@ let pendingFile=null, chatPendingFile=null;
 
 // ══ Init ═══════════════════════════════════════════════════
 function init(){
-  API.DB.init();
-  API.Tasks.resetDailyForToday();
-  document.getElementById('lockName').textContent=API.DB.getTeacher().madrasa||'Waqful Madinah';
-  document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); }));
-  renderPendingSection();
+  Promise.resolve(API.DB.init()).then(()=>{
+    API.Tasks.resetDailyForToday();
+    document.getElementById('lockName').textContent=API.DB.getTeacher().madrasa||'Waqful Madinah';
+    document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); }));
+    renderPendingSection();
+  }).catch(e=>{ console.error(e); document.getElementById('lockName').textContent='সার্ভার সংযোগ ব্যর্থ'; });
 }
 
 // ══ PENDING SECTION (lock screen) ══════════════════════════

@@ -25,11 +25,11 @@
 
 ## Deployment Context
 - Teacher uses ONE device, students use SEPARATE devices
-- Current backend: LocalStorage (single-device only — for development/demo)
-- Real-time sync and push notifications are NOT possible with LocalStorage
-- Future migration to Supabase/Python backend is required for multi-device use
-- Do NOT build features that assume real-time sync until backend is migrated
-- Do NOT add notification logic that depends on push/server events
+- **Backend:** With `supabase-config.js` (URL + anon key) + scripts in HTML, data syncs via **Supabase** (`app_kv` JSON + Storage bucket `waqf-files`). Without that file, the app falls back to **LocalStorage** (single-browser).
+- Run `supabase/001_app_kv_and_storage.sql` once in the Supabase SQL Editor. **MVP RLS allows anon read/write — tighten before production.** PIN login stays client-side (same trust model as LocalStorage demo).
+- `supabase-config.js` is **gitignored**; copy from `supabase-config.example.js`. Never commit real keys.
+- Real-time tab sync is not implemented yet (no Supabase Realtime subscription).
+- Do NOT add notification logic that depends on push/server events until explicitly requested
 
 ## Self-Maintenance
 After every feature, update this CLAUDE.md if any rule changed; include that update in your own commit when you commit.
