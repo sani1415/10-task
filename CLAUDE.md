@@ -21,6 +21,7 @@
 ## Git Rules
 - Before ANY change: `git add . && git commit -m "before: [description]"`
 - After completing: `git add . && git commit -m "done: [description]"`
+- After editing, always give the summary of changes FIRST — then ask about / proceed with the commit
 
 ## Deployment Context
 - Teacher uses ONE device, students use SEPARATE devices
