@@ -181,7 +181,7 @@
     </div>
     <button class="chat-file-cancel" onclick="cancelChatFile()">✕</button>
   </div>
-  <input type="file" id="chatFileInput" style="display:none" accept="image/*,.pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx" onchange="onChatFileChosen(this)">
+  <input type="file" id="chatFileInput" style="display:none" multiple accept="image/*,.pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx" onchange="onChatFileChosen(this)">
   <div class="chat-input-bar">
     <button class="attach-btn" onclick="document.getElementById('chatFileInput').click()" title="ফাইল পাঠান">📎</button>
     <div class="chat-input-wrap"><textarea id="msgIn" placeholder="উস্তাদকে বার্তা লিখুন..." rows="1" oninput="autoResize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"></textarea></div>
@@ -225,9 +225,9 @@
     <div class="doc-upload-area" onclick="document.getElementById('fileInput').click()">
       <div class="doc-upload-icon">📎</div>
       <div class="doc-upload-label">ফাইল আপলোড করুন</div>
-      <div class="doc-upload-hint">ক্লিক করুন · ছবি, PDF, Word — সর্বোচ্চ 5MB</div>
+      <div class="doc-upload-hint">ক্লিক করুন · একাধিক ছবি একসাথে = একটি PDF · অন্য ফাইল একটিই · সর্বোচ্চ ১০ MB</div>
     </div>
-    <input type="file" id="fileInput" style="display:none" accept="image/*,.pdf,.doc,.docx,.txt" onchange="handleFileSelect(this)">
+    <input type="file" id="fileInput" style="display:none" multiple accept="image/*,.pdf,.doc,.docx,.txt" onchange="handleFileSelect(this)">
 
     <!-- Category & note before upload -->
     <div id="uploadPreview" style="display:none;margin:0 12px 12px">
@@ -297,6 +297,8 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2.49.8/dist/umd/supabase.js"></script>
 <script src="supabase-config.js"></script>
 <script src="remote-sync.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<script src="pdf-merge.js"></script>
 <script src="api.js"></script>
 <script>
 // ══ State ══════════════════════════════════════════════════
@@ -304,6 +306,16 @@ let me=null, tFilter='all', gFilter='all';
 let activeQuizId=null, quizAnswers={}, quizTimerInterval=null, quizSecondsLeft=0;
 let pendingFile=null, chatPendingFile=null;
 let studentChatPreviewDocId=null;
+
+function showUploadPrepError(e){
+  const m=e && e.message;
+  if(m==='file_too_large') showToast('❌ একটি ফাইল সর্বোচ্চ ১০ MB!');
+  else if(m==='mixed_or_non_image') showToast('❌ একাধিক নিলে সবগুলো ছবি হতে হবে; নয়তো একটি ফাইল নিন।');
+  else if(m==='pdf_lib_missing') showToast('❌ PDF লাইব্রেরি লোড হয়নি। পাতা রিফ্রেশ করুন।');
+  else if(m==='no_file') showToast('❌ কোনো ফাইল নেই।');
+  else if(m==='image_load_error') showToast('❌ ছবি পড়া যায়নি।');
+  else showToast('❌ ফাইল প্রস্তুত করা যায়নি!');
+}
 
 // ══ Init ═══════════════════════════════════════════════════
 function init(){
@@ -497,17 +509,21 @@ function sendMsg(){
 }
 
 // ── Chat file attachment ─────────────────────────────────
-function onChatFileChosen(input){
+async function onChatFileChosen(input){
   if(!input.files?.length) return;
-  const f=input.files[0];
-  if(f.size>5*1024*1024){ showToast('❌ ফাইল 5MB এর বেশি হতে পারবে না!'); input.value=''; return; }
-  chatPendingFile=f;
-  document.getElementById('chatFileIcon').textContent=fileIcon(f.type);
-  document.getElementById('chatFileName').textContent=f.name;
-  document.getElementById('chatFileSize').textContent=formatBytes(f.size);
-  document.getElementById('chatFilePreview').style.display='flex';
-  // Change send button to show it will send a file
-  showToast(`📎 ${f.name} — ➤ বোতামে চাপুন`);
+  try{
+    if(input.files.length>1) showToast('📄 ছবি একত্রিত করা হচ্ছে…',5000);
+    const f=await API.prepareFilesForUpload(input.files);
+    chatPendingFile=f;
+    document.getElementById('chatFileIcon').textContent=fileIcon(f.type);
+    document.getElementById('chatFileName').textContent=f.name;
+    document.getElementById('chatFileSize').textContent=formatBytes(f.size);
+    document.getElementById('chatFilePreview').style.display='flex';
+    showToast(`📎 ${f.name} — ➤ বোতামে চাপুন`);
+  } catch(e){
+    showUploadPrepError(e);
+  }
+  input.value='';
 }
 function cancelChatFile(){
   chatPendingFile=null;
@@ -523,7 +539,7 @@ async function sendChatFile(){
     renderChat(); renderSentDocs(); updateBadges();
     showToast('✅ ফাইল পাঠানো হয়েছে!');
   } catch(e){
-    if(e.message==='file_too_large') showToast('❌ ফাইল 5MB এর বেশি!');
+    if(e.message==='file_too_large') showToast('❌ ফাইল ১০ MB এর বেশি!');
     else if(e.message==='storage_full') showToast('❌ স্টোরেজ পূর্ণ!');
     else showToast('❌ পাঠানো ব্যর্থ হয়েছে!');
   }
@@ -697,12 +713,18 @@ function updateExamBadge(){
 }
 
 // ══ DOCUMENTS ══════════════════════════════════════════════
-function handleFileSelect(input){
+async function handleFileSelect(input){
   if(!input.files?.length) return;
-  pendingFile=input.files[0];
-  if(pendingFile.size>5*1024*1024){ showToast('❌ ফাইল 5MB এর বেশি হতে পারবে না!'); pendingFile=null; input.value=''; return; }
-  document.getElementById('uploadPreview').style.display='block';
-  showToast(`📎 নির্বাচিত: ${pendingFile.name}`);
+  try{
+    if(input.files.length>1) showToast('📄 ছবি একত্রিত করা হচ্ছে…',5000);
+    pendingFile=await API.prepareFilesForUpload(input.files);
+    document.getElementById('uploadPreview').style.display='block';
+    showToast(`📎 নির্বাচিত: ${pendingFile.name}`);
+  } catch(e){
+    pendingFile=null;
+    showUploadPrepError(e);
+  }
+  input.value='';
 }
 function cancelUpload(){
   pendingFile=null; document.getElementById('fileInput').value='';
@@ -726,7 +748,7 @@ async function confirmUpload(){
     showToast('✅ ডকুমেন্ট পাঠানো হয়েছে!');
   } catch(e){
     progWrap.style.display='none';
-    if(e.message==='file_too_large') showToast('❌ ফাইল 5MB এর বেশি!');
+    if(e.message==='file_too_large') showToast('❌ ফাইল ১০ MB এর বেশি!');
     else if(e.message==='storage_full') showToast('❌ স্টোরেজ পূর্ণ! পুরনো ফাইল মুছুন।');
     else showToast('❌ আপলোড ব্যর্থ!');
   }

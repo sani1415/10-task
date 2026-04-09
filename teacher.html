@@ -221,7 +221,7 @@
     </div>
     <div id="docsStoragePane" style="display:none;padding:12px">
       <div class="doc-storage-bar">
-        <div class="doc-storage-label"><span>ব্যবহৃত স্টোরেজ</span><span id="storageUsed">0 KB / ~5 MB</span></div>
+        <div class="doc-storage-label"><span>ব্যবহৃত স্টোরেজ (আনুমানিক)</span><span id="storageUsed">০ KB · প্রতি ফাইল সর্বোচ্চ ১০ MB</span></div>
         <div class="doc-storage-track"><div class="doc-storage-fill" id="storageFill" style="width:0%"></div></div>
       </div>
       <div id="storageFileTree"></div>
@@ -297,7 +297,7 @@
     </div>
     <button class="chat-file-cancel" onclick="cancelTeacherChatFile()">✕</button>
   </div>
-  <input type="file" id="chatFileInput" style="display:none" accept="image/*,.pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx" onchange="onTeacherChatFileChosen(this)">
+  <input type="file" id="chatFileInput" style="display:none" multiple accept="image/*,.pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx" onchange="onTeacherChatFileChosen(this)">
   <div class="chat-input-bar">
     <button class="attach-btn" id="chatAttachBtn" onclick="document.getElementById('chatFileInput').click()" title="ফাইল পাঠান">📎</button>
     <div class="chat-input-wrap"><textarea id="msgIn" placeholder="বার্তা লিখুন..." rows="1" oninput="autoResize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"></textarea></div>
@@ -391,6 +391,8 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2.49.8/dist/umd/supabase.js"></script>
 <script src="supabase-config.js"></script>
 <script src="remote-sync.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<script src="pdf-merge.js"></script>
 <script src="api.js"></script>
 <script>
 // ══ State ══════════════════════════════════════════════════
@@ -402,6 +404,16 @@ let curPreviewDocId=null;
 let chatTeacherPendingFile=null;
 let curProfileSid=null;
 const C=['#128C7E','#1565C0','#6A1B9A','#BF360C','#1B5E20'];
+
+function showUploadPrepError(e){
+  const m=e && e.message;
+  if(m==='file_too_large') showToast('❌ একটি ফাইল সর্বোচ্চ ১০ MB!');
+  else if(m==='mixed_or_non_image') showToast('❌ একাধিক নিলে সবগুলো ছবি হতে হবে; নয়তো একটি ফাইল নিন।');
+  else if(m==='pdf_lib_missing') showToast('❌ PDF লাইব্রেরি লোড হয়নি। পাতা রিফ্রেশ করুন।');
+  else if(m==='no_file') showToast('❌ কোনো ফাইল নেই।');
+  else if(m==='image_load_error') showToast('❌ ছবি পড়া যায়নি।');
+  else showToast('❌ ফাইল প্রস্তুত করা যায়নি!');
+}
 
 // ══ Init ═══════════════════════════════════════════════════
 function init(){
@@ -573,16 +585,21 @@ async function openDocPreview(docId, markAsRead){
 }
 function teacherPreviewChatDoc(docId){ if(docId) openDocPreview(docId, true); }
 // ── Teacher chat file functions ───────────────────────────
-function onTeacherChatFileChosen(input){
+async function onTeacherChatFileChosen(input){
   if(!input.files?.length) return;
-  const f=input.files[0];
-  if(f.size>5*1024*1024){ showToast('❌ ফাইল 5MB এর বেশি হতে পারবে না!'); input.value=''; return; }
-  chatTeacherPendingFile=f;
-  document.getElementById('chatFileIcon').textContent=fileIcon(f.type);
-  document.getElementById('chatFileName').textContent=f.name;
-  document.getElementById('chatFileSize').textContent=formatBytes(f.size);
-  document.getElementById('chatFilePreview').style.display='flex';
-  showToast(`📎 ${f.name} — ➤ বোতামে চাপুন`);
+  try{
+    if(input.files.length>1) showToast('📄 ছবি একত্রিত করা হচ্ছে…',5000);
+    const f=await API.prepareFilesForUpload(input.files);
+    chatTeacherPendingFile=f;
+    document.getElementById('chatFileIcon').textContent=fileIcon(f.type);
+    document.getElementById('chatFileName').textContent=f.name;
+    document.getElementById('chatFileSize').textContent=formatBytes(f.size);
+    document.getElementById('chatFilePreview').style.display='flex';
+    showToast(`📎 ${f.name} — ➤ বোতামে চাপুন`);
+  } catch(e){
+    showUploadPrepError(e);
+  }
+  input.value='';
 }
 function cancelTeacherChatFile(){
   chatTeacherPendingFile=null;
@@ -598,7 +615,7 @@ async function sendTeacherChatFile(){
     renderMsgs(curChat); renderChatList(); updateBadge();
     showToast('✅ ফাইল পাঠানো হয়েছে!');
   } catch(e){
-    if(e.message==='file_too_large') showToast('❌ ফাইল 5MB এর বেশি!');
+    if(e.message==='file_too_large') showToast('❌ ফাইল ১০ MB এর বেশি!');
     else if(e.message==='storage_full') showToast('❌ স্টোরেজ পূর্ণ!');
     else showToast('❌ পাঠানো ব্যর্থ হয়েছে!');
   }
@@ -1005,9 +1022,9 @@ function deleteDoc(id){ if(!confirm('এই ডকুমেন্ট মুছ�
 function renderStorageTree(){
   const docs=API.Docs.getAll();
   const usedKB=API.Docs.totalStorageKB();
-  const maxKB=5*1024;
+  const maxKB=200*1024;
   const pct=Math.min(100,Math.round(usedKB/maxKB*100));
-  document.getElementById('storageUsed').textContent=`${usedKB} KB / ~5 MB`;
+  document.getElementById('storageUsed').textContent=`${usedKB} KB (আনুমানিক) · প্রতি ফাইল সর্বোচ্চ ১০ MB`;
   document.getElementById('storageFill').style.width=pct+'%';
   document.getElementById('storageFill').style.background=pct>80?'#C62828':pct>50?'#E65100':'#128C7E';
 
@@ -1098,7 +1115,7 @@ function renderProfileBody(s){
     <!-- Avatar row -->
     <div class="profile-avatar-row">
       <div class="profile-avatar" style="background:${s.color||C[0]}">${s.name.charAt(0)}</div>
-      <div>
+      <div class="profile-meta-col">
         <div class="profile-id-badge">${s.waqfId||'—'}</div>
         ${batch!=null?`<div class="profile-batch-badge">📅 ${batch}য় বর্ষ${s.enrollmentDate?' ('+s.enrollmentDate.slice(0,4)+')':''}${' → '+(new Date().getFullYear()+'সাল')}</div>`:''}
       </div>
@@ -1152,12 +1169,23 @@ function renderProfileBody(s){
       </div>
     </div>
     <!-- Teacher Notes -->
-    <div class="profile-section" style="margin-bottom:24px">
+    <div class="profile-section" style="margin-bottom:16px">
       <div class="profile-sec-hd">শিক্ষকের নোট <span style="font-size:11px;font-weight:400;color:var(--gray-400)">(ছাত্র দেখতে পাবে না)</span></div>
       <div id="notesList">${renderNotesList(notes)}</div>
       <div class="note-add-row">
         <textarea id="noteInput" placeholder="নতুন নোট লিখুন..." rows="2"></textarea>
         <button onclick="addNote()" style="background:#075E54;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;align-self:flex-end">📝 যোগ</button>
+      </div>
+    </div>
+    <div class="profile-section" style="margin-bottom:24px;border:1.5px solid #FFCDD2;border-radius:12px;background:#FFF8F8">
+      <div class="profile-sec-hd" style="color:#C62828">ঝুঁকিপূর্ণ কাজ</div>
+      <p style="font-size:13px;color:var(--gray-600);padding:0 14px 8px;line-height:1.55;margin:0">ছাত্রের নাম, ওয়াকফ ও পিন <strong>থাকবে</strong>। চ্যাট, টাস্ক, পরীক্ষার জমা, ডকুমেন্ট, লক্ষ্য, একাডেমিক রেকর্ড ও শিক্ষকের নোট মুছে যাবে।</p>
+      <div style="padding:0 14px 12px">
+        <button type="button" onclick="confirmClearStudentData()" style="width:100%;background:#fff;border:1.5px solid #E57373;color:#B71C1C;border-radius:10px;padding:10px 14px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer">🧹 শুধু সংশ্লিষ্ট তথ্য মুছুন</button>
+      </div>
+      <p style="font-size:13px;color:var(--gray-600);padding:0 14px 8px;line-height:1.55;margin:0;border-top:1px solid #FFEBEE;padding-top:12px">ছাত্র সম্পূর্ণ মুছবেন (অভ্যন্তরীণ আইডি ও ওয়াকফ মুক্ত হবে)। নতুন ছাত্র যোগ করলে খালি ওয়াকফ নম্বর আবার ব্যবহার হতে পারে।</p>
+      <div style="padding:0 14px 16px">
+        <button type="button" onclick="confirmDeleteStudent()" style="width:100%;background:#C62828;color:#fff;border:none;border-radius:10px;padding:10px 14px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer">🗑 ছাত্র সম্পূর্ণ মুছুন</button>
       </div>
     </div>
   `;
@@ -1175,6 +1203,35 @@ function renderNotesList(notes){
       <button class="note-btn del" onclick="deleteNote('${n.id}')">🗑 মুছুন</button>
     </div>
   </div>`).join('');
+}
+function confirmClearStudentData(){
+  if(!curProfileSid) return;
+  if(!confirm('এই ছাত্রের চ্যাট, টাস্ক, পরীক্ষার জমা, ডকুমেন্ট, লক্ষ্য, একাডেমিক রেকর্ড ও শিক্ষকের নোট সব মুছে যাবে। ছাত্রের নাম, ওয়াকফ ও পিন অপরিবর্তিত থাকবে। চালিয়ে যাবেন?')) return;
+  try{
+    API.Students.clearAllRelatedData(curProfileSid);
+    closeStudentProfile();
+    renderAll();
+    showToast('✅ সংশ্লিষ্ট তথ্য মুছে ফেলা হয়েছে');
+  } catch(e){
+    console.error(e);
+    showToast('কাজটি ব্যর্থ হয়েছে');
+  }
+}
+function confirmDeleteStudent(){
+  if(!curProfileSid) return;
+  const st=API.Students.getById(curProfileSid);
+  if(!st) return;
+  if(!confirm('«'+st.name+'» ('+(st.waqfId||'')+') সম্পূর্ণ মুছে যাবে। ডেটা ফিরিয়ে আনা যাবে না। চালিয়ে যাবেন?')) return;
+  if(!confirm('শেষ নিশ্চিতকরণ: আপনি নিশ্চিত?')) return;
+  try{
+    API.Students.deleteCompletely(curProfileSid);
+    closeStudentProfile();
+    renderAll();
+    showToast('🗑 ছাত্র মুছে ফেলা হয়েছে');
+  } catch(e){
+    console.error(e);
+    showToast('কাজটি ব্যর্থ হয়েছে');
+  }
 }
 function saveProfileEdits(){
   if(!curProfileSid) return;

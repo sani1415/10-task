@@ -364,7 +364,12 @@
     await broadcastKvPing();
   }
 
+  const MAX_STORAGE_UPLOAD_BYTES = 10 * 1024 * 1024;
+
   async function uploadFile(path, file) {
+    if (!file || typeof file.size !== 'number' || file.size > MAX_STORAGE_UPLOAD_BYTES) {
+      throw new Error('file_too_large');
+    }
     const sb = getClient();
     const { error } = await sb.storage.from(BUCKET).upload(path, file, {
       upsert: true,

@@ -12,6 +12,33 @@ const API = (() => {
   const nextDate= d => { const dt=new Date(); dt.setDate(dt.getDate()+d); return dt.toISOString().split('T')[0]; };
   const uid    = p => (p||'id')+Date.now()+Math.random().toString(36).slice(2,5);
   const safeFilePart = name => String(name||'file').replace(/[^a-zA-Z0-9._-]/g,'_').slice(0,80);
+  /** একক আপলোড সর্বোচ্চ আকার (রিমোট: Supabase Storage; মেটা `docs_meta` এ KV তে) */
+  const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+
+  function fileWithinUploadLimit(file) {
+    return file && typeof file.size === 'number' && file.size > 0 && file.size <= MAX_UPLOAD_BYTES;
+  }
+
+  function looksLikeImageFile(f) {
+    if (f.type && f.type.startsWith('image/')) return true;
+    return /\.(jpe?g|png|gif|webp|bmp)$/i.test(f.name || '');
+  }
+
+  async function prepareFilesForUpload(fileList) {
+    const files = Array.from(fileList || []).filter(Boolean);
+    if (!files.length) throw new Error('no_file');
+    for (const f of files) {
+      if (!fileWithinUploadLimit(f)) throw new Error('file_too_large');
+    }
+    if (files.length === 1) return files[0];
+    const allImg = files.every(looksLikeImageFile);
+    if (!allImg) throw new Error('mixed_or_non_image');
+    const merger = typeof window !== 'undefined' && window.mergeImageFilesToPdf;
+    if (!merger) throw new Error('pdf_lib_missing');
+    const pdf = await merger(files);
+    if (!fileWithinUploadLimit(pdf)) throw new Error('file_too_large');
+    return pdf;
+  }
 
   function ensureChatsShape(db) {
     if (!db.chats) db.chats = {};
@@ -204,11 +231,17 @@ const API = (() => {
     getById(id){ return DB.get().students.find(s=>s.id===id)||null; },
 
     getNextWaqfId() {
-      const nums = this.getAll()
-        .map(s=>parseInt((s.waqfId||'waqf_000').split('_')[1]||'0'))
-        .filter(n=>!isNaN(n));
-      const max = nums.length ? Math.max(...nums) : 0;
-      return 'waqf_' + String(max+1).padStart(3,'0');
+      const used = new Set(
+        this.getAll()
+          .map((s) => {
+            const m = String(s.waqfId || '').match(/waqf_(\d+)/i);
+            return m ? parseInt(m[1], 10) : NaN;
+          })
+          .filter((n) => !Number.isNaN(n) && n > 0)
+      );
+      let n = 1;
+      while (used.has(n)) n++;
+      return 'waqf_' + String(n).padStart(3, '0');
     },
 
     // Public login/display id, e.g. "waqf_001" (same as waqfId)
@@ -258,6 +291,59 @@ const API = (() => {
       const db=DB.get();
       if(db.students.some(s=>s.id!==sid&&s.pin===pin)) throw new Error('pin_exists');
       const s=db.students.find(s=>s.id===sid); if(s){ s.pin=pin; DB.save(db); } return s;
+    },
+
+    /** ছাত্র সারি অপরিবর্তিত; চ্যাট, টাস্ক, পরীক্ষা, ডক, লক্ষ্য, একাডেমিক, নোট মুছে। */
+    clearAllRelatedData(sid) {
+      if (!this.getById(sid)) throw new Error('student_not_found');
+      const db0 = DB.get();
+      db0.chats[sid] = [];
+      DB.save(db0);
+      const acad = AcademicHistory._read();
+      delete acad[sid];
+      AcademicHistory._write(acad);
+      const tnotes = TeacherNotes._read();
+      delete tnotes[sid];
+      TeacherNotes._write(tnotes);
+      const gAll = Goals._all();
+      delete gAll[sid];
+      if (_useRemote) {
+        RS.mem.goals = gAll;
+        RS.schedule('goals', () => JSON.parse(JSON.stringify(RS.mem.goals)));
+      } else {
+        localStorage.setItem(GOALS_KEY, JSON.stringify(gAll));
+      }
+      const db1 = DB.get();
+      db1.tasks = (db1.tasks || [])
+        .map((t) => {
+          if (!t.assignees || t.assignees[sid] === undefined) return t;
+          const assignees = { ...t.assignees };
+          delete assignees[sid];
+          const completedBy = { ...(t.completedBy || {}) };
+          delete completedBy[sid];
+          if (!Object.keys(assignees).length) return null;
+          return { ...t, assignees, completedBy };
+        })
+        .filter(Boolean);
+      DB.save(db1);
+      const ex = Exams._readAll();
+      ex.submissions = (ex.submissions || []).filter((sub) => sub.studentId !== sid);
+      ex.quizzes = (ex.quizzes || []).map((q) => ({
+        ...q,
+        assigneeIds: (q.assigneeIds || []).filter((id) => id !== sid),
+      }));
+      Exams._write(ex);
+      Docs.deleteAllForStudent(sid);
+    },
+
+    /** ছাত্র + সব সংশ্লিষ্ট ডেটা মুছে; ওয়াকফ নম্বর পরে নতুন ছাত্রের জন্য পুনরায় বরাদ্দ হতে পারে। */
+    deleteCompletely(sid) {
+      if (!this.getById(sid)) throw new Error('student_not_found');
+      this.clearAllRelatedData(sid);
+      const db = DB.get();
+      db.students = db.students.filter((s) => s.id !== sid);
+      delete db.chats[sid];
+      DB.save(db);
     },
 
     importFromCSV(csvText) {
@@ -394,7 +480,7 @@ const API = (() => {
       return new Promise((resolve, reject) => {
         const student=Students.getById(sid);
         if(!student){ reject(new Error('student_not_found')); return; }
-        if(file.size > 5*1024*1024){ reject(new Error('file_too_large')); return; }
+        if(!fileWithinUploadLimit(file)){ reject(new Error('file_too_large')); return; }
         if (_useRemote) {
           const docId=uid('doc');
           const path=`${sid}/${docId}_${safeFilePart(file.name)}`;
@@ -442,7 +528,7 @@ const API = (() => {
     },
     sendFileFromTeacher(sid, file) {
       return new Promise((resolve, reject) => {
-        if(file.size > 5*1024*1024){ reject(new Error('file_too_large')); return; }
+        if(!fileWithinUploadLimit(file)){ reject(new Error('file_too_large')); return; }
         if (_useRemote) {
           const docId=uid('tdoc');
           const path=`teacher/${sid}/${docId}_${safeFilePart(file.name)}`;
@@ -716,10 +802,10 @@ const API = (() => {
 
   // ── DOCUMENTS ────────────────────────────────────────────
   /*
-    Document metadata:
+    Document metadata (KV `docs_meta`):
     { id, studentId, studentName, fileName, fileType, fileSize,
-      category, note, uploadedAt, read }
-    File content stored in: madrasa_doc_<id> as base64 data-URL
+      category, note, uploadedAt, read, fileUrl?, storage_path? }
+    রিমোট: ফাইলের বাইট Supabase Storage বাকেট `waqf-files` এ; লোকাল: madrasa_doc_<id> base64
   */
   const Docs = {
     _readMeta() {
@@ -758,7 +844,7 @@ const API = (() => {
       return new Promise((resolve, reject) => {
         const student=Students.getById(sid);
         if(!student){ reject(new Error('student_not_found')); return; }
-        if(file.size > 5*1024*1024){ reject(new Error('file_too_large')); return; }
+        if(!fileWithinUploadLimit(file)){ reject(new Error('file_too_large')); return; }
 
         if (_useRemote) {
           const id=uid('doc');
@@ -808,6 +894,17 @@ const API = (() => {
       this._writeMeta(this._readMeta().filter(d=>d.id!==id));
     },
 
+    deleteAllForStudent(sid) {
+      const list = this._readMeta();
+      const keep = [];
+      for (const d of list) {
+        if (d.studentId === sid) {
+          if (!_useRemote) localStorage.removeItem('madrasa_doc_' + d.id);
+        } else keep.push(d);
+      }
+      this._writeMeta(keep);
+    },
+
     unreadCount() { return this._readMeta().filter(d=>!d.read).length; },
 
     totalStorageKB() {
@@ -825,6 +922,8 @@ const API = (() => {
 
   return {
     Auth, DB, Students, Messages, Tasks, Goals, Exams, Docs, AcademicHistory, TeacherNotes, today, nowTime, nextDate, uid,
+    MAX_UPLOAD_BYTES,
+    prepareFilesForUpload,
     unlockTeacherRemote(pin) {
       if (!_useRemote || !RS.unlockTeacherWithPin) return Promise.reject(new Error('not_remote'));
       return RS.unlockTeacherWithPin(pin);

@@ -225,11 +225,12 @@ textarea.form-input{resize:vertical;min-height:70px}
 .profile-hd-sub{font-size:12px;opacity:.85;margin-top:1px}
 .profile-save-btn{background:rgba(255,255,255,.2);border:none;color:#fff;padding:7px 14px;border-radius:16px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
 .profile-save-btn:active{background:rgba(255,255,255,.35)}
-.profile-body{flex:1;overflow-y:auto}
+.profile-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:max(20px,env(safe-area-inset-bottom))}
 .profile-avatar-row{background:#075E54;padding:0 16px 20px;display:flex;align-items:center;gap:14px}
+.profile-meta-col{min-width:0;flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
 .profile-avatar{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:#fff;flex-shrink:0;border:3px solid rgba(255,255,255,.3)}
-.profile-id-badge{background:rgba(255,255,255,.15);border-radius:12px;padding:4px 12px;font-size:13px;font-weight:600;color:rgba(255,255,255,.95)}
-.profile-batch-badge{background:rgba(37,211,102,.25);border-radius:12px;padding:4px 12px;font-size:12px;font-weight:600;color:#fff;margin-top:4px}
+.profile-id-badge{background:rgba(255,255,255,.15);border-radius:12px;padding:4px 12px;font-size:13px;font-weight:600;color:rgba(255,255,255,.95);max-width:100%;word-break:break-word;line-height:1.35}
+.profile-batch-badge{background:rgba(37,211,102,.25);border-radius:12px;padding:4px 12px;font-size:12px;font-weight:600;color:#fff;margin-top:0;max-width:100%;word-break:break-word;line-height:1.35}
 .profile-section{background:#fff;margin:10px 12px;border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden}
 .profile-sec-hd{padding:10px 14px;background:var(--gray-50);border-bottom:1px solid var(--gray-100);font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;display:flex;justify-content:space-between;align-items:center}
 .profile-field{padding:10px 14px;border-bottom:1px solid var(--gray-100);display:flex;flex-direction:column;gap:3px}
@@ -243,10 +244,28 @@ textarea.form-input{resize:vertical;min-height:70px}
 .acad-year{flex:1;font-size:14px;font-weight:600;color:var(--gray-700)}
 .acad-grade{font-size:13px;color:#075E54;font-weight:700;min-width:50px;text-align:right}
 .acad-del{background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:18px;padding:2px 6px}
-.acad-add-row{display:flex;gap:8px;padding:10px 14px}
-.acad-add-row input{flex:1;border:1.5px solid var(--gray-300);border-radius:8px;padding:7px 10px;font-family:var(--font);font-size:13px;outline:none}
+.acad-add-row{display:flex;flex-wrap:wrap;gap:8px;padding:10px 14px;align-items:stretch}
+.acad-add-row input{flex:1 1 100%;min-width:0;border:1.5px solid var(--gray-300);border-radius:8px;padding:7px 10px;font-family:var(--font);font-size:13px;outline:none}
 .acad-add-row input:focus{border-color:#075E54}
-.acad-add-btn{background:#075E54;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+.acad-add-btn{background:#075E54;color:#fff;border:none;border-radius:8px;padding:9px 14px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;flex:1 1 100%;width:100%}
+@media (min-width:380px){
+  .acad-add-row input{flex:1 1 calc(50% - 4px)}
+  .acad-add-btn{flex:0 0 auto;width:auto;white-space:nowrap;align-self:center}
+}
+@media (min-width:420px){
+  .acad-add-row input:first-child{flex:2 1 120px}
+  .acad-add-row input:nth-child(2){flex:1 1 80px}
+}
+.profile-pin-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.profile-pin-row .form-input{flex:1 1 140px;min-width:0}
+.profile-pin-save{flex:0 0 auto;white-space:nowrap}
+@media (max-width:360px){
+  .profile-pin-save{flex:1 1 auto;width:100%}
+}
+.note-submit-btn{align-self:stretch;width:100%;max-width:100%}
+@media (min-width:380px){
+  .note-submit-btn{align-self:flex-end;width:auto;max-width:none}
+}
 /* Teacher notes */
 .note-item{padding:10px 14px;border-bottom:1px solid var(--gray-100)}
 .note-item:last-child{border-bottom:none}

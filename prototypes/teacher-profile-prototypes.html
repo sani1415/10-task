@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ছাত্র প্রোফাইল — নিচের অংশের নকশা (নমুনা)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* এই পাতাটি শুধু নমুনা — মূল অ্যাপের বাইরে */
+    body {
+      overflow-y: auto;
+      height: auto;
+      min-height: 100dvh;
+      align-items: flex-start;
+      justify-content: flex-start;
+      padding: 0;
+    }
+    .proto-root {
+      width: 100%;
+      max-width: 430px;
+      margin: 0 auto;
+      background: var(--gray-100);
+      min-height: 100dvh;
+      font-family: var(--font);
+      padding-bottom: 32px;
+    }
+    .proto-top {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: var(--t-dark);
+      color: #fff;
+      padding: 14px 16px;
+      font-size: 15px;
+      font-weight: 700;
+      box-shadow: var(--shadow-md);
+    }
+    .proto-top small {
+      display: block;
+      font-weight: 400;
+      font-size: 12px;
+      opacity: 0.9;
+      margin-top: 4px;
+    }
+    .proto-block-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #546e7a;
+      margin: 20px 14px 8px;
+      padding-top: 16px;
+      border-top: 2px dashed #b0bec5;
+    }
+    .proto-block-title:first-of-type {
+      border-top: none;
+      margin-top: 12px;
+      padding-top: 0;
+    }
+    .proto-desc {
+      font-size: 12px;
+      color: var(--gray-500);
+      margin: 0 14px 12px;
+      line-height: 1.55;
+    }
+    .proto-sim-hd {
+      background: var(--t-dark);
+      color: #fff;
+      padding: 10px 16px;
+      font-size: 12px;
+      opacity: 0.95;
+      margin: 0 0 0;
+    }
+
+    /* ── নমুনা ১: কার্ড (আধুনিক, নরম ছায়া, মোবাইলে সারি ভাঙা) ── */
+    .proto-v1 .p-hero {
+      background: var(--t-dark);
+      padding: 0 16px 18px;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+    .proto-v1 .p-av {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #128c7e;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 700;
+      flex-shrink: 0;
+      border: 3px solid rgba(255, 255, 255, 0.25);
+    }
+    .proto-v1 .p-meta {
+      min-width: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: flex-start;
+    }
+    .proto-v1 .p-badge {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      padding: 4px 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      max-width: 100%;
+      word-break: break-word;
+      line-height: 1.35;
+    }
+    .proto-v1 .p-card {
+      background: #fff;
+      margin: 10px 12px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .proto-v1 .p-card-h {
+      padding: 10px 14px;
+      background: var(--gray-50);
+      border-bottom: 1px solid var(--gray-100);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .proto-v1 .p-field {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .proto-v1 .p-field:last-child {
+      border-bottom: none;
+    }
+    .proto-v1 .p-field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gray-400);
+      margin-bottom: 6px;
+    }
+    .proto-v1 .p-field input {
+      width: 100%;
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-family: var(--font);
+      font-size: 14px;
+      outline: none;
+    }
+    .proto-v1 .p-acad-add {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px 14px;
+    }
+    .proto-v1 .p-acad-add input {
+      width: 100%;
+      border: 1px solid var(--gray-300);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 13px;
+      font-family: var(--font);
+    }
+    .proto-v1 .p-acad-add button {
+      width: 100%;
+      background: var(--t-dark);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px;
+      font-family: var(--font);
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    @media (min-width: 380px) {
+      .proto-v1 .p-acad-add {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+      .proto-v1 .p-acad-add input:first-child {
+        flex: 2;
+        min-width: 140px;
+      }
+      .proto-v1 .p-acad-add input:nth-child(2) {
+        flex: 1;
+        min-width: 100px;
+      }
+      .proto-v1 .p-acad-add button {
+        width: auto;
+        flex: 1 1 100%;
+      }
+    }
+    @media (min-width: 400px) {
+      .proto-v1 .p-acad-add button {
+        flex: 0 0 auto;
+        width: auto;
+        padding: 8px 16px;
+      }
+    }
+
+    /* ── নমুনা ২: সেটিংস-স্টাইল সারি (লেবেল বামে, ইনপুট ডানে) ── */
+    .proto-v2 .p-hero {
+      background: linear-gradient(160deg, #075e54 0%, #0a6b5e 100%);
+      padding: 16px;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+    .proto-v2 .p-av {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .proto-v2 .p-meta {
+      min-width: 0;
+      flex: 1;
+    }
+    .proto-v2 .p-name {
+      color: #fff;
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .proto-v2 .p-sub {
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 12px;
+      margin-top: 4px;
+      word-break: break-word;
+    }
+    .proto-v2 .p-sheet {
+      margin: -12px 10px 0;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+    }
+    .proto-v2 .p-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 4px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .proto-v2 .p-row:last-child {
+      border-bottom: none;
+    }
+    .proto-v2 .p-row span {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-500);
+    }
+    .proto-v2 .p-row input {
+      width: 100%;
+      border: none;
+      border-bottom: 1px solid var(--gray-200);
+      padding: 4px 0;
+      font-family: var(--font);
+      font-size: 15px;
+      color: var(--gray-700);
+      outline: none;
+      border-radius: 0;
+    }
+    @media (min-width: 360px) {
+      .proto-v2 .p-row {
+        grid-template-columns: 38% 1fr;
+        align-items: center;
+        gap: 10px;
+      }
+      .proto-v2 .p-row input {
+        border-bottom: none;
+        background: var(--gray-50);
+        border-radius: 8px;
+        padding: 8px 10px;
+      }
+    }
+    .proto-v2 .p-sec-label {
+      padding: 8px 14px 4px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gray-400);
+      text-transform: uppercase;
+      background: var(--gray-50);
+    }
+
+    /* ── নমুনা ৩: এক কার্ড, ধাপে ধাপে (কম বক্স, বেশি ফাঁক) ── */
+    .proto-v3 .p-hero {
+      padding: 20px 16px 16px;
+      text-align: center;
+      background: var(--gray-100);
+    }
+    .proto-v3 .p-av {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #1565c0;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0 auto 10px;
+      box-shadow: var(--shadow-md);
+    }
+    .proto-v3 .p-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--gray-700);
+    }
+    .proto-v3 .p-sub {
+      font-size: 13px;
+      color: var(--gray-500);
+      margin-top: 4px;
+      padding: 0 12px;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+    .proto-v3 .p-one {
+      margin: 12px;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: var(--shadow-sm);
+      padding: 6px 0 16px;
+    }
+    .proto-v3 .p-h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--t-dark);
+      padding: 14px 16px 8px;
+      margin: 0;
+    }
+    .proto-v3 .p-h3:not(:first-child) {
+      border-top: 1px solid var(--gray-100);
+      margin-top: 4px;
+      padding-top: 18px;
+    }
+    .proto-v3 .p-field {
+      padding: 8px 16px;
+    }
+    .proto-v3 .p-field label {
+      font-size: 11px;
+      color: var(--gray-400);
+      font-weight: 600;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .proto-v3 .p-field input {
+      width: 100%;
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-family: var(--font);
+    }
+    .proto-v3 .p-pin-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 0 16px 12px;
+    }
+    .proto-v3 .p-pin-row input {
+      flex: 1;
+      min-width: 140px;
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      padding: 10px;
+      font-family: var(--font);
+    }
+    .proto-v3 .p-pin-row button {
+      flex: 1;
+      min-width: 120px;
+      background: var(--t-dark);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px;
+      font-weight: 600;
+      font-family: var(--font);
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="proto-root">
+    <div class="proto-top">
+      ছাত্র প্রোফাইল — নিচের অংশের নকশা
+      <small>হেডার (ব্যাক / সেভ) এখানে নেই। শুধু তথ্য দেখানোর স্টাইল বেছে নিন।</small>
+    </div>
+
+    <div class="proto-block-title">নমুনা ১ — কার্ড ভাগ করা (বর্তমানের মতো, মোবাইলে বাটন/ইনপুট পুরো প্রস্থ)</div>
+    <p class="proto-desc">প্রতিটি বিষয় আলাদা সাদা কার্ড। দীর্ঘ ওয়াকফ/বর্ষ লেখা ভাঙবে। একাডেমিক যোগ সারিতে ছোট স্ক্রিনে স্ট্যাক হয়।</p>
+    <div class="proto-sim-hd">⋯ হেডার সিমুলেশন (আসল অ্যাপে থাকবে) ⋯</div>
+    <div class="proto-v1">
+      <div class="p-hero">
+        <div class="p-av">ম</div>
+        <div class="p-meta">
+          <span class="p-badge">waqf_012</span>
+          <span class="p-badge" style="background: rgba(37, 211, 102, 0.25)">📅 ২য় বর্ষ (২০২৪) → ২০২৬সাল</span>
+        </div>
+      </div>
+      <div class="p-card">
+        <div class="p-card-h">মূল তথ্য</div>
+        <div class="p-field"><label>নাম</label><input value="মুহাম্মাদ রাফি" /></div>
+        <div class="p-field"><label>মোবাইল</label><input value="০১৭১১××××××" /></div>
+      </div>
+      <div class="p-card">
+        <div class="p-card-h">পূর্ববর্তী ফলাফল — যোগ করুন</div>
+        <div class="p-acad-add">
+          <input placeholder="বছর / শ্রেণী (দীর্ঘ টেক্সটও ঠিক থাকবে)" />
+          <input placeholder="নম্বর" />
+          <button type="button">যোগ</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="proto-block-title">নমুনা ২ — সেটিংস সারি (লেবেল + মান এক লাইনে, ওয়াইডে দুই কলাম)</div>
+    <p class="proto-desc">একটি উঠতি কার্ডের ভিতরে সব ক্ষেত্র। ছোট ফোনে লেবিল উপরে, বড়তে বামে।</p>
+    <div class="proto-sim-hd">⋯ হেডার সিমুলেশন ⋯</div>
+    <div class="proto-v2">
+      <div class="p-hero">
+        <div class="p-av">ম</div>
+        <div class="p-meta">
+          <div class="p-name">মুহাম্মাদ রাফি</div>
+          <div class="p-sub">waqf_012 · ২য় বর্ষ</div>
+        </div>
+      </div>
+      <div class="p-sheet">
+        <div class="p-sec-label">মূল তথ্য</div>
+        <div class="p-row"><span>পিতার নাম</span><input value="আব্দুর রহমান" /></div>
+        <div class="p-row"><span>মোবাইল</span><input value="০১৭১১××××××" /></div>
+        <div class="p-sec-label">ঠিকানা</div>
+        <div class="p-row"><span>জেলা</span><input value="ঢাকা" /></div>
+        <div class="p-row"><span>উপজেলা</span><input value="কেরানীগঞ্জ" /></div>
+      </div>
+    </div>
+
+    <div class="proto-block-title">নমুনা ৩ — এক কার্ড, নরম শিরোনাম (কম “বক্স ভিতরে বক্স”)</div>
+    <p class="proto-desc">উপরে বড় অবতার + নাম; নিচে একটাই বড় প্যানেল, বিভাগ শুধু টেক্সট হেডিং দিয়ে।</p>
+    <div class="proto-sim-hd">⋯ হেডার সিমুলেশন ⋯</div>
+    <div class="proto-v3">
+      <div class="p-hero">
+        <div class="p-av">ম</div>
+        <div class="p-name">মুহাম্মাদ রাফি</div>
+        <div class="p-sub">waqf_012 · হিফজ ১ম · ২য় বর্ষ</div>
+      </div>
+      <div class="p-one">
+        <h3 class="p-h3">মূল তথ্য</h3>
+        <div class="p-field"><label>নাম</label><input value="মুহাম্মাদ রাফি" /></div>
+        <div class="p-field"><label>মোবাইল</label><input placeholder="মোবাইল" /></div>
+        <h3 class="p-h3">লগইন পিন পরিবর্তন</h3>
+        <div class="p-pin-row">
+          <input type="text" inputmode="numeric" placeholder="নতুন ৪ সংখ্যার পিন" />
+          <button type="button">সেভ পিন</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="proto-desc" style="margin-top: 24px; text-align: center; color: var(--gray-600)">
+      কোনটি ভালো লাগলো জানালে সেটি <code>teacher.html</code> + <code>style.css</code> এ বসিয়ে দেওয়া যাবে।
+    </p>
+  </div>
+</body>
+</html>
