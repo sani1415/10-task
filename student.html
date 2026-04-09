@@ -76,6 +76,27 @@
 .doc-cat-badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:8px;background:var(--gray-200);color:var(--gray-600);margin-right:4px}
 .upload-progress{height:4px;background:var(--gray-200);border-radius:2px;margin:4px 0;overflow:hidden}
 .upload-progress-fill{height:100%;background:#1565C0;border-radius:2px;transition:width .3s}
+
+/* ── Pending notifications (lock screen) ── */
+.pending-sec-label{color:rgba(255,255,255,.6);font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;text-align:center}
+.pending-item{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);border-radius:14px;padding:9px 12px;cursor:pointer;width:100%;text-align:left;margin-bottom:7px;transition:background .2s;font-family:var(--font)}
+.pending-item:active{background:rgba(255,255,255,.25)}
+.pending-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0}
+.pending-name{flex:1;font-size:14px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pending-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;flex-shrink:0}
+.pending-badge.msg{background:#42A5F5;color:#0D47A1}
+.pending-badge.task{background:#FFE082;color:#E65100}
+
+/* ── Login form (lock screen) ── */
+.login-box{background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:20px;padding:20px 20px 16px;width:100%;max-width:300px}
+.login-field{margin-bottom:12px}
+.login-lbl{display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.6px;text-transform:uppercase;margin-bottom:6px}
+.login-input{width:100%;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);border-radius:10px;color:#fff;font-family:var(--font);font-size:22px;font-weight:600;padding:10px 14px;outline:none;letter-spacing:4px;text-align:center;-webkit-appearance:none;appearance:none}
+.login-input::placeholder{color:rgba(255,255,255,.35);letter-spacing:normal;font-size:16px}
+.login-input:focus{border-color:rgba(255,255,255,.7);background:rgba(255,255,255,.22)}
+.login-err{color:#FF8A80;font-size:13px;min-height:18px;margin:-4px 0 8px;text-align:center}
+.login-btn{width:100%;background:#fff;color:#1565C0;border:none;border-radius:12px;padding:13px;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s;margin-top:4px}
+.login-btn:active{opacity:.85}
 </style>
 </head>
 <body>
@@ -84,27 +105,29 @@
 <!-- ══ LOCK ══════════════════════════════════════════════ -->
 <div id="lockScreen">
   <div class="lock-logo">📖</div>
-  <div class="lock-title" id="lockTitle">ছাত্র প্যানেল</div>
+  <div class="lock-title">ছাত্র প্যানেল</div>
   <div class="lock-sub" id="lockName">মাদরাসাতুল মদিনা</div>
 
-  <!-- Step 1: student picker -->
-  <div class="student-picker" id="studentPicker">
-    <div class="student-picker-title">আপনি কে? নাম বেছে নিন ↓</div>
-    <div class="student-list-scroll" id="studentPickList"></div>
+  <!-- Section 1: Students with pending messages or tasks -->
+  <div id="pendingSection" style="display:none;width:100%;max-width:340px;padding:0 16px">
+    <div class="pending-sec-label">⏳ অপেক্ষারত</div>
+    <div id="pendingList"></div>
   </div>
 
-  <!-- Step 2: PIN entry (hidden until student picked) -->
-  <div id="pinEntry" style="display:none;flex-direction:column;align-items:center;gap:16px">
-    <div class="lock-hint" id="pinHint">আপনার ৪ সংখ্যার পিন দিন।</div>
-    <div class="pin-dots"><div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div><div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div></div>
-    <div class="pin-error" id="pinErr"></div>
-    <div class="pin-pad">
-      <button class="pin-key" onclick="pk('1')">1</button><button class="pin-key" onclick="pk('2')">2<span class="sub">ABC</span></button><button class="pin-key" onclick="pk('3')">3<span class="sub">DEF</span></button>
-      <button class="pin-key" onclick="pk('4')">4<span class="sub">GHI</span></button><button class="pin-key" onclick="pk('5')">5<span class="sub">JKL</span></button><button class="pin-key" onclick="pk('6')">6<span class="sub">MNO</span></button>
-      <button class="pin-key" onclick="pk('7')">7<span class="sub">PQRS</span></button><button class="pin-key" onclick="pk('8')">8<span class="sub">TUV</span></button><button class="pin-key" onclick="pk('9')">9<span class="sub">WXYZ</span></button>
-      <button class="pin-key" style="opacity:.3"></button><button class="pin-key" onclick="pk('0')">0</button><button class="pin-key" onclick="pd()">⌫</button>
+  <!-- Section 2: Login form (ID + PIN) -->
+  <div class="login-box">
+    <div class="login-field">
+      <label class="login-lbl">আইডি নম্বর</label>
+      <input id="loginId" class="login-input" type="tel" inputmode="numeric" maxlength="3"
+             placeholder="001" autocomplete="off" onkeydown="if(event.key==='Enter')document.getElementById('loginPin').focus()">
     </div>
-    <button class="picker-back-btn" onclick="backToPicker()">← অন্য নাম বেছে নিন</button>
+    <div class="login-field">
+      <label class="login-lbl">পিন কোড</label>
+      <input id="loginPin" class="login-input" type="password" inputmode="numeric" maxlength="4"
+             placeholder="••••" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div id="loginErr" class="login-err"></div>
+    <button class="login-btn" onclick="doLogin()">প্রবেশ করুন →</button>
   </div>
 </div>
 
@@ -262,7 +285,7 @@
 <script src="api.js"></script>
 <script>
 // ══ State ══════════════════════════════════════════════════
-let pin='', me=null, pickedStudent=null, tFilter='all', gFilter='all';
+let me=null, tFilter='all', gFilter='all';
 let activeQuizId=null, quizAnswers={}, quizTimerInterval=null, quizSecondsLeft=0;
 let pendingFile=null, chatPendingFile=null;
 
@@ -272,62 +295,58 @@ function init(){
   API.Tasks.resetDailyForToday();
   document.getElementById('lockName').textContent=API.DB.getTeacher().madrasa||'মাদরাসাতুল মদিনা';
   document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); }));
-  renderStudentPicker();
+  renderPendingSection();
 }
 
-// ══ STUDENT PICKER (device-shared login) ═══════════════════
-function renderStudentPicker(){
+// ══ PENDING SECTION (lock screen) ══════════════════════════
+function renderPendingSection(){
   const students=API.Students.getAll();
-  const el=document.getElementById('studentPickList');
-  if(!students.length){
-    el.innerHTML='<div style="color:rgba(255,255,255,.6);font-size:13px;text-align:center;padding:16px">কোনো ছাত্র নেই।<br>উস্তাদকে যোগ করতে বলুন।</div>';
-    return;
-  }
-  el.innerHTML=students.map(s=>`
-    <button class="student-pick-btn" onclick="pickStudent('${s.id}')">
-      <div class="student-pick-avatar" style="background:${s.color||'#1565C0'}">${s.name.charAt(0)}</div>
-      <div style="flex:1;min-width:0">
-        <div class="student-pick-name">${esc(s.name)}</div>
-        <div class="student-pick-cls">${esc(s.cls||'')}${s.roll?' · রোল '+s.roll:''}</div>
-      </div>
-      <span class="student-pick-arrow">›</span>
-    </button>`).join('');
+  // Students with unread teacher→student messages OR pending tasks
+  const pending=students.filter(s=>
+    API.Messages.unreadCount(s.id,'out')>0 || API.Tasks.pendingCount(s.id)>0
+  );
+  const sec=document.getElementById('pendingSection');
+  if(!pending.length){ sec.style.display='none'; return; }
+  sec.style.display='block';
+  document.getElementById('pendingList').innerHTML=pending.map(s=>{
+    const msgCnt=API.Messages.unreadCount(s.id,'out');
+    const taskCnt=API.Tasks.pendingCount(s.id);
+    const shortId=API.Students.getShortId(s)||'---';
+    return `<button class="pending-item" onclick="prefillId('${esc(shortId)}')">
+      <div class="pending-avatar" style="background:${s.color||'#1565C0'}">${s.name.charAt(0)}</div>
+      <div class="pending-name">${esc(s.name)}</div>
+      ${msgCnt>0?`<span class="pending-badge msg">💬 ${msgCnt}</span>`:''}
+      ${taskCnt>0?`<span class="pending-badge task">📋 ${taskCnt}</span>`:''}
+    </button>`;
+  }).join('');
 }
 
-function pickStudent(sid){
-  pickedStudent=API.Students.getById(sid); if(!pickedStudent) return;
-  pin='';
-  document.getElementById('pinHint').textContent=`${pickedStudent.name.split(' ')[0]} — ৪ সংখ্যার পিন দিন`;
-  document.getElementById('studentPicker').style.display='none';
-  document.getElementById('lockTitle').textContent=pickedStudent.name.split(' ')[0];
-  document.getElementById('pinEntry').style.display='flex';
-  dots();
+function prefillId(shortId){
+  document.getElementById('loginId').value=shortId;
+  document.getElementById('loginErr').textContent='';
+  document.getElementById('loginPin').value='';
+  document.getElementById('loginPin').focus();
 }
 
-function backToPicker(){
-  pickedStudent=null; pin='';
-  document.getElementById('pinEntry').style.display='none';
-  document.getElementById('lockTitle').textContent='ছাত্র প্যানেল';
-  document.getElementById('studentPicker').style.display='flex';
-  document.getElementById('pinErr').textContent='';
-  dots();
+// ══ LOGIN (ID + PIN form) ═══════════════════════════════════
+function doLogin(){
+  const rawId=document.getElementById('loginId').value.trim();
+  const pin=document.getElementById('loginPin').value.trim();
+  if(!rawId){ showLoginErr('আইডি নম্বর দিন'); return; }
+  if(!pin){ showLoginErr('পিন কোড দিন'); return; }
+  // Auto-convert "001" → waqf_001 lookup
+  const student=API.Students.getByWaqfShortId(rawId);
+  if(!student){ showLoginErr('❌ আইডি পাওয়া যায়নি'); return; }
+  if(pin!==student.pin){ showLoginErr('❌ পিন ভুল হয়েছে'); document.getElementById('loginPin').value=''; return; }
+  me=student;
+  document.getElementById('lockScreen').style.display='none';
+  onLogin();
 }
 
-// ══ PIN ════════════════════════════════════════════════════
-function pk(k){ if(!k||pin.length>=4) return; pin+=k; dots(); if(pin.length===4) setTimeout(chkPin,150); }
-function pd(){ pin=pin.slice(0,-1); dots(); }
-function dots(){ [0,1,2,3].forEach(i=>document.getElementById('d'+i).classList.toggle('filled',i<pin.length)); }
-function chkPin(){
-  // Verify PIN matches the picked student specifically
-  if(pickedStudent && pin===pickedStudent.pin){
-    me=pickedStudent;
-    document.getElementById('lockScreen').style.display='none';
-    onLogin();
-  } else {
-    document.getElementById('pinErr').textContent='❌ পিন ভুল হয়েছে';
-    pin=''; dots();
-    setTimeout(()=>document.getElementById('pinErr').textContent='',2500);
-  }
+function showLoginErr(msg){
+  const el=document.getElementById('loginErr');
+  el.textContent=msg;
+  setTimeout(()=>{ if(el.textContent===msg) el.textContent=''; },2500);
 }
 function onLogin(){
   localStorage.setItem('madrasa_lastPanel','student');
@@ -339,13 +358,13 @@ function onLogin(){
   renderAll();
 }
 function logout(){
-  me=null; pin=''; pickedStudent=null;
+  me=null;
   document.getElementById('lockScreen').style.display='flex';
-  document.getElementById('pinEntry').style.display='none';
-  document.getElementById('lockTitle').textContent='ছাত্র প্যানেল';
-  document.getElementById('studentPicker').style.display='flex';
-  renderStudentPicker();
-  dots(); goTab('home');
+  document.getElementById('loginId').value='';
+  document.getElementById('loginPin').value='';
+  document.getElementById('loginErr').textContent='';
+  renderPendingSection();
+  goTab('home');
 }
 function renderAll(){ renderHome(); renderChat(); renderTaskList(); renderExamList(); renderSentDocs(); renderGoals(); updateBadges(); }
 

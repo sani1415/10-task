@@ -28,9 +28,9 @@ const API = (() => {
     const db = {
       teacher: { name:'শিক্ষক', madrasa:'মাদরাসাতুল মদিনা' },
       students: [
-        { id:'s1', name:'মুহাম্মাদ আব্দুল্লাহ', cls:'হিফজ ১ম', roll:'০১', note:'মেধাবী', color:colors[0], pin:'1111' },
-        { id:'s2', name:'আহমাদ উমর',           cls:'হিফজ ১ম', roll:'০২', note:'',       color:colors[1], pin:'2222' },
-        { id:'s3', name:'ইউসুফ হাসান',          cls:'নাজেরা ২য়', roll:'০৩', note:'',    color:colors[2], pin:'3333' },
+        { id:'s1', waqfId:'waqf_001', name:'মুহাম্মাদ আব্দুল্লাহ', cls:'হিফজ ১ম', roll:'০১', note:'মেধাবী', color:colors[0], pin:'1111' },
+        { id:'s2', waqfId:'waqf_002', name:'আহমাদ উমর',           cls:'হিফজ ১ম', roll:'০২', note:'',       color:colors[1], pin:'2222' },
+        { id:'s3', waqfId:'waqf_003', name:'ইউসুফ হাসান',          cls:'নাজেরা ২য়', roll:'০৩', note:'',    color:colors[2], pin:'3333' },
       ],
       chats: {
         's1': [{ id:uid('m'), role:'out', text:'আস-সালামু আলাইকুম। পাঠ তৈরি?', time:'১০:০০', read:true, type:'text' }],
@@ -84,6 +84,18 @@ const API = (() => {
         .filter(n=>!isNaN(n));
       const max = nums.length ? Math.max(...nums) : 0;
       return 'waqf_' + String(max+1).padStart(3,'0');
+    },
+
+    // Returns "001" from a student object (short display ID)
+    getShortId(s) {
+      if(!s?.waqfId) return null;
+      return s.waqfId.split('_')[1]||null;
+    },
+
+    // Find student by short numeric ID ("001" → student with waqfId "waqf_001")
+    getByWaqfShortId(shortId) {
+      const padded='waqf_'+String(parseInt(shortId)||0).padStart(3,'0');
+      return this.getAll().find(s=>s.waqfId===padded)||null;
     },
 
     getBatchYear(enrollmentDate) {
