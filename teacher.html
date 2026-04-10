@@ -102,6 +102,13 @@
 <body>
 <div id="app">
 
+<!-- PWA Install Banner -->
+<div id="pwaInstallBanner">
+  <span>📲 অ্যাপটি হোম স্ক্রিনে যোগ করুন</span>
+  <button onclick="pwaBannerInstall()">ইন্সটল করুন</button>
+  <button class="pwa-close" onclick="pwaBannerDismiss()">✕</button>
+</div>
+
 <!-- ══ LOCK ══════════════════════════════════════════════ -->
 <div id="lockScreen">
   <div class="lock-logo">🕌</div>
@@ -1470,6 +1477,18 @@ document.addEventListener('visibilitychange', () => {
 });
 
 init();
+</script>
+<script>
+(function(){
+  var _prompt=null;
+  window.addEventListener('beforeinstallprompt',function(e){
+    e.preventDefault(); _prompt=e;
+    document.getElementById('pwaInstallBanner').classList.add('show');
+  });
+  window.addEventListener('appinstalled',function(){ document.getElementById('pwaInstallBanner').classList.remove('show'); _prompt=null; });
+  window.pwaBannerInstall=function(){ if(_prompt){ _prompt.prompt(); _prompt.userChoice.then(function(){ document.getElementById('pwaInstallBanner').classList.remove('show'); _prompt=null; }); } };
+  window.pwaBannerDismiss=function(){ document.getElementById('pwaInstallBanner').classList.remove('show'); };
+})();
 </script>
 </body>
 </html>

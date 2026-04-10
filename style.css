@@ -410,3 +410,8 @@ textarea.form-input{resize:vertical;min-height:70px}
 .csp-note-add{background:#fff;border-radius:10px;padding:10px 12px;box-shadow:var(--shadow-sm);display:flex;gap:8px;align-items:flex-end;flex-shrink:0}
 .csp-note-add textarea{flex:1;border:1px solid var(--gray-200);border-radius:8px;padding:8px 10px;font-family:var(--font);font-size:13px;resize:none;min-height:36px;outline:none;color:var(--gray-700)}
 .csp-note-add button{background:#128C7E;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0}
+/* PWA install banner */
+#pwaInstallBanner{display:none;align-items:center;gap:10px;padding:8px 14px;background:#1B5E20;color:#fff;font-family:var(--font);font-size:13px;z-index:1000;flex-shrink:0}
+#pwaInstallBanner.show{display:flex}
+#pwaInstallBanner button{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;font-family:var(--font);font-size:12px;font-weight:700;padding:5px 12px;border-radius:16px;cursor:pointer;white-space:nowrap}
+#pwaInstallBanner .pwa-close{background:none;border:none;color:rgba(255,255,255,.7);font-size:18px;cursor:pointer;margin-left:auto;padding:0 2px;line-height:1}

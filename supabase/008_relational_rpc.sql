@@ -55,16 +55,16 @@ BEGIN
 
   RETURN jsonb_build_object(
     'config', (SELECT row_to_json(c) FROM public.madrasa_config c WHERE id = 'singleton'),
-    'students', (SELECT jsonb_agg(row_to_json(s)) FROM public.students s ORDER BY s.waqf_id),
-    'messages', (SELECT jsonb_agg(row_to_json(m)) FROM public.messages m ORDER BY m.sent_at),
-    'tasks', (SELECT jsonb_agg(row_to_json(t)) FROM public.tasks t ORDER BY t.created_at),
+    'students', (SELECT jsonb_agg(row_to_json(s)) FROM (SELECT * FROM public.students ORDER BY waqf_id) s),
+    'messages', (SELECT jsonb_agg(row_to_json(m)) FROM (SELECT * FROM public.messages ORDER BY sent_at) m),
+    'tasks', (SELECT jsonb_agg(row_to_json(t)) FROM (SELECT * FROM public.tasks ORDER BY created_at) t),
     'task_assignments', (SELECT jsonb_agg(row_to_json(ta)) FROM public.task_assignments ta),
     'goals', (SELECT jsonb_agg(row_to_json(g)) FROM public.goals g),
-    'quizzes', (SELECT jsonb_agg(row_to_json(q)) FROM public.quizzes q ORDER BY q.created_at),
-    'quiz_questions', (SELECT jsonb_agg(row_to_json(qq)) FROM public.quiz_questions qq ORDER BY qq.quiz_id, qq.sort_order),
+    'quizzes', (SELECT jsonb_agg(row_to_json(q)) FROM (SELECT * FROM public.quizzes ORDER BY created_at) q),
+    'quiz_questions', (SELECT jsonb_agg(row_to_json(qq)) FROM (SELECT * FROM public.quiz_questions ORDER BY quiz_id, sort_order) qq),
     'quiz_assignees', (SELECT jsonb_agg(row_to_json(qa)) FROM public.quiz_assignees qa),
     'quiz_submissions', (SELECT jsonb_agg(row_to_json(qs)) FROM public.quiz_submissions qs),
-    'documents', (SELECT jsonb_agg(row_to_json(d)) FROM public.documents d ORDER BY d.uploaded_at DESC),
+    'documents', (SELECT jsonb_agg(row_to_json(d)) FROM (SELECT * FROM public.documents ORDER BY uploaded_at DESC) d),
     'academic_history', (SELECT jsonb_agg(row_to_json(ah)) FROM public.academic_history ah),
     'teacher_notes', (SELECT jsonb_agg(row_to_json(tn)) FROM public.teacher_notes tn)
   );
@@ -87,9 +87,9 @@ BEGIN
                FROM public.madrasa_config WHERE id = 'singleton'),
     'messages', (
       SELECT jsonb_agg(row_to_json(m))
-      FROM public.messages m
-      WHERE m.thread_id = v_student.id OR m.thread_id = '_bc'
-      ORDER BY m.sent_at
+      FROM (SELECT * FROM public.messages
+            WHERE thread_id = v_student.id OR thread_id = '_bc'
+            ORDER BY sent_at) m
     ),
     'tasks', (
       SELECT jsonb_agg(jsonb_build_object(
@@ -104,14 +104,14 @@ BEGIN
     'quizzes', (
       SELECT jsonb_agg(jsonb_build_object(
         'quiz', row_to_json(q),
-        'questions', (SELECT jsonb_agg(row_to_json(qq)) FROM public.quiz_questions qq WHERE qq.quiz_id = q.id ORDER BY qq.sort_order),
+        'questions', (SELECT jsonb_agg(row_to_json(qq)) FROM (SELECT * FROM public.quiz_questions WHERE quiz_id = q.id ORDER BY sort_order) qq),
         'submission', (SELECT row_to_json(qs) FROM public.quiz_submissions qs WHERE qs.quiz_id = q.id AND qs.student_id = v_student.id)
       ))
       FROM public.quiz_assignees qa
       JOIN public.quizzes q ON q.id = qa.quiz_id
       WHERE qa.student_id = v_student.id
     ),
-    'documents', (SELECT jsonb_agg(row_to_json(d)) FROM public.documents d WHERE d.student_id = v_student.id ORDER BY d.uploaded_at DESC),
+    'documents', (SELECT jsonb_agg(row_to_json(d)) FROM (SELECT * FROM public.documents WHERE student_id = v_student.id ORDER BY uploaded_at DESC) d),
     'academic_history', (SELECT jsonb_agg(row_to_json(ah)) FROM public.academic_history ah WHERE ah.student_id = v_student.id)
   );
 END;

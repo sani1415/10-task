@@ -35,7 +35,8 @@
   6. `006_relational_tables.sql` — 13 relational tables replacing `app_kv` blobs
   7. `007_relational_rls.sql` — RLS on all new tables (deny all direct REST)
   8. `008_relational_rpc.sql` — PIN-gated RPCs (`madrasa_rel_*` prefix); also needs `private` schema (`CREATE SCHEMA IF NOT EXISTS private`)
-  9. `009_data_migration.sql` — one-time copy of `app_kv` data into relational tables
+  9. `008b_fix_bootstrap_order_by.sql` — patches the two bootstrap RPCs to wrap ORDER BY in subqueries (PostgreSQL requires this inside `jsonb_agg` scalar subqueries)
+  10. `009_data_migration.sql` — one-time copy of `app_kv` data into relational tables
 - **Relational tables:** `madrasa_config`, `students`, `messages`, `tasks`, `task_assignments`, `goals`, `quizzes`, `quiz_questions`, `quiz_assignees`, `quiz_submissions`, `documents`, `academic_history`, `teacher_notes`, `pwa_subscriptions`. All have RLS enabled; zero direct REST access — everything goes through `madrasa_rel_*` RPCs.
 - **RPC functions (`madrasa_rel_*`, all `GRANT EXECUTE TO anon`):**
   - `madrasa_rel_public_branding()` — no PIN

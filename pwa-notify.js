@@ -23,24 +23,19 @@
 
   function saveSubscriptionToRemote(role, studentWaqf, subJson) {
     var RS = w.RemoteSync;
-    if (!RS || !RS.isRemote || !RS.isRemote() || !RS.flushKey) return Promise.resolve();
+    if (!RS || !RS.isRemote || !RS.isRemote()) return Promise.resolve();
     var sb = RS.getClient && RS.getClient();
     if (!sb) return Promise.resolve();
-    if (role === 'teacher') {
-      return RS.flushKey('pwa_push_teacher', {
-        subscription: subJson,
-        updatedAt: new Date().toISOString(),
-      });
-    }
-    if (role === 'student' && studentWaqf) {
-      var safe = String(studentWaqf).replace(/[^a-zA-Z0-9_]/g, '_');
-      return RS.flushKey('pwa_push_student_' + safe, {
-        subscription: subJson,
-        waqfId: studentWaqf,
-        updatedAt: new Date().toISOString(),
-      });
-    }
-    return Promise.resolve();
+    var id = role === 'teacher' ? 'teacher' : (studentWaqf ? String(studentWaqf) : null);
+    if (!id) return Promise.resolve();
+    // Save directly to pwa_subscriptions table via RPC (no PIN required)
+    return sb.rpc('madrasa_rel_save_pwa_subscription', {
+      p_id: id,
+      p_role: role,
+      p_subscription: subJson,
+    }).then(function (res) {
+      if (res.error) console.warn('MadrasaPwa sub save:', res.error);
+    });
   }
 
   async function enableAfterAuth(role, opts) {

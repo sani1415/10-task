@@ -252,7 +252,7 @@ const API = (() => {
     getShortId(s) {
       return s?.waqfId||null;
     },
-    getPendingForLockScreen(){ return _useRemote&&RS.mem&&Array.isArray(RS.mem.lockHints)?RS.mem.lockHints:this.getAll().filter(s=>Messages.unreadCount(s.id,'out')>0); },
+    getPendingForLockScreen(){ return _useRemote&&RS.mem&&Array.isArray(RS.mem.lockHints)?RS.mem.lockHints.filter(s=>(s.unreadCount||0)>0):this.getAll().filter(s=>Messages.unreadCount(s.id,'out')>0); },
 
     // Login lookup: accepts "001" or "waqf_001" (case-insensitive waqf_)
     getByWaqfShortId(raw) {
