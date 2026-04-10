@@ -608,7 +608,6 @@ const API = (() => {
         completedBy: {},
       };
       db.tasks.push(task); DB.save(db);
-      assigneeIds.forEach(sid=>Messages.sendTask(sid,task));
       return task;
     },
 

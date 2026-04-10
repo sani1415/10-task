@@ -399,7 +399,7 @@ function onLogin(){
   document.getElementById('hTitle').textContent=me.name;
   { const p=[]; if(me.waqfId) p.push(me.waqfId); if(me.cls) p.push(me.cls); document.getElementById('hSub').textContent=p.length?p.join(' · '):'ছাত্র'; }
   document.getElementById('wAvatar').textContent=me.name.charAt(0);
-  document.getElementById('wName').textContent='আস-সালামু আলাইকুম, '+me.name.split(' ')[0];
+  document.getElementById('wName').textContent='আস-সালামু আলাইকুম, '+me.name;
   document.getElementById('wCls').textContent=(me.waqfId?me.waqfId+' · ':'')+(me.cls||'')+(me.roll?' · রোল '+me.roll:'');
   renderAll();
   goTab('chat');
@@ -626,7 +626,6 @@ function renderExamList(){
             : `<span class="${sub.passed?'exam-done-chip':'exam-fail-chip'}">${sub.passed?'✅':'❌'} ${sub.score}/${sub.total} নম্বর · ${sub.passed?'পাস':'ফেল'}</span>`)
           : `<button class="exam-start-btn" onclick="startQuiz('${q.id}')">📝 পরীক্ষা দিন</button>`
         }
-        ${isDone?`<button onclick="startQuiz('${q.id}')" style="background:none;border:1px solid var(--gray-300);border-radius:16px;padding:5px 12px;font-size:12px;cursor:pointer;color:var(--gray-600)">পুনরায় দিন</button>`:''}
       </div>
     </div>`;
   }).join('');
@@ -697,7 +696,10 @@ function submitQuiz(){
   const answered=Object.keys(quizAnswers).length;
   const quiz=API.Exams.getQuizById(activeQuizId);
   const total=quiz?.questions?.length||0;
-  if(answered<total&&!confirm(`${answered}/${total}টি প্রশ্নের উত্তর দিয়েছেন। এখনই জমা দেবেন?`)) return;
+  const confirmMsg = answered<total
+    ? `${answered}/${total}টি প্রশ্নের উত্তর দিয়েছেন। এখনই জমা দেবেন?`
+    : 'পরীক্ষা জমা দেবেন?';
+  if(!confirm(confirmMsg)) return;
   const sub=API.Exams.submitQuiz(activeQuizId,me.id,quizAnswers);
   exitQuiz();
   if(sub.needsManualGrade){
