@@ -288,16 +288,23 @@
 <!-- ══ CHAT VIEW ══════════════════════════════════════════ -->
 <div class="chat-view" id="chatView">
   <div class="bc-notice" id="bcNotice">📢 গ্রুপ বার্তা — সবাইকে পাঠানো হবে</div>
-  <!-- Docs summary bar (shown only for 1:1 student chats) -->
-  <div class="chat-docs-bar" id="chatDocsBar" style="display:none" onclick="openChatDocsPanel()">
-    <div class="chat-docs-bar-thumb" id="chatDocsThumbs"></div>
-    <div class="chat-docs-bar-info">
-      <div class="chat-docs-bar-label" id="chatDocsLabel">ডকুমেন্টসমূহ</div>
-      <div class="chat-docs-bar-sub" id="chatDocsSub">ছাত্রের পাঠানো ফাইল</div>
-    </div>
-    <span class="chat-docs-bar-arrow">›</span>
+  <!-- In-chat student tabs (hidden for broadcast) -->
+  <div class="chat-student-tabs" id="chatStudentTabs" style="display:none">
+    <button class="cs-tab active" id="cst-msg"  onclick="switchChatTab('msg',this)">💬 বার্তা</button>
+    <button class="cs-tab"        id="cst-task" onclick="switchChatTab('task',this)">📋 টাস্ক</button>
+    <button class="cs-tab"        id="cst-doc"  onclick="switchChatTab('doc',this)">📁 ডকুমেন্ট</button>
+    <button class="cs-tab"        id="cst-exam" onclick="switchChatTab('exam',this)">📝 পরীক্ষা</button>
+    <button class="cs-tab"        id="cst-goal" onclick="switchChatTab('goal',this)">🎯 লক্ষ্য</button>
+    <button class="cs-tab"        id="cst-note" onclick="switchChatTab('note',this)">🗒️ নোট</button>
   </div>
+  <!-- Chat messages panel -->
   <div class="chat-messages" id="chatMsgs"></div>
+  <!-- Other student data panels -->
+  <div class="cs-panel" id="csp-task"  style="display:none"></div>
+  <div class="cs-panel" id="csp-doc"   style="display:none"></div>
+  <div class="cs-panel" id="csp-exam"  style="display:none"></div>
+  <div class="cs-panel" id="csp-goal"  style="display:none"></div>
+  <div class="cs-panel" id="csp-note"  style="display:none"></div>
   <!-- Teacher file preview bar -->
   <div class="chat-file-preview" id="chatFilePreview" style="display:none">
     <span id="chatFileIcon" style="font-size:22px">📎</span>
@@ -408,7 +415,7 @@
 <script src="pwa-notify.js"></script>
 <script>
 // ══ State ══════════════════════════════════════════════════
-let pin='', curTab='chats', curChat=null, tFilter='all', docFilter='all', editSid=null;
+let pin='', curTab='chats', curChat=null, curChatTab='msg', tFilter='all', docFilter='all', editSid=null;
 let newTaskType='daily';
 let examTab='list', docViewTab='received';
 let questions=[];
@@ -505,28 +512,15 @@ function openChat(id){
   document.getElementById('fab').style.display='none';
   document.getElementById('searchToggleBtn').style.display='none';
   document.getElementById('bcNotice').classList.toggle('show',isBC);
-  // Docs summary bar — only for 1:1 student chats
-  const docsBar=document.getElementById('chatDocsBar');
+  // Student tabs — only for 1:1 chats
+  const tabs=document.getElementById('chatStudentTabs');
   const attachBtn=document.getElementById('chatAttachBtn');
   if(!isBC){
-    const studentDocs=API.Docs.getForStudent(id);
-    if(studentDocs.length){
-      void (async ()=>{
-        const thumbs=(await Promise.all(studentDocs.slice(0,3).map(async d=>{
-          const data=await API.Docs.resolveFileUrl(d.id);
-          return data&&d.fileType?.startsWith('image/')
-            ? `<span><img src=${JSON.stringify(data)} alt=""></span>`
-            : `<span>${d.fileType==='application/pdf'?'📕':d.fileType?.includes('word')?'📝':'📎'}</span>`;
-        }))).join('');
-        document.getElementById('chatDocsThumbs').innerHTML=thumbs;
-      })();
-      document.getElementById('chatDocsLabel').textContent=`📎 ${studentDocs.length}টি ডকুমেন্ট`;
-      document.getElementById('chatDocsSub').textContent=`${s?.waqfId?s.waqfId+' · ':''}${s?.name||''}-এর পাঠানো ফাইল — ক্লিক করে দেখুন`;
-      docsBar.style.display='flex';
-    } else { docsBar.style.display='none'; }
+    tabs.style.display='flex';
     attachBtn.style.display='flex';
+    switchChatTab('msg', document.getElementById('cst-msg'));
   } else {
-    docsBar.style.display='none';
+    tabs.style.display='none';
     attachBtn.style.display='none';
   }
   document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
@@ -535,7 +529,7 @@ function openChat(id){
   setTimeout(()=>{ document.getElementById('chatMsgs').scrollTop=9e9; document.getElementById('msgIn').focus(); },50);
 }
 function closeChat(){
-  curChat=null; document.getElementById('chatView').classList.remove('open');
+  curChat=null; curChatTab='msg'; document.getElementById('chatView').classList.remove('open');
   document.getElementById('tabBar').style.display='flex'; document.getElementById('fab').style.display='flex';
   document.getElementById('backBtn').style.display='none';
   document.getElementById('searchToggleBtn').style.display='flex';
@@ -548,6 +542,105 @@ function closeChat(){
   renderChatList(); updateBadge();
 }
 function fileIcon(type){ return type?.startsWith('image/')?'🖼️':type==='application/pdf'?'📕':type?.includes('word')||type?.includes('doc')?'📝':type?.includes('sheet')||type?.includes('excel')?'📊':'📎'; }
+
+// ══ IN-CHAT STUDENT TABS ═══════════════════════════════
+function switchChatTab(tab,btn){
+  curChatTab=tab;
+  document.querySelectorAll('.cs-tab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  const panels=['task','doc','exam','goal','note'];
+  document.getElementById('chatMsgs').style.display=tab==='msg'?'flex':'none';
+  panels.forEach(p=>{ document.getElementById('csp-'+p).style.display=p===tab?'flex':'none'; });
+  document.getElementById('chatAttachBtn').style.display=tab==='msg'?'flex':'none';
+  document.getElementById('msgIn').placeholder=tab==='msg'?'বার্তা লিখুন...':'বার্তা লিখুন...';
+  if(!curChat) return;
+  if(tab==='msg') setTimeout(()=>document.getElementById('chatMsgs').scrollTop=9e9,30);
+  else if(tab==='task') renderChatTasks();
+  else if(tab==='doc')  renderChatDocs();
+  else if(tab==='exam') renderChatExams();
+  else if(tab==='goal') renderChatGoals();
+  else if(tab==='note') renderChatNotes();
+}
+function renderChatTasks(){
+  const el=document.getElementById('csp-task'); if(!el||!curChat) return;
+  const tasks=API.Tasks.getAll().filter(t=>t.assignees&&curChat in t.assignees);
+  if(!tasks.length){ el.innerHTML='<div class="csp-empty">📋 কোনো টাস্ক নেই।</div>'; return; }
+  const bm={done:'badge-done',pending:'badge-pending',late:'badge-late'};
+  const lm={done:'✅ সম্পন্ন',pending:'⏳ বকেয়া',late:'❌ দেরি'};
+  el.innerHTML=tasks.map(t=>{
+    const isDaily=t.type==='daily';
+    const st=isDaily?(API.Tasks.isDailyDoneToday(t,curChat)?'done':'pending'):(t.assignees[curChat]||'pending');
+    return `<div class="csp-task-card">
+      <div class="csp-task-title">${esc(t.title)}<span class="type-badge ${t.type}">${isDaily?'🔁 দৈনিক':'📌 এককালীন'}</span></div>
+      ${t.desc?`<div style="font-size:12px;color:var(--gray-500);line-height:1.4">${esc(t.desc)}</div>`:''}
+      <div class="csp-task-foot">
+        <span class="csp-task-meta">${isDaily?'🔄 প্রতিদিন':'📅 '+(t.deadline||'')}</span>
+        <span class="status-badge ${bm[st]||'badge-pending'}">${lm[st]||st}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+function renderChatDocs(){
+  const el=document.getElementById('csp-doc'); if(!el||!curChat) return;
+  const docs=API.Docs.getForStudent(curChat);
+  if(!docs.length){ el.innerHTML='<div class="csp-empty">📁 কোনো ডকুমেন্ট নেই।</div>'; return; }
+  el.innerHTML=docs.map(d=>`
+    <div class="csp-doc-item" onclick="teacherPreviewChatDoc('${d.id}',true);switchChatTab('doc',document.getElementById('cst-doc'))">
+      <span class="csp-doc-icon">${fileIcon(d.fileType)}</span>
+      <div class="csp-doc-info">
+        <div class="csp-doc-name">${esc(d.fileName)}</div>
+        <div class="csp-doc-meta">${d.uploadedAt?d.uploadedAt.slice(0,10):''}${d.note?' · '+esc(d.note):''}</div>
+      </div>
+      ${!d.read?'<div class="csp-doc-unread"></div>':''}
+    </div>`).join('');
+}
+function renderChatExams(){
+  const el=document.getElementById('csp-exam'); if(!el||!curChat) return;
+  const quizzes=API.Exams.getQuizzes().filter(q=>q.assigneeIds?.includes(curChat));
+  if(!quizzes.length){ el.innerHTML='<div class="csp-empty">📝 কোনো পরীক্ষা নেই।</div>'; return; }
+  el.innerHTML=quizzes.map(q=>{
+    const subs=API.Exams.getSubmissionsForQuiz(q.id);
+    const sub=subs.find(s=>s.studentId===curChat);
+    let statusHtml;
+    if(!sub) statusHtml=`<span class="status-badge badge-pending">⏳ জমা দেয়নি</span>`;
+    else if(sub.needsManualGrade) statusHtml=`<span class="status-badge badge-pending">✅ জমা · ফলাফল অপেক্ষায়</span>`;
+    else statusHtml=`<span class="status-badge ${sub.passed?'badge-done':'badge-late'}">${sub.passed?'✅':'❌'} ${sub.score}/${sub.total} · ${sub.passed?'পাস':'ফেল'}</span>`;
+    return `<div class="csp-exam-card">
+      <div class="csp-exam-title">${esc(q.title)}</div>
+      <div class="csp-exam-meta">${esc(q.subject||'')} · ${q.questions?.length||0}টি প্রশ্ন · ${q.timeLimit} মিনিট${q.deadline?' · 📅 '+q.deadline:''}</div>
+      ${statusHtml}
+      ${sub&&sub.needsManualGrade?`<div style="display:flex;align-items:center;gap:8px;margin-top:6px"><input class="marks-input" type="number" placeholder="নম্বর দিন" value="${sub.score||0}" min="0" max="${sub.total}" style="width:90px" onchange="API.Exams.updateScore('${sub.id}',parseInt(this.value)||0);renderChatExams();showToast('✅ নম্বর আপডেট')"><span style="font-size:12px;color:var(--gray-400)">/ ${sub.total}</span></div>`:''}
+    </div>`;
+  }).join('');
+}
+function renderChatGoals(){
+  const el=document.getElementById('csp-goal'); if(!el||!curChat) return;
+  const goals=API.Goals.getAll(curChat);
+  if(!goals.length){ el.innerHTML='<div class="csp-empty">🎯 কোনো লক্ষ্য নেই।</div>'; return; }
+  el.innerHTML=goals.map(g=>`
+    <div class="csp-goal-item">
+      <div class="csp-goal-check ${g.done?'done':''}" onclick="API.Goals.toggle('${curChat}','${g.id}');renderChatGoals()">${g.done?'✓':''}</div>
+      <div class="csp-goal-text ${g.done?'done':''}">${esc(g.title)}${g.deadline?`<span style="font-size:11px;color:var(--gray-400);display:block">📅 ${g.deadline}</span>`:''}</div>
+    </div>`).join('');
+}
+function renderChatNotes(){
+  const el=document.getElementById('csp-note'); if(!el||!curChat) return;
+  const notes=API.TeacherNotes.getAll(curChat);
+  el.innerHTML=(notes.length?notes.slice().reverse().map(n=>`
+    <div class="csp-note-item">
+      <div class="csp-note-body">${esc(n.text)}</div>
+      <div class="csp-note-time">${n.createdAt?n.createdAt.slice(0,10):''}</div>
+    </div>`).join(''):'<div class="csp-empty" style="padding:20px 0">🗒️ কোনো নোট নেই।</div>')
+  +`<div class="csp-note-add">
+      <textarea id="chatNoteInput" placeholder="নতুন নোট লিখুন..." rows="2"></textarea>
+      <button onclick="saveChatNote()">যোগ</button>
+    </div>`;
+}
+function saveChatNote(){
+  const inp=document.getElementById('chatNoteInput'); if(!inp||!curChat) return;
+  const text=inp.value.trim(); if(!text){ showToast('নোট লিখুন!'); return; }
+  API.TeacherNotes.add(curChat,text); inp.value=''; renderChatNotes(); showToast('✅ নোট সংরক্ষিত');
+}
 
 function renderMsgs(id){
   const msgs=API.Messages.getThread(id==='_broadcast'?'_bc':id);
@@ -639,9 +732,7 @@ async function sendTeacherChatFile(){
 }
 function openChatDocsPanel(){
   if(!curChat||curChat==='_broadcast') return;
-  closeChat(); goTab('docs'); renderDocsGrouped();
-  // Auto-open this student's group
-  setTimeout(()=>{ const grpEl=document.getElementById('grp_'+curChat); if(grpEl&&grpEl.style.display==='none') toggleDocGroup('grp_'+curChat,curChat); },100);
+  switchChatTab('doc', document.getElementById('cst-doc'));
 }
 function sendMsg(){
   if(!curChat) return;
