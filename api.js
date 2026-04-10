@@ -586,6 +586,7 @@ const API = (() => {
     },
     markRead(threadId,role='in') {
       const db=DB.get(); (db.chats[threadId]||[]).forEach(m=>{ if(m.role===role) m.read=true; }); DB.save(db);
+      if (_useRemote && RS.markMessagesReadRemote) RS.markMessagesReadRemote(threadId, role === 'in' ? 'teacher' : 'student');
     },
     // Teacher opened a student's chat → mark student messages as read (→ double tick on student)
     markReadByTeacher(sid) { this.markRead(sid,'in'); },

@@ -22,6 +22,7 @@ var LOCAL_SHELL = [
   'student.html',
   'style.css',
   'api.js',
+  'remote-sync-write.js',
   'remote-sync.js',
   'pdf-merge.js',
   'pwa-notify.js',

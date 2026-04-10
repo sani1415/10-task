@@ -11,51 +11,16 @@ function jsonResponse(obj: unknown, status = 200) {
   });
 }
 
-function isSubscriptionKvKey(key: string) {
-  return key === "pwa_push_teacher" || key.startsWith("pwa_push_student_");
-}
-
 type SubJson = { endpoint?: string; keys?: { p256dh?: string; auth?: string } };
-type SubRow = { key: string; value: unknown };
 
 function pickSubscription(v: unknown): SubJson | null {
   if (!v || typeof v !== "object") return null;
-  const o = v as { subscription?: SubJson };
-  const s = o.subscription;
-  if (s && typeof s.endpoint === "string" && s.endpoint.length > 0) return s;
+  const o = v as { subscription?: SubJson; endpoint?: string; keys?: unknown };
+  // pwa_subscriptions table: { subscription: { endpoint, keys } }
+  if (o.subscription && typeof (o.subscription as SubJson).endpoint === "string") return o.subscription as SubJson;
+  // app_kv legacy: value is the subscription object directly or wrapped
+  if (typeof o.endpoint === "string" && o.endpoint.length > 0) return o as SubJson;
   return null;
-}
-
-/**
- * Decide who triggered the change and who should be notified.
- *
- * Keys written ONLY by students: core (chat/task status), goals, exams, docs_meta, academic, tnotes
- * Keys written ONLY by teacher:  core (teacher writes tasks/students), goals (teacher can set), exams,
- *                                 docs_meta, academic, tnotes, teacher_pin
- *
- * Because both sides write to "core" we look at the OLD vs NEW value to guess the actor,
- * but that's complex. Instead we use a simpler rule:
- *   - "tnotes" / "teacher_pin" → only teacher writes → notify STUDENTS
- *   - all other keys (core, goals, exams, docs_meta, academic) → could be either →
- *     notify BOTH sides (teacher + students) but use a different message body per audience.
- *
- * This means teacher always sees a ping when data changes (even their own saves) but
- * students only see a ping when relevant teacher-side keys change.
- * For a small cohort this is acceptable and simple.
- */
-function resolveAudience(key: string): "teacher_only" | "students_only" | "both" {
-  if (key === "tnotes" || key === "teacher_pin") return "students_only";
-  // "core" contains chat messages + tasks + student list — both sides care
-  return "both";
-}
-
-function makePayload(title: string, body: string, key: string, target: "teacher" | "student"): string {
-  return JSON.stringify({
-    title,
-    body,
-    url: target === "teacher" ? "./teacher.html" : "./student.html",
-    tag: "kv-" + target + "-" + key.slice(0, 30),
-  });
 }
 
 async function sendPush(sub: SubJson, payload: string, vapidPublic: string, vapidPrivate: string) {
@@ -67,6 +32,63 @@ async function sendPush(sub: SubJson, payload: string, vapidPublic: string, vapi
   );
 }
 
+function makePayload(body: string, target: "teacher" | "student", tag: string): string {
+  return JSON.stringify({
+    title: "Waqful Madinah",
+    body,
+    url: target === "teacher" ? "./teacher.html" : "./student.html",
+    tag,
+  });
+}
+
+// ── Subscription lookup from pwa_subscriptions (new) + app_kv fallback ───────
+async function getTeacherSub(sb: ReturnType<typeof createClient>): Promise<SubJson | null> {
+  // Try new pwa_subscriptions table first
+  const { data: rel } = await sb
+    .from("pwa_subscriptions").select("subscription").eq("id", "teacher").maybeSingle();
+  if (rel?.subscription) {
+    const s = pickSubscription({ subscription: rel.subscription });
+    if (s) return s;
+  }
+  // Fallback: legacy app_kv
+  const { data: kv } = await sb
+    .from("app_kv").select("value").eq("key", "pwa_push_teacher").maybeSingle();
+  return kv?.value ? pickSubscription(kv.value) : null;
+}
+
+async function getAllStudentSubs(sb: ReturnType<typeof createClient>): Promise<SubJson[]> {
+  const subs: SubJson[] = [];
+  // New table
+  const { data: relRows } = await sb
+    .from("pwa_subscriptions").select("subscription").eq("role", "student");
+  for (const row of relRows || []) {
+    const s = pickSubscription({ subscription: row.subscription });
+    if (s) subs.push(s);
+  }
+  // Legacy app_kv fallback (deduplicate by endpoint)
+  const endpoints = new Set(subs.map((s) => s.endpoint));
+  const { data: kvRows } = await sb
+    .from("app_kv").select("value").like("key", "pwa_push_student_%");
+  for (const row of kvRows || []) {
+    const s = pickSubscription(row.value);
+    if (s && s.endpoint && !endpoints.has(s.endpoint)) { subs.push(s); endpoints.add(s.endpoint); }
+  }
+  return subs;
+}
+
+async function getStudentSubByWaqf(sb: ReturnType<typeof createClient>, waqfId: string): Promise<SubJson | null> {
+  const { data: rel } = await sb
+    .from("pwa_subscriptions").select("subscription").eq("id", waqfId).maybeSingle();
+  if (rel?.subscription) {
+    const s = pickSubscription({ subscription: rel.subscription });
+    if (s) return s;
+  }
+  const { data: kv } = await sb
+    .from("app_kv").select("value").eq("key", `pwa_push_student_${waqfId}`).maybeSingle();
+  return kv?.value ? pickSubscription(kv.value) : null;
+}
+
+// ── Main handler ──────────────────────────────────────────────────────────────
 Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return jsonResponse({ error: "method_not_allowed" }, 405);
 
@@ -85,98 +107,88 @@ Deno.serve(async (req: Request) => {
   }
 
   let body: Record<string, unknown>;
-  try {
-    body = await req.json();
-  } catch {
-    return jsonResponse({ error: "invalid_json" }, 400);
-  }
+  try { body = await req.json(); }
+  catch { return jsonResponse({ error: "invalid_json" }, 400); }
 
   const table = String(body.table || "");
-  if (table !== "app_kv") return jsonResponse({ ok: true, skipped: "not_app_kv" });
-
-  const record = body.record as Record<string, unknown> | undefined;
-  const key = record?.key != null ? String(record.key) : "";
-  if (isSubscriptionKvKey(key)) {
-    return jsonResponse({ ok: true, skipped: "subscription_key" });
-  }
-
-  // Only notify for the 'core' key (chat messages). All other keys — docs_meta,
-  // goals, exams, academic, tnotes, teacher_pin — are silent background writes.
-  if (key !== "core") {
-    return jsonResponse({ ok: true, skipped: "non_chat_key" });
-  }
-
-  // Within 'core', only notify when _notifyAt changed — prevents spurious
-  // notifications from silent writes like markRead or resetDailyForToday.
-  const oldVal = (body.old_record as Record<string, unknown> | undefined)?.value as Record<string, unknown> | undefined;
-  const newVal = record?.value as Record<string, unknown> | undefined;
-  const oldNAt = oldVal?._notifyAt ?? null;
-  const newNAt = newVal?._notifyAt ?? null;
-  if (!newNAt || newNAt === oldNAt) {
-    return jsonResponse({ ok: true, skipped: "no_notify_event" });
-  }
-
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const sb = createClient(supabaseUrl, serviceKey);
 
-  const { data: teacherRow } = await sb
-    .from("app_kv").select("value").eq("key", "pwa_push_teacher").maybeSingle();
-  const { data: studentRows } = await sb
-    .from("app_kv").select("key,value").like("key", "pwa_push_student_%");
-
-  const teacherSub = teacherRow?.value ? pickSubscription(teacherRow.value) : null;
-  const studentSubs: SubJson[] = (studentRows as SubRow[] || [])
-    .map((r) => pickSubscription(r.value))
-    .filter((s): s is SubJson => s !== null);
-
-  const audience = resolveAudience(key);
-
-  // Notification text per audience
-  const teacherPayload = makePayload(
-    "Waqful Madinah",
-    "ছাত্রের নতুন আপডেট এসেছে।",
-    key,
-    "teacher"
-  );
-  const studentPayload = makePayload(
-    "Waqful Madinah",
-    "শিক্ষকের নতুন আপডেট এসেছে। অ্যাপ খুলুন।",
-    key,
-    "student"
-  );
-
-  let sent = 0;
-  let failed = 0;
+  let sent = 0, failed = 0;
 
   async function trySend(sub: SubJson, payload: string) {
-    try {
-      await sendPush(sub, payload, vapidPublic, vapidPrivate);
-      sent++;
-    } catch (e) {
-      console.error("push failed", sub.endpoint?.slice(0, 48), e);
-      failed++;
-    }
+    try { await sendPush(sub, payload, vapidPublic, vapidPrivate); sent++; }
+    catch (e) { console.error("push failed", sub.endpoint?.slice(0, 48), e); failed++; }
   }
 
-  // Deduplicate: if teacher's push endpoint is also stored under a student key
-  // (happens when teacher opened student.html on the same device), skip that
-  // student entry so the teacher device doesn't receive two notifications.
+  // ── NEW: messages table webhook ───────────────────────────────
+  if (table === "messages") {
+    const record = body.record as Record<string, unknown> | undefined;
+    if (!record) return jsonResponse({ ok: true, skipped: "no_record" });
+
+    const msgRole = String(record.role || "");   // 'in' = student→teacher, 'out' = teacher→student
+    const threadId = String(record.thread_id || "");
+
+    if (msgRole === "in") {
+      // Student sent a message → notify teacher
+      const teacherSub = await getTeacherSub(sb);
+      if (teacherSub) await trySend(teacherSub,
+        makePayload("ছাত্রের নতুন বার্তা এসেছে।", "teacher", "msg-in-teacher"));
+    } else if (msgRole === "out") {
+      if (threadId === "_bc") {
+        // Broadcast → notify all students
+        const allSubs = await getAllStudentSubs(sb);
+        for (const sub of allSubs)
+          await trySend(sub, makePayload("শিক্ষকের নতুন বার্তা এসেছে।", "student", "msg-out-bc"));
+      } else {
+        // Teacher → specific student: look up student's waqf_id
+        const { data: stu } = await sb
+          .from("students").select("waqf_id").eq("id", threadId).maybeSingle();
+        const waqfId = stu?.waqf_id ? String(stu.waqf_id) : null;
+        if (waqfId) {
+          const sub = await getStudentSubByWaqf(sb, waqfId);
+          if (sub) await trySend(sub,
+            makePayload("শিক্ষকের নতুন বার্তা এসেছে। অ্যাপ খুলুন।", "student", `msg-out-${waqfId}`));
+        }
+      }
+    }
+
+    return jsonResponse({ ok: true, table: "messages", sent, failed });
+  }
+
+  // ── LEGACY: app_kv webhook (kept for transition period) ───────
+  if (table !== "app_kv") return jsonResponse({ ok: true, skipped: "unknown_table" });
+
+  const record = body.record as Record<string, unknown> | undefined;
+  const key = record?.key != null ? String(record.key) : "";
+
+  // Skip subscription keys — they are not data events
+  if (key === "pwa_push_teacher" || key.startsWith("pwa_push_student_")) {
+    return jsonResponse({ ok: true, skipped: "subscription_key" });
+  }
+  // Only notify on 'core' (chat messages marked with _notifyAt)
+  if (key !== "core") return jsonResponse({ ok: true, skipped: "non_chat_key" });
+
+  const oldVal = (body.old_record as Record<string, unknown> | undefined)?.value as Record<string, unknown> | undefined;
+  const newVal = record?.value as Record<string, unknown> | undefined;
+  if (!newVal?._notifyAt || newVal._notifyAt === oldVal?._notifyAt) {
+    return jsonResponse({ ok: true, skipped: "no_notify_event" });
+  }
+
+  const teacherSub = await getTeacherSub(sb);
+  const allStudentSubs = await getAllStudentSubs(sb);
   const teacherEndpoint = teacherSub?.endpoint ?? null;
-  const dedupedStudentSubs = studentSubs.filter(
+  const dedupedStudentSubs = allStudentSubs.filter(
     (s) => !teacherEndpoint || s.endpoint !== teacherEndpoint
   );
 
-  if (audience === "both" || audience === "students_only") {
-    for (const sub of dedupedStudentSubs) await trySend(sub, studentPayload);
-  }
-  if (audience === "both" || audience === "teacher_only") {
-    if (teacherSub) await trySend(teacherSub, teacherPayload);
-  }
+  for (const sub of dedupedStudentSubs)
+    await trySend(sub, makePayload("শিক্ষকের নতুন আপডেট এসেছে। অ্যাপ খুলুন।", "student", `kv-student-${key}`));
+  if (teacherSub)
+    await trySend(teacherSub, makePayload("ছাত্রের নতুন আপডেট এসেছে।", "teacher", `kv-teacher-${key}`));
 
-  return jsonResponse({ ok: true, sent, failed,
+  return jsonResponse({ ok: true, table: "app_kv", sent, failed,
     teacher_targets: teacherSub ? 1 : 0,
-    student_targets: dedupedStudentSubs.length,
-    audience,
-  });
+    student_targets: dedupedStudentSubs.length });
 });
