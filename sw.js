@@ -104,10 +104,12 @@ self.addEventListener('fetch', function (e) {
   e.respondWith(
     fetch(e.request)
       .then(function (res) {
-        if (res && res.ok)
+        if (res && res.ok) {
+          var copy = res.clone();
           caches.open(CACHE).then(function (c) {
-            c.put(e.request, res.clone());
+            c.put(e.request, copy);
           });
+        }
         return res;
       })
       .catch(function () {
