@@ -28,7 +28,7 @@ async function sendPush(sub: SubJson, payload: string, vapidPublic: string, vapi
   await webPush.sendNotification(
     sub as Parameters<typeof webPush.sendNotification>[0],
     payload,
-    { TTL: 3600 }
+    { TTL: 3600, urgency: "high" }
   );
 }
 
