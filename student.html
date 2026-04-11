@@ -848,6 +848,8 @@ window.addEventListener('storage', e => {
 document.addEventListener('visibilitychange', () => {
   if(document.visibilityState==='visible') {
     if('clearAppBadge' in navigator) navigator.clearAppBadge();
+    if(navigator.serviceWorker && navigator.serviceWorker.controller)
+      navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_BADGE' });
     API.Tasks.resetDailyForToday();
     if(me) renderAll();
     else Promise.resolve(API.refreshStudentLockHints()).then(()=>renderPendingSection());

@@ -1,5 +1,5 @@
 /* Waqful Madinah — full-app shell cache + Web Push display */
-var CACHE = 'waqful-full-v3';
+var CACHE = 'waqful-full-v4';
 
 var CDN_ASSETS = [
   'https://unpkg.com/@supabase/supabase-js@2.49.8/dist/umd/supabase.js',
@@ -118,6 +118,61 @@ self.addEventListener('fetch', function (e) {
   );
 });
 
+// ── Badge tracking via IndexedDB (persists across SW restarts) ────────────────
+function _idbOpen() {
+  return new Promise(function (res, rej) {
+    var r = indexedDB.open('waqful-badge', 1);
+    r.onupgradeneeded = function (e) { e.target.result.createObjectStore('counts'); };
+    r.onsuccess = function (e) { res(e.target.result); };
+    r.onerror = function () { rej(r.error); };
+  });
+}
+function _idbGet(tag) {
+  return _idbOpen().then(function (db) {
+    return new Promise(function (res) {
+      var tx = db.transaction('counts', 'readonly');
+      var req = tx.objectStore('counts').get(tag);
+      req.onsuccess = function () { res(req.result || 0); };
+      req.onerror = function () { res(0); };
+    });
+  }).catch(function () { return 0; });
+}
+function _idbSet(tag, n) {
+  return _idbOpen().then(function (db) {
+    return new Promise(function (res) {
+      var tx = db.transaction('counts', 'readwrite');
+      var store = tx.objectStore('counts');
+      if (n <= 0) store.delete(tag); else store.put(n, tag);
+      tx.oncomplete = function () { res(); };
+      tx.onerror = function () { res(); };
+    });
+  }).catch(function () {});
+}
+function _idbTotal() {
+  return _idbOpen().then(function (db) {
+    return new Promise(function (res) {
+      var tx = db.transaction('counts', 'readonly');
+      var req = tx.objectStore('counts').getAll();
+      req.onsuccess = function () {
+        var total = (req.result || []).reduce(function (s, n) { return s + n; }, 0);
+        res(total);
+      };
+      req.onerror = function () { res(0); };
+    });
+  }).catch(function () { return 0; });
+}
+function _idbClear() {
+  return _idbOpen().then(function (db) {
+    return new Promise(function (res) {
+      var tx = db.transaction('counts', 'readwrite');
+      tx.objectStore('counts').clear();
+      tx.oncomplete = function () { res(); };
+      tx.onerror = function () { res(); };
+    });
+  }).catch(function () {});
+}
+
+// ── Push notification ─────────────────────────────────────────────────────────
 self.addEventListener('push', function (e) {
   var title = 'Waqful Madinah';
   var body = 'নতুন আপডেট আছে।';
@@ -135,38 +190,46 @@ self.addEventListener('push', function (e) {
       if (t) body = t.slice(0, 200);
     }
   }
+  var _body = body;
+  var _tag = tag;
   e.waitUntil(
-    self.registration.getNotifications().then(function (existing) {
-      // A new tag replaces an existing notification with the same tag, so
-      // subtract any existing notification that shares this tag before counting.
-      var sameTag = existing.filter(function (n) { return n.tag === tag; }).length;
-      var newCount = existing.length - sameTag + 1;
-      return self.registration.showNotification(title, {
-        body: body,
-        icon: absLocal('icons/icon-192.png'),
-        badge: absLocal('icons/icon-192.png'),
-        tag: tag,
-        renotify: true,
-        silent: false,
-        vibrate: [200, 100, 200],
-        data: { url: openUrl },
-      }).then(function () {
-        if ('setAppBadge' in navigator) return navigator.setAppBadge(newCount);
+    _idbGet(_tag).then(function (prev) {
+      var tagCount = prev + 1;
+      return _idbSet(_tag, tagCount).then(function () {
+        return _idbTotal();
+      }).then(function (total) {
+        // Show count in body when multiple messages from same sender
+        var displayBody = tagCount > 1
+          ? _body + ' (' + tagCount + 'টি নতুন)'
+          : _body;
+        return self.registration.showNotification(title, {
+          body: displayBody,
+          icon: absLocal('icons/icon-192.png'),
+          badge: absLocal('icons/icon-192.png'),
+          tag: _tag,
+          renotify: true,
+          silent: false,
+          vibrate: [200, 100, 200],
+          data: { url: openUrl, tag: _tag },
+        }).then(function () {
+          if ('setAppBadge' in navigator) return navigator.setAppBadge(total);
+        });
       });
     })
   );
 });
 
+// ── Notification click ────────────────────────────────────────────────────────
 self.addEventListener('notificationclick', function (e) {
   e.notification.close();
-  var clickedTag = e.notification.tag;
+  var clickedTag = (e.notification.data && e.notification.data.tag) || e.notification.tag;
   var url = (e.notification.data && e.notification.data.url) || absLocal('index.html');
   e.waitUntil(
-    self.registration.getNotifications().then(function (remaining) {
-      // close() is synchronous but getNotifications may still list it; filter it out
-      var n = remaining.filter(function (r) { return r.tag !== clickedTag; }).length;
+    _idbSet(clickedTag, 0).then(function () {
+      return _idbTotal();
+    }).then(function (remaining) {
       if ('setAppBadge' in navigator) {
-        return n > 0 ? navigator.setAppBadge(n) : navigator.clearAppBadge();
+        return remaining > 0 ? navigator.setAppBadge(remaining) : navigator.clearAppBadge();
       }
     }).then(function () {
       return self.clients.matchAll({ type: 'window', includeUncontrolled: true });
@@ -178,4 +241,13 @@ self.addEventListener('notificationclick', function (e) {
       if (self.clients.openWindow) return self.clients.openWindow(url);
     })
   );
+});
+
+// ── Message from page: clear all badge counts when app is opened ──────────────
+self.addEventListener('message', function (e) {
+  if (e.data && e.data.type === 'CLEAR_BADGE') {
+    _idbClear().then(function () {
+      if ('clearAppBadge' in navigator) navigator.clearAppBadge();
+    });
+  }
 });
