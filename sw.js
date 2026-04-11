@@ -159,10 +159,18 @@ self.addEventListener('push', function (e) {
 
 self.addEventListener('notificationclick', function (e) {
   e.notification.close();
-  if ('clearAppBadge' in navigator) navigator.clearAppBadge();
+  var clickedTag = e.notification.tag;
   var url = (e.notification.data && e.notification.data.url) || absLocal('index.html');
   e.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (list) {
+    self.registration.getNotifications().then(function (remaining) {
+      // close() is synchronous but getNotifications may still list it; filter it out
+      var n = remaining.filter(function (r) { return r.tag !== clickedTag; }).length;
+      if ('setAppBadge' in navigator) {
+        return n > 0 ? navigator.setAppBadge(n) : navigator.clearAppBadge();
+      }
+    }).then(function () {
+      return self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    }).then(function (list) {
       for (var i = 0; i < list.length; i++) {
         var c = list[i];
         if (c.url && 'focus' in c) return c.focus();

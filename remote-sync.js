@@ -365,6 +365,14 @@
     return { fileUrl: res, storagePath: null };
   }
 
+  async function clearStudentDataRemote(sid) {
+    if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
+    const sb = getClient(); if (!sb) return;
+    try {
+      await sb.rpc('madrasa_rel_clear_student_data', { p_teacher_pin: _teacherPin, p_student_id: sid });
+    } catch (e) { console.warn('clearStudentDataRemote:', e); }
+  }
+
   async function deleteStudentRemote(sid) {
     if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
     const sb = getClient(); if (!sb) return;
@@ -381,7 +389,7 @@
     unlockTeacherWithPin, unlockStudentWithWaqfPin,
     refreshStudentLockHints,
     schedule, flushKey, flushAllFromMem,
-    markMessagesReadRemote, deleteStudentRemote,
+    markMessagesReadRemote, clearStudentDataRemote, deleteStudentRemote,
     uploadFile, getSignedUrlForPath, consumeUploadResult,
     BUCKET, startRealtimeSync,
   };

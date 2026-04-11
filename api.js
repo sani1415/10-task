@@ -300,6 +300,8 @@ const API = (() => {
     /** ছাত্র সারি অপরিবর্তিত; চ্যাট, টাস্ক, পরীক্ষা, ডক, লক্ষ্য, একাডেমিক, নোট মুছে। */
     clearAllRelatedData(sid) {
       if (!this.getById(sid)) throw new Error('student_not_found');
+      // Delete all related rows from the remote DB first (before local changes)
+      if (_useRemote && RS.clearStudentDataRemote) RS.clearStudentDataRemote(sid);
       const db0 = DB.get();
       db0.chats[sid] = [];
       DB.save(db0);

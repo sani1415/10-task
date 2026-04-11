@@ -116,10 +116,31 @@ Deno.serve(async (req: Request) => {
   const sb = createClient(supabaseUrl, serviceKey);
 
   let sent = 0, failed = 0;
+  const staleEndpoints: string[] = [];
 
   async function trySend(sub: SubJson, payload: string) {
-    try { await sendPush(sub, payload, vapidPublic, vapidPrivate); sent++; }
-    catch (e) { console.error("push failed", sub.endpoint?.slice(0, 48), e); failed++; }
+    try {
+      await sendPush(sub, payload, vapidPublic, vapidPrivate);
+      sent++;
+      console.log("push ok", sub.endpoint?.slice(-30));
+    } catch (e: unknown) {
+      const status = (e as { statusCode?: number })?.statusCode;
+      console.error("push failed", status, sub.endpoint?.slice(-30), String(e));
+      failed++;
+      // 410 Gone or 404 = subscription expired/invalid — mark for removal
+      if (status === 410 || status === 404) {
+        if (sub.endpoint) staleEndpoints.push(sub.endpoint);
+      }
+    }
+  }
+
+  async function removeStaleSubscriptions() {
+    if (!staleEndpoints.length) return;
+    for (const ep of staleEndpoints) {
+      await sb.from("pwa_subscriptions").delete()
+        .filter("subscription->>'endpoint'", "eq", ep);
+    }
+    console.log("removed stale subs:", staleEndpoints.length);
   }
 
   // ── NEW: messages table webhook ───────────────────────────────
@@ -154,6 +175,7 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    await removeStaleSubscriptions();
     return jsonResponse({ ok: true, table: "messages", sent, failed });
   }
 
@@ -188,6 +210,7 @@ Deno.serve(async (req: Request) => {
   if (teacherSub)
     await trySend(teacherSub, makePayload("ছাত্রের নতুন আপডেট এসেছে।", "teacher", `kv-teacher-${key}`));
 
+  await removeStaleSubscriptions();
   return jsonResponse({ ok: true, table: "app_kv", sent, failed,
     teacher_targets: teacherSub ? 1 : 0,
     student_targets: dedupedStudentSubs.length });
