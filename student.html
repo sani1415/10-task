@@ -851,9 +851,13 @@ document.addEventListener('visibilitychange', () => {
     if(navigator.serviceWorker && navigator.serviceWorker.controller)
       navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_BADGE' });
     API.Tasks.resetDailyForToday();
-    if(me) renderAll();
+    if(typeof RemoteSync !== 'undefined' && RemoteSync.pullRemoteSnapshot) RemoteSync.pullRemoteSnapshot();
+    else if(me) renderAll();
     else Promise.resolve(API.refreshStudentLockHints()).then(()=>renderPendingSection());
   }
+});
+if(navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', function(e){
+  if(e.data && e.data.type==='REFRESH_DATA' && typeof RemoteSync!=='undefined' && RemoteSync.pullRemoteSnapshot) RemoteSync.pullRemoteSnapshot();
 });
 </script>
 <script>

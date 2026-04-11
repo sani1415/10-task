@@ -153,24 +153,30 @@ Deno.serve(async (req: Request) => {
 
     if (msgRole === "in") {
       // Student sent a message → notify teacher (tag per thread so each student stacks separately)
+      const { data: stuInfo } = await sb
+        .from("students").select("name").eq("id", threadId).maybeSingle();
+      const studentName = stuInfo?.name ? String(stuInfo.name) : "ছাত্র";
       const teacherSub = await getTeacherSub(sb);
       if (teacherSub) await trySend(teacherSub,
-        makePayload("ছাত্রের নতুন বার্তা এসেছে।", "teacher", `msg-in-${threadId}`));
+        makePayload(`${studentName}: নতুন বার্তা পাঠিয়েছে।`, "teacher", `msg-in-${threadId}`));
     } else if (msgRole === "out") {
       if (threadId === "_bc") {
-        // Broadcast → notify all students
+        // Broadcast → notify all students (no name needed)
         const allSubs = await getAllStudentSubs(sb);
         for (const sub of allSubs)
           await trySend(sub, makePayload("শিক্ষকের নতুন বার্তা এসেছে।", "student", "msg-out-bc"));
       } else {
-        // Teacher → specific student: look up student's waqf_id
+        // Teacher → specific student: look up student's name and waqf_id
         const { data: stu } = await sb
-          .from("students").select("waqf_id").eq("id", threadId).maybeSingle();
+          .from("students").select("name, waqf_id").eq("id", threadId).maybeSingle();
         const waqfId = stu?.waqf_id ? String(stu.waqf_id) : null;
+        const studentName = stu?.name ? String(stu.name) : null;
         if (waqfId) {
           const sub = await getStudentSubByWaqf(sb, waqfId);
-          if (sub) await trySend(sub,
-            makePayload("শিক্ষকের নতুন বার্তা এসেছে। অ্যাপ খুলুন।", "student", `msg-out-${waqfId}`));
+          const body = studentName
+            ? `${studentName}, শিক্ষকের নতুন বার্তা এসেছে।`
+            : "শিক্ষকের নতুন বার্তা এসেছে।";
+          if (sub) await trySend(sub, makePayload(body, "student", `msg-out-${waqfId}`));
         }
       }
     }

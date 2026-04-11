@@ -486,7 +486,10 @@ function renderAll(){ renderChatList(); renderStudentList(); renderTaskList(); r
 
 // ══ CHAT LIST ══════════════════════════════════════════════
 function renderChatList(f=''){
-  const students=API.Students.getAll().filter(s=>!f||s.name.toLowerCase().includes(f.toLowerCase())||(s.waqfId&&s.waqfId.toLowerCase().includes(f.toLowerCase())));
+  const msgTs=s=>{ const m=API.Messages.getThread(s.id); if(!m.length) return 0; const last=m[m.length-1]; return last._ts||parseInt(last.id.slice(1))||0; };
+  const students=API.Students.getAll()
+    .filter(s=>!f||s.name.toLowerCase().includes(f.toLowerCase())||(s.waqfId&&s.waqfId.toLowerCase().includes(f.toLowerCase())))
+    .sort((a,b)=>msgTs(b)-msgTs(a));
   let h='';
   if(!f){ const bc=API.Messages.getThread('_bc'); const last=bc[bc.length-1];
     h+=`<div class="chat-item" onclick="openChat('_broadcast')"><div class="chat-avatar" style="background:#7B1FA2">📢</div><div class="chat-body"><div class="chat-row1"><span class="chat-name">📢 সবাইকে বার্তা</span><span class="chat-time">${last?.time||''}</span></div><div class="chat-row2"><span class="chat-preview">${esc(last?.text||'গ্রুপ বার্তা')}</span></div></div></div>`; }
@@ -1475,7 +1478,11 @@ document.addEventListener('visibilitychange', () => {
     if('clearAppBadge' in navigator) navigator.clearAppBadge();
     if(navigator.serviceWorker && navigator.serviceWorker.controller)
       navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_BADGE' });
+    if(typeof RemoteSync !== 'undefined' && RemoteSync.pullRemoteSnapshot) RemoteSync.pullRemoteSnapshot();
   }
+});
+if(navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', function(e){
+  if(e.data && e.data.type==='REFRESH_DATA' && typeof RemoteSync!=='undefined' && RemoteSync.pullRemoteSnapshot) RemoteSync.pullRemoteSnapshot();
 });
 
 init();

@@ -65,6 +65,7 @@
     return { id: m.id, role: m.role, type: m.type || 'text', text: m.text || '',
       read: m.is_read || false,
       time: m.sent_at ? new Date(m.sent_at).toTimeString().slice(0, 5) : '',
+      _ts: m.sent_at ? new Date(m.sent_at).getTime() : 0,
       ...(m.extra && typeof m.extra === 'object' ? m.extra : {}) };
   }
 
@@ -391,6 +392,6 @@
     schedule, flushKey, flushAllFromMem,
     markMessagesReadRemote, clearStudentDataRemote, deleteStudentRemote,
     uploadFile, getSignedUrlForPath, consumeUploadResult,
-    BUCKET, startRealtimeSync,
+    BUCKET, startRealtimeSync, pullRemoteSnapshot,
   };
 })(typeof window !== 'undefined' ? window : globalThis);

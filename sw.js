@@ -1,5 +1,5 @@
 /* Waqful Madinah — full-app shell cache + Web Push display */
-var CACHE = 'waqful-full-v4';
+var CACHE = 'waqful-full-v6';
 
 var CDN_ASSETS = [
   'https://unpkg.com/@supabase/supabase-js@2.49.8/dist/umd/supabase.js',
@@ -212,7 +212,12 @@ self.addEventListener('push', function (e) {
           vibrate: [200, 100, 200],
           data: { url: openUrl, tag: _tag },
         }).then(function () {
-          if ('setAppBadge' in navigator) return navigator.setAppBadge(total);
+          if ('setAppBadge' in navigator) navigator.setAppBadge(total);
+          // Tell any open page to refresh data immediately
+          return self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+            .then(function (clients) {
+              clients.forEach(function (c) { c.postMessage({ type: 'REFRESH_DATA' }); });
+            });
         });
       });
     })
@@ -236,7 +241,11 @@ self.addEventListener('notificationclick', function (e) {
     }).then(function (list) {
       for (var i = 0; i < list.length; i++) {
         var c = list[i];
-        if (c.url && 'focus' in c) return c.focus();
+        if (c.url && 'focus' in c) {
+          return c.focus().then(function (fc) {
+            if (fc) fc.postMessage({ type: 'REFRESH_DATA' });
+          });
+        }
       }
       if (self.clients.openWindow) return self.clients.openWindow(url);
     })
