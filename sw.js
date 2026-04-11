@@ -136,17 +136,23 @@ self.addEventListener('push', function (e) {
     }
   }
   e.waitUntil(
-    self.registration.showNotification(title, {
-      body: body,
-      icon: absLocal('icons/icon-192.png'),
-      badge: absLocal('icons/icon-192.png'),
-      tag: tag,
-      renotify: true,
-      silent: false,
-      vibrate: [200, 100, 200],
-      data: { url: openUrl },
-    }).then(function () {
-      if ('setAppBadge' in navigator) return navigator.setAppBadge(1);
+    self.registration.getNotifications().then(function (existing) {
+      // A new tag replaces an existing notification with the same tag, so
+      // subtract any existing notification that shares this tag before counting.
+      var sameTag = existing.filter(function (n) { return n.tag === tag; }).length;
+      var newCount = existing.length - sameTag + 1;
+      return self.registration.showNotification(title, {
+        body: body,
+        icon: absLocal('icons/icon-192.png'),
+        badge: absLocal('icons/icon-192.png'),
+        tag: tag,
+        renotify: true,
+        silent: false,
+        vibrate: [200, 100, 200],
+        data: { url: openUrl },
+      }).then(function () {
+        if ('setAppBadge' in navigator) return navigator.setAppBadge(newCount);
+      });
     })
   );
 });

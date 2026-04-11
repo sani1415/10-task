@@ -131,10 +131,10 @@ Deno.serve(async (req: Request) => {
     const threadId = String(record.thread_id || "");
 
     if (msgRole === "in") {
-      // Student sent a message → notify teacher
+      // Student sent a message → notify teacher (tag per thread so each student stacks separately)
       const teacherSub = await getTeacherSub(sb);
       if (teacherSub) await trySend(teacherSub,
-        makePayload("ছাত্রের নতুন বার্তা এসেছে।", "teacher", "msg-in-teacher"));
+        makePayload("ছাত্রের নতুন বার্তা এসেছে।", "teacher", `msg-in-${threadId}`));
     } else if (msgRole === "out") {
       if (threadId === "_bc") {
         // Broadcast → notify all students

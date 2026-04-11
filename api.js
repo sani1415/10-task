@@ -348,6 +348,13 @@ const API = (() => {
       db.students = db.students.filter((s) => s.id !== sid);
       delete db.chats[sid];
       DB.save(db);
+      if (_useRemote) {
+        // Remove from lock-screen hints immediately so UI updates at once
+        if (RS.mem && Array.isArray(RS.mem.lockHints))
+          RS.mem.lockHints = RS.mem.lockHints.filter(s => s.id !== sid);
+        // Delete from DB (CASCADE removes all related rows)
+        if (RS.deleteStudentRemote) RS.deleteStudentRemote(sid);
+      }
     },
 
     importFromCSV(csvText) {

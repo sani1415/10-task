@@ -365,6 +365,15 @@
     return { fileUrl: res, storagePath: null };
   }
 
+  async function deleteStudentRemote(sid) {
+    if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
+    const sb = getClient(); if (!sb) return;
+    try {
+      await sb.rpc('madrasa_rel_delete_student', { p_teacher_pin: _teacherPin, p_student_id: sid });
+      if (Array.isArray(mem.lockHints)) mem.lockHints = mem.lockHints.filter(s => s.id !== sid);
+    } catch (e) { console.warn('deleteStudentRemote:', e); }
+  }
+
   w.RemoteSync = {
     isRemote, usesSecureKv, getClient,
     mem,
@@ -372,7 +381,7 @@
     unlockTeacherWithPin, unlockStudentWithWaqfPin,
     refreshStudentLockHints,
     schedule, flushKey, flushAllFromMem,
-    markMessagesReadRemote,
+    markMessagesReadRemote, deleteStudentRemote,
     uploadFile, getSignedUrlForPath, consumeUploadResult,
     BUCKET, startRealtimeSync,
   };

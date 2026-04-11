@@ -1,7 +1,7 @@
 /* Waqful Madinah — PWA: SW registration, Web Push subscribe, foreground sync hints */
 (function (w) {
   var lastForegroundNotify = 0;
-  var MIN_GAP_MS = 40000;
+  var MIN_GAP_MS = 5000;
 
   function urlB64ToUint8Array(base64String) {
     var padLen = (4 - (base64String.length % 4)) % 4;
