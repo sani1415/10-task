@@ -97,6 +97,13 @@
 /* ── Daily overview (teacher task tab) ── */
 .task-daily-sep{background:var(--gray-100);padding:8px 16px;font-size:11px;font-weight:700;color:var(--gray-500);letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid var(--gray-200);border-top:1px solid var(--gray-200);display:flex;justify-content:space-between;align-items:center}
 .done-count-badge{font-size:11px;font-weight:600;background:#E8F5E9;color:#2E7D32;padding:2px 8px;border-radius:8px}
+
+/* ── Student profile tabs ── */
+.prof-tabs{display:flex;border-bottom:2px solid var(--gray-200);background:#fff;flex-shrink:0}
+.prof-tab{flex:1;background:none;border:none;padding:11px 2px 9px;font-family:var(--font);font-size:12px;font-weight:600;color:var(--gray-500);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;white-space:nowrap}
+.prof-tab.active{color:#075E54;border-bottom-color:#075E54}
+.prof-pane{padding-bottom:max(20px,env(safe-area-inset-bottom))}
+.header-info{cursor:default}
 </style>
 </head>
 <body>
@@ -128,9 +135,9 @@
 <!-- ══ HEADER ════════════════════════════════════════════ -->
 <div class="header" id="hdr">
   <button class="header-back" id="backBtn" onclick="closeChat()">‹</button>
-  <div class="header-avatar" id="hAvatar" style="background:#128C7E">শি</div>
-  <div class="header-info"><div class="header-title" id="hTitle">Waqful Madinah</div><div class="header-sub" id="hSub">শিক্ষক প্যানেল</div></div>
-  <div class="header-actions"><button class="header-btn" id="searchToggleBtn" onclick="toggleSearch()">🔍</button><button class="header-btn" onclick="headerMenuClick()">⋮</button></div>
+  <div class="header-avatar" id="hAvatar" style="background:#128C7E" onclick="if(curChat&&curChat!=='_broadcast')openStudentProfile(curChat)">শি</div>
+  <div class="header-info" style="cursor:default" id="hInfo" onclick="if(curChat&&curChat!=='_broadcast')openStudentProfile(curChat)"><div class="header-title" id="hTitle">Waqful Madinah</div><div class="header-sub" id="hSub">শিক্ষক প্যানেল</div></div>
+  <div class="header-actions"><button class="header-btn" id="searchToggleBtn" onclick="toggleSearch()">🔍</button></div>
 </div>
 
 <!-- ══ TAB BAR ═══════════════════════════════════════════ -->
@@ -289,6 +296,12 @@
     </div>
     <button class="profile-save-btn" onclick="saveProfileEdits()">💾 সেভ</button>
   </div>
+  <div class="prof-tabs">
+    <button class="prof-tab active" id="ptab-info"    onclick="switchProfileTab('info',this)">👤 তথ্য</button>
+    <button class="prof-tab"        id="ptab-acad"    onclick="switchProfileTab('acad',this)">📚 একাডেমিক</button>
+    <button class="prof-tab"        id="ptab-notes"   onclick="switchProfileTab('notes',this)">🗒️ নোট</button>
+    <button class="prof-tab"        id="ptab-actions" onclick="switchProfileTab('actions',this)">⚙️ বিকল্প</button>
+  </div>
   <div class="profile-body" id="profileBody"></div>
 </div>
 
@@ -340,14 +353,6 @@
   <button class="btn-secondary" onclick="closeModal('fabMenu')">বাতিল</button>
 </div></div>
 
-<div class="modal-overlay" id="chatMenu"><div class="modal-sheet">
-  <div class="modal-handle"></div><div class="modal-title" id="chatMenuTitle">ছাত্রের বিকল্প</div>
-  <button class="btn-primary" style="margin-bottom:8px" onclick="closeModal('chatMenu');openStudentProfile(curChat)">👤 ছাত্রের বিস্তারিত তথ্য</button>
-  <button class="btn-primary" style="background:var(--orange);margin-bottom:8px" onclick="closeModal('chatMenu');openAddTask(curChat)">📋 টাস্ক দিন</button>
-  <button class="btn-primary" style="background:#3949AB;margin-bottom:8px" onclick="closeModal('chatMenu');openAddExamForChat(curChat)">📝 পরীক্ষা দিন</button>
-  <button class="btn-primary" style="background:#128C7E;margin-bottom:8px" onclick="closeModal('chatMenu');viewPin(curChat)">🔑 পিন দেখুন</button>
-  <button class="btn-secondary" onclick="closeModal('chatMenu')">বাতিল</button>
-</div></div>
 
 <div class="modal-overlay" id="addStudentModal"><div class="modal-sheet">
   <div class="modal-handle"></div><div class="modal-title">নতুন ছাত্র যোগ</div>
@@ -669,7 +674,7 @@ function renderChatGoals(){
   if(!goals.length){ el.innerHTML='<div class="csp-empty">🎯 কোনো লক্ষ্য নেই।</div>'; return; }
   el.innerHTML=goals.map(g=>`
     <div class="csp-goal-item">
-      <div class="csp-goal-check ${g.done?'done':''}" onclick="API.Goals.toggle('${curChat}','${g.id}');renderChatGoals()">${g.done?'✓':''}</div>
+      <div class="csp-goal-check ${g.done?'done':''}" style="cursor:default;pointer-events:none">${g.done?'✓':''}</div>
       <div class="csp-goal-text ${g.done?'done':''}">${esc(g.title)}${g.deadline?`<span style="font-size:11px;color:var(--gray-400);display:block">📅 ${g.deadline}</span>`:''}</div>
     </div>`).join('');
 }
@@ -1276,13 +1281,6 @@ function fabClick(){
   else if(curTab==='exams') goExamTab('create', document.querySelectorAll('.exam-tab-btn')[1]);
   else openModal('fabMenu');
 }
-function headerMenuClick(){
-  if(curChat && curChat!=='_broadcast'){
-    const s=API.Students.getById(curChat);
-    document.getElementById('chatMenuTitle').textContent=s?s.name+'-এর বিকল্প':'ছাত্রের বিকল্প';
-    openModal('chatMenu');
-  } else { openModal('fabMenu'); }
-}
 function toggleSearch(){ const b=document.getElementById('searchBar'); b.style.display=b.style.display==='none'?'block':'none'; if(b.style.display==='block') b.querySelector('input').focus(); }
 
 // ══ STUDENT PROFILE ════════════════════════════════════════
@@ -1292,6 +1290,8 @@ function openStudentProfile(sid){
   const batch=API.Students.getBatchYear(s.enrollmentDate);
   document.getElementById('profileHdName').textContent=s.name;
   document.getElementById('profileHdSub').textContent=(s.waqfId||'')+(batch!=null?' · '+batch+'য় বর্ষ':'');
+  // Reset to first tab
+  document.querySelectorAll('.prof-tab').forEach((b,i)=>b.classList.toggle('active',i===0));
   renderProfileBody(s);
   document.getElementById('profileView').classList.add('open');
   document.getElementById('tabBar').style.display='none';
@@ -1299,8 +1299,10 @@ function openStudentProfile(sid){
 }
 function closeStudentProfile(){
   document.getElementById('profileView').classList.remove('open');
-  document.getElementById('tabBar').style.display='flex';
-  document.getElementById('fab').style.display='flex';
+  if(!curChat){
+    document.getElementById('tabBar').style.display='flex';
+    document.getElementById('fab').style.display='flex';
+  }
   curProfileSid=null;
 }
 function renderProfileBody(s){
@@ -1309,6 +1311,8 @@ function renderProfileBody(s){
   const notes=API.TeacherNotes.getAll(s.id);
   const subLine=(()=>{ const p=[]; if(s.waqfId) p.push(s.waqfId); if(batch!=null) p.push(batch+'য় বর্ষ'); if(s.enrollmentDate) p.push(s.enrollmentDate.slice(0,4)); return p.length?p.join(' · '):'পরিচয়'; })();
   document.getElementById('profileBody').innerHTML=`
+  <!-- ── Tab: তথ্য ───────────────────────────────────── -->
+  <div class="prof-pane" id="ppane-info">
     <div class="profile-v2-hero">
       <div class="profile-v2-av" style="background:${s.color||C[0]}">${s.name.charAt(0)}</div>
       <div class="profile-v2-meta">
@@ -1326,10 +1330,46 @@ function renderProfileBody(s){
       <div class="profile-v2-sec">ঠিকানা</div>
       ${pRow('জেলা','p_district',s.district||'')}
       ${pRow('উপজেলা','p_upazila',s.upazila||'')}
-      <div class="profile-v2-sec">একাডেমিক</div>
+    </div>
+  </div>
+
+  <!-- ── Tab: একাডেমিক ──────────────────────────────── -->
+  <div class="prof-pane" id="ppane-acad" style="display:none">
+    <div class="profile-v2-sheet">
+      <div class="profile-v2-sec">বর্তমান</div>
       ${pRow('শ্রেণী','p_cls',s.cls||'')}
       ${pRow('রোল','p_roll',s.roll||'')}
       ${pRow('ভর্তির তারিখ','p_enroll',s.enrollmentDate||'',' type="date"')}
+      <div class="profile-v2-sec">পূর্ববর্তী ফলাফল</div>
+      <div id="acadList">${academic.length?academic.map(r=>`
+        <div class="acad-item" id="acad_${r.id}">
+          <div class="acad-year">${esc(r.yearClass)}</div>
+          <div class="acad-grade">${esc(r.grade)}</div>
+          <button type="button" class="acad-del" onclick="deleteAcadRec('${r.id}')">🗑</button>
+        </div>`).join(''):'<div style="padding:12px 14px;font-size:13px;color:var(--gray-400)">কোনো রেকর্ড নেই।</div>'}</div>
+      <div class="acad-add-row">
+        <input id="acadYear" placeholder="বছর / শ্রেণী (যেমন: ২০২২ - জামাতে খামেছা)">
+        <input id="acadGrade" placeholder="নম্বর / গ্রেড">
+        <button type="button" class="acad-add-btn" onclick="addAcadRec()">যোগ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Tab: নোট ───────────────────────────────────── -->
+  <div class="prof-pane" id="ppane-notes" style="display:none">
+    <div class="profile-v2-sheet">
+      <div class="profile-v2-sec">শিক্ষকের নোট <span style="font-size:11px;font-weight:400;color:var(--gray-400);text-transform:none;letter-spacing:0">(ছাত্র দেখতে পাবে না)</span></div>
+      <div id="notesList">${renderNotesList(notes)}</div>
+      <div class="note-add-row">
+        <textarea id="noteInput" placeholder="নতুন নোট লিখুন..." rows="2"></textarea>
+        <button type="button" class="note-submit-btn" onclick="addNote()" style="background:#075E54;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer">📝 যোগ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Tab: বিকল্প ────────────────────────────────── -->
+  <div class="prof-pane" id="ppane-actions" style="display:none">
+    <div class="profile-v2-sheet">
       <div class="profile-v2-sec profile-v2-sec--flex">
         <span>লগইন পিন</span>
         <button type="button" class="profile-v2-sec-btn" onclick="showPinResetInProfile()">পরিবর্তন</button>
@@ -1344,24 +1384,6 @@ function renderProfileBody(s){
           <button type="button" class="profile-pin-save" onclick="saveProfilePin()" style="background:#075E54;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer">সেভ পিন</button>
         </div>
       </div>
-      <div class="profile-v2-sec">পূর্ববর্তী একাডেমিক ফলাফল</div>
-      <div id="acadList">${academic.length?academic.map(r=>`
-        <div class="acad-item" id="acad_${r.id}">
-          <div class="acad-year">${esc(r.yearClass)}</div>
-          <div class="acad-grade">${esc(r.grade)}</div>
-          <button type="button" class="acad-del" onclick="deleteAcadRec('${r.id}')">🗑</button>
-        </div>`).join(''):'<div style="padding:12px 14px;font-size:13px;color:var(--gray-400)">কোনো রেকর্ড নেই।</div>'}</div>
-      <div class="acad-add-row">
-        <input id="acadYear" placeholder="বছর / শ্রেণী (যেমন: ২০২২ - জামাতে খামেছা)">
-        <input id="acadGrade" placeholder="নম্বর / গ্রেড">
-        <button type="button" class="acad-add-btn" onclick="addAcadRec()">যোগ</button>
-      </div>
-      <div class="profile-v2-sec">শিক্ষকের নোট <span style="font-size:11px;font-weight:400;color:var(--gray-400);text-transform:none;letter-spacing:0">(ছাত্র দেখতে পাবে না)</span></div>
-      <div id="notesList">${renderNotesList(notes)}</div>
-      <div class="note-add-row">
-        <textarea id="noteInput" placeholder="নতুন নোট লিখুন..." rows="2"></textarea>
-        <button type="button" class="note-submit-btn" onclick="addNote()" style="background:#075E54;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer">📝 যোগ</button>
-      </div>
     </div>
     <div class="profile-section profile-v2-foot-danger">
       <div class="profile-sec-hd">ঝুঁকিপূর্ণ কাজ</div>
@@ -1369,12 +1391,19 @@ function renderProfileBody(s){
       <div style="padding:0 14px 12px">
         <button type="button" onclick="confirmClearStudentData()" style="width:100%;background:#fff;border:1.5px solid #E57373;color:#B71C1C;border-radius:10px;padding:10px 14px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer">🧹 শুধু সংশ্লিষ্ট তথ্য মুছুন</button>
       </div>
-      <p style="font-size:13px;color:var(--gray-600);padding:0 14px 8px;line-height:1.55;margin:0;border-top:1px solid #FFEBEE;padding-top:12px">ছাত্র সম্পূর্ণ মুছবেন (অভ্যন্তরীণ আইডি ও ওয়াকফ মুক্ত হবে)। নতুন ছাত্র যোগ করলে খালি ওয়াকফ নম্বর আবার ব্যবহার হতে পারে।</p>
+      <p style="font-size:13px;color:var(--gray-600);padding:0 14px 8px;line-height:1.55;margin:0;border-top:1px solid #FFEBEE;padding-top:12px">ছাত্র সম্পূর্ণ মুছবেন। নতুন ছাত্র যোগ করলে খালি ওয়াকফ নম্বর আবার ব্যবহার হতে পারে।</p>
       <div style="padding:0 14px 16px">
         <button type="button" onclick="confirmDeleteStudent()" style="width:100%;background:#C62828;color:#fff;border:none;border-radius:10px;padding:10px 14px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer">🗑 ছাত্র সম্পূর্ণ মুছুন</button>
       </div>
     </div>
+  </div>
   `;
+}
+function switchProfileTab(tab,btn){
+  document.querySelectorAll('.prof-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.prof-pane').forEach(p=>p.style.display='none');
+  document.getElementById('ppane-'+tab).style.display='block';
 }
 function pRow(label,id,val,extra=''){
   return `<div class="profile-v2-row"><span>${esc(label)}</span><input id="${id}" value="${esc(val)}"${extra} placeholder="${esc(label)}…"></div>`;
