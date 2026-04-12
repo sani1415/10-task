@@ -490,7 +490,7 @@ function renderChat(){
   const msgs=API.Messages.getThread(me.id); const el=document.getElementById('chatMsgs');
   if(!msgs.length){ el.innerHTML='<div style="text-align:center;padding:40px;color:var(--gray-400);font-size:14px">📖 উস্তাদকে সালাম দিন! 👋</div>'; return; }
   const _todayStr=new Date().toISOString().split('T')[0];
-  function _mds(m){ const ts=m._ts||(m.id&&m.id[0]==='m'?parseInt(m.id.slice(1)):0); if(!ts) return null; return new Date(ts).toISOString().split('T')[0]; }
+  function _mds(m){ const ts=m._ts||parseInt(/^m(\d{13})/.exec(m.id)?.[1]||'0'); if(!ts) return null; return new Date(ts).toISOString().split('T')[0]; }
   function _dlbl(ds){ if(!ds) return null; if(ds===_todayStr) return 'আজ'; const d=new Date(ds); return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`; }
   let h='', _lastDs=null;
   msgs.forEach(m=>{
@@ -834,9 +834,10 @@ function goTab(tab){
 }
 
 // Fix mobile viewport height (100vh bug on Android)
-function fixVH(){ document.documentElement.style.setProperty('--real-vh', window.innerHeight*0.01+'px'); }
+function fixVH(){ document.documentElement.style.setProperty('--real-vh',(window.visualViewport?.height||window.innerHeight)*0.01+'px'); }
 fixVH();
 window.addEventListener('resize', fixVH);
+if(window.visualViewport) window.visualViewport.addEventListener('resize', fixVH);
 
 init();
 
