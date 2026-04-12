@@ -272,8 +272,14 @@
       <input type="file" id="impFile" accept=".json" style="display:none" onchange="doImport(this)">
       <button class="restore-btn" onclick="document.getElementById('impFile').click()">📂 পুনরুদ্ধার</button>
     </div>
-    <div class="sec-hd">ছাত্র তালিকা</div>
+    <div class="sec-hd">ডেটা রিসেট</div>
     <div class="backup-card">
+      <h3 style="font-size:14px;font-weight:600;color:var(--gray-700);margin-bottom:6px">🧹 সব ছাত্রের ডেটা মুছুন</h3>
+      <p style="font-size:13px;color:var(--gray-600);line-height:1.6;margin-bottom:12px">সব ছাত্রের চ্যাট, টাস্ক, পরীক্ষার জমা, ডকুমেন্ট, লক্ষ্য, একাডেমিক রেকর্ড ও শিক্ষকের নোট মুছে যাবে। ছাত্রের নাম, ওয়াকফ ও পিন <strong>অপরিবর্তিত থাকবে</strong>। আগে ব্যাকআপ নিন।</p>
+      <button type="button" class="backup-btn" style="background:#E65100;color:#fff;border:none" onclick="confirmClearAllStudentsData()">🧹 সব ছাত্রের ডেটা রিসেট</button>
+    </div>
+    <div class="backup-card" style="margin-top:0">
+      <h3 style="font-size:14px;font-weight:600;color:var(--gray-700);margin-bottom:6px">🔄 ছাত্র তালিকা রিসেট</h3>
       <p style="font-size:13px;color:var(--gray-600);line-height:1.6;margin-bottom:12px">সব ছাত্র মুছে ফেলে নতুন CSV আপলোড করতে। টাস্ক, পরীক্ষা, ডকুমেন্ট, লক্ষ্য ও শিক্ষকের নোটও খালি হবে। গ্রুপ ব্রডকাস্ট বার্তার ইতিহাস থাকবে। আগে ব্যাকআপ নিন।</p>
       <button type="button" class="backup-btn" style="background:#C62828;color:#fff;border:none" onclick="confirmResetRoster()">🔄 ছাত্র তালিকা রিসেট</button>
     </div>
@@ -330,14 +336,24 @@
     <span id="chatFileIcon" style="font-size:22px">📎</span>
     <div style="flex:1;min-width:0">
       <div class="chat-file-preview-name" id="chatFileName">-</div>
+      <input class="chat-file-title-in" id="chatFileTitleIn" placeholder="শিরোনাম দিন (আবশ্যিক)…" maxlength="80">
       <div class="chat-file-preview-size" id="chatFileSize">-</div>
     </div>
     <button class="chat-file-cancel" onclick="cancelTeacherChatFile()">✕</button>
   </div>
+  <!-- Reply preview bar -->
+  <div class="reply-preview-bar" id="replyPreviewBar" style="display:none">
+    <span style="font-size:16px;color:var(--gray-500)">↩</span>
+    <div class="reply-preview-content">
+      <div class="reply-preview-sender" id="replyPreviewSender"></div>
+      <div class="reply-preview-text" id="replyPreviewText"></div>
+    </div>
+    <button onclick="cancelReply()" style="background:none;border:none;font-size:18px;color:var(--gray-400);cursor:pointer;padding:4px;flex-shrink:0">✕</button>
+  </div>
   <input type="file" id="chatFileInput" style="display:none" multiple accept="image/*,.pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx" onchange="onTeacherChatFileChosen(this)">
   <div class="chat-input-bar">
     <button class="attach-btn" id="chatAttachBtn" onclick="document.getElementById('chatFileInput').click()" title="ফাইল পাঠান">📎</button>
-    <div class="chat-input-wrap"><textarea id="msgIn" placeholder="বার্তা লিখুন..." rows="1" oninput="autoResize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"></textarea></div>
+    <div class="chat-input-wrap"><textarea id="msgIn" placeholder="বার্তা লিখুন..." rows="1" oninput="autoResize(this)"></textarea></div>
     <button class="send-btn" onclick="sendMsg()">➤</button>
   </div>
 </div>
@@ -463,6 +479,7 @@ let questions=[], curQContainer='questionList', examChatSid=null;
 let curPreviewDocId=null;
 let chatTeacherPendingFile=null;
 let curProfileSid=null;
+let replyingTo=null;
 const C=['#128C7E','#1565C0','#6A1B9A','#BF360C','#1B5E20'];
 
 function showUploadPrepError(e){
@@ -708,21 +725,23 @@ function renderMsgs(id){
   msgs.forEach(m=>{
     const ds=_msgDateStr(m);
     if(ds && ds!==lastDs){ const lbl=_dateSepLabel(ds); if(lbl) h+=`<div class="msg-date-sep"><span>${lbl}</span></div>`; lastDs=ds; }
+    const replyRef=m.replyTo?`<div class="msg-reply-ref" onclick="scrollToMsg('${m.replyTo.id}')"><div class="rr-sender">${esc(m.replyTo.senderLabel||'')}</div><div class="rr-text">${esc(m.replyTo.text||'')}</div></div>`:'';
+    const swiIcon=`<div class="swipe-reply-icon">↩</div>`;
     if(m.type==='task'){
       const tLabel=m.task?.taskType==='daily'?'🔁 দৈনিক':'📌 এককালীন';
-      h+=`<div class="msg-wrap out"><div class="task-bubble"><div class="task-bubble-hd">📋 টাস্ক · ${tLabel}</div><div class="task-bubble-bd"><div class="task-bubble-title">${esc(m.task.title)}</div><div class="task-bubble-desc">${esc(m.task.desc)}</div>${m.task.deadline?`<div class="task-bubble-dl">📅 ${m.task.deadline}</div>`:''}</div></div><div style="font-size:11px;color:var(--gray-400);text-align:right;margin-top:2px">${m.time}</div></div>`;
+      h+=`<div class="msg-wrap out" data-mid="${m.id}">${swiIcon}<div class="task-bubble"><div class="task-bubble-hd">📋 টাস্ক · ${tLabel}</div><div class="task-bubble-bd">${replyRef}<div class="task-bubble-title">${esc(m.task.title)}</div><div class="task-bubble-desc">${esc(m.task.desc)}</div>${m.task.deadline?`<div class="task-bubble-dl">📅 ${m.task.deadline}</div>`:''}</div></div><div style="font-size:11px;color:var(--gray-400);text-align:right;margin-top:2px">${m.time}</div></div>`;
     } else if(m.type==='doc'){
       const ic=fileIcon(m.fileType);
       const markRead=m.role==='in';
       const previewBtn=m.docId?`<button type="button" class="chat-doc-view-btn" onclick="teacherPreviewChatDoc('${m.docId}',${markRead})">👁 দেখুন</button>`:'';
       if(m.role==='in'){
-        h+=`<div class="msg-wrap in"><div class="msg-sender">${esc(id==='_broadcast'?'ছাত্র':API.Students.getById(id)?.name||'ছাত্র')}</div><div class="msg-doc-bubble"><div class="msg-doc-icon">${ic}</div><div class="msg-doc-info"><div class="msg-doc-name">${esc(m.fileName)}</div><div class="msg-doc-size">${m.fileSize?formatBytes(m.fileSize):''}</div>${previewBtn}</div></div><div style="font-size:11px;color:var(--gray-400);margin-top:2px;padding-left:4px">${m.time}</div></div>`;
+        h+=`<div class="msg-wrap in" data-mid="${m.id}">${swiIcon}<div class="msg-doc-bubble">${replyRef}<div class="msg-doc-icon">${ic}</div><div class="msg-doc-info"><div class="msg-doc-name">${esc(m.fileName)}</div><div class="msg-doc-size">${m.fileSize?formatBytes(m.fileSize):''}</div>${previewBtn}</div></div><div style="font-size:11px;color:var(--gray-400);margin-top:2px;padding-left:4px">${m.time}</div></div>`;
       } else {
-        h+=`<div class="msg-wrap out"><div class="msg-doc-bubble"><div class="msg-doc-icon">${ic}</div><div class="msg-doc-info"><div class="msg-doc-name">${esc(m.fileName)}</div><div class="msg-doc-size">${m.fileSize?formatBytes(m.fileSize):''}</div>${previewBtn}</div></div><div style="font-size:11px;color:var(--gray-400);text-align:right;margin-top:2px">${m.time}</div></div>`;
+        h+=`<div class="msg-wrap out" data-mid="${m.id}">${swiIcon}<div class="msg-doc-bubble">${replyRef}<div class="msg-doc-icon">${ic}</div><div class="msg-doc-info"><div class="msg-doc-name">${esc(m.fileName)}</div><div class="msg-doc-size">${m.fileSize?formatBytes(m.fileSize):''}</div>${previewBtn}</div></div><div style="font-size:11px;color:var(--gray-400);text-align:right;margin-top:2px">${m.time}</div></div>`;
       }
     } else {
       const tickHtml=m.role==='out'?(m.read?'<span class="msg-tick" style="color:#25D366">✓✓</span>':'<span class="msg-tick" style="color:rgba(0,0,0,.3)">✓</span>'):'';
-      h+=`<div class="msg-wrap ${m.role}"><div class="msg-bubble ${m.role}">${esc(m.text)}<div class="msg-meta"><span class="msg-time">${m.time}</span>${tickHtml}</div></div></div>`;
+      h+=`<div class="msg-wrap ${m.role}" data-mid="${m.id}">${swiIcon}<div class="msg-bubble ${m.role}">${replyRef}${esc(m.text)}<div class="msg-meta"><span class="msg-time">${m.time}</span>${tickHtml}</div></div></div>`;
     }
   });
   el.innerHTML=h; setTimeout(()=>el.scrollTop=9e9,50);
@@ -774,14 +793,19 @@ async function onTeacherChatFileChosen(input){
 function cancelTeacherChatFile(){
   chatTeacherPendingFile=null;
   document.getElementById('chatFileInput').value='';
+  document.getElementById('chatFileTitleIn').value='';
   document.getElementById('chatFilePreview').style.display='none';
 }
 async function sendTeacherChatFile(){
   if(!chatTeacherPendingFile||!curChat) return;
-  const f=chatTeacherPendingFile;
-  cancelTeacherChatFile();
+  const titleEl=document.getElementById('chatFileTitleIn');
+  const title=titleEl.value.trim();
+  if(!title){ titleEl.classList.add('error'); titleEl.focus(); setTimeout(()=>titleEl.classList.remove('error'),400); showToast('ফাইলের শিরোনাম দিন!'); return; }
+  const f=new File([chatTeacherPendingFile], title, {type:chatTeacherPendingFile.type});
+  const rt=replyingTo?{...replyingTo}:null;
+  cancelTeacherChatFile(); cancelReply();
   try{
-    await API.Messages.sendFileFromTeacher(curChat, f);
+    await API.Messages.sendFileFromTeacher(curChat, f, {replyTo:rt});
     renderMsgs(curChat); renderChatList(); updateBadge();
     showToast('✅ ফাইল পাঠানো হয়েছে!');
   } catch(e){
@@ -794,12 +818,73 @@ function openChatDocsPanel(){
   if(!curChat||curChat==='_broadcast') return;
   switchChatTab('doc', document.getElementById('cst-doc'));
 }
+// ── Reply-to ────────────────────────────────────────────────
+function triggerReply(mid){
+  const msgs=API.Messages.getThread(curChat==='_broadcast'?'_bc':curChat);
+  const m=msgs.find(x=>x.id===mid); if(!m) return;
+  const senderLabel=m.role==='out'?'আপনি':(API.Students.getById(curChat)?.name||'ছাত্র');
+  replyingTo={id:m.id, text:m.text||m.fileName||'(ফাইল)', role:m.role, senderLabel};
+  document.getElementById('replyPreviewSender').textContent=senderLabel;
+  document.getElementById('replyPreviewText').textContent=replyingTo.text;
+  document.getElementById('replyPreviewBar').style.display='flex';
+  document.getElementById('msgIn').focus();
+}
+function cancelReply(){
+  replyingTo=null;
+  const bar=document.getElementById('replyPreviewBar'); if(bar) bar.style.display='none';
+}
+function scrollToMsg(mid){
+  const el=document.querySelector(`.msg-wrap[data-mid="${mid}"]`);
+  if(!el) return;
+  el.scrollIntoView({behavior:'smooth',block:'center'});
+  el.classList.add('msg-highlight');
+  setTimeout(()=>el.classList.remove('msg-highlight'),1200);
+}
+// ── Swipe-to-reply ──────────────────────────────────────────
+(function initSwipeReply(){
+  let _st=null;
+  const THRESH=60;
+  function _getBubble(wrap){ return wrap.querySelector('.msg-bubble')||wrap.querySelector('.msg-doc-bubble')||wrap.querySelector('.task-bubble'); }
+  document.addEventListener('touchstart',e=>{
+    const wrap=e.target.closest('#chatMsgs .msg-wrap[data-mid]');
+    if(!wrap){_st=null;return;}
+    _st={wrap,sx:e.touches[0].clientX,sy:e.touches[0].clientY,dx:0,locked:false};
+  },{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(!_st) return;
+    const dx=e.touches[0].clientX-_st.sx, dy=e.touches[0].clientY-_st.sy;
+    if(!_st.locked){
+      if(Math.abs(dy)>Math.abs(dx)+6){_st=null;return;}
+      if(Math.abs(dx)<8) return;
+      _st.locked=true;
+    }
+    const isIn=_st.wrap.classList.contains('in'), isOut=_st.wrap.classList.contains('out');
+    let clamped=0;
+    if(isIn&&dx>0) clamped=Math.min(dx,THRESH+20);
+    else if(isOut&&dx<0) clamped=Math.max(dx,-(THRESH+20));
+    else{_st=null;return;}
+    _st.dx=clamped;
+    const b=_getBubble(_st.wrap); if(b) b.style.transform=`translateX(${clamped}px)`;
+    const ic=_st.wrap.querySelector('.swipe-reply-icon');
+    if(ic) ic.style.opacity=Math.min(Math.abs(clamped)/THRESH,1);
+  },{passive:true});
+  document.addEventListener('touchend',()=>{
+    if(!_st) return;
+    const {wrap,dx}=_st; _st=null;
+    const b=_getBubble(wrap);
+    if(b){b.style.transition='transform .2s ease';b.style.transform='';setTimeout(()=>{b.style.transition=''},200);}
+    const ic=wrap.querySelector('.swipe-reply-icon'); if(ic) ic.style.opacity='0';
+    if(Math.abs(dx)>=THRESH) triggerReply(wrap.dataset.mid);
+  });
+})();
 function sendMsg(){
   if(!curChat) return;
   if(chatTeacherPendingFile){ sendTeacherChatFile(); return; }
   const inp=document.getElementById('msgIn'); const text=inp.value.trim(); if(!text) return;
+  const rt=replyingTo?{...replyingTo}:null;
+  cancelReply();
   if(curChat==='_broadcast') API.Messages.broadcast(text);
-  else { API.Messages.send(curChat,text); }
+  else API.Messages.send(curChat, text, 'text', rt?{replyTo:rt}:{});
   inp.value=''; inp.style.height='auto'; renderMsgs(curChat==='_broadcast'?'_broadcast':curChat);
   renderChatList(); updateBadge();
   setTimeout(()=>document.getElementById('chatMsgs').scrollTop=9e9,50);
@@ -1249,6 +1334,13 @@ function renderStorageTree(){
 // ══ SETTINGS ═══════════════════════════════════════════════
 function sendBC(){ const text=document.getElementById('bcText').value.trim(); if(!text){ showToast('বার্তা লিখুন!'); return; } API.Messages.broadcast(text); closeModal('bcModal'); document.getElementById('bcText').value=''; renderChatList(); showToast('📢 সবাইকে পাঠানো হয়েছে'); }
 function saveInfo(){ API.DB.saveTeacher({name:document.getElementById('tName').value.trim()||'শিক্ষক',madrasa:document.getElementById('tMadrasa').value.trim()||'Waqful Madinah'}); document.getElementById('hTitle').textContent=API.DB.getTeacher().madrasa; showToast('✅ সংরক্ষিত'); }
+function confirmClearAllStudentsData(){
+  if(!confirm('সব ছাত্রের চ্যাট, টাস্ক, পরীক্ষা, লক্ষ্য ও নোট মুছে ফেলবেন?\nছাত্র তালিকা অক্ষুণ্ণ থাকবে।')) return;
+  Promise.resolve(API.Students.clearAllStudentsData()).then(()=>{
+    renderAll();
+    showToast('✅ সব ছাত্রের ডেটা রিসেট হয়েছে');
+  }).catch(e=>{ console.error(e); showToast('❌ রিসেট ব্যর্থ'); });
+}
 function confirmResetRoster(){
   if(!confirm('সব ছাত্র ও সম্পর্কিত ডেটা মুছে ফেলবেন? আগে ব্যাকআপ নেওয়া আছে তো?')) return;
   if(curChat) closeChat();

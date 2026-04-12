@@ -30,6 +30,9 @@
 .at-done-btn{background:#1565C0}.at-done-btn.done{background:#4CAF50}.at-done-btn.late{background:#F44336}
 .msg-bubble.out{background:#BBDEFB;border-bottom-right-radius:4px}.msg-tick{color:#1565C0}.msg-sender{color:#1565C0}
 .task-bubble-hd{background:#0D47A1}
+.reply-preview-bar{background:#EFF4FB;border-top-color:#42A5F5}
+.reply-preview-content{border-left-color:#1565C0}.reply-preview-sender{color:#1565C0}
+.chat-file-title-in:focus{border-color:#1565C0}
 .welcome-card{background:linear-gradient(135deg,#1565C0,#00BCD4)}
 .chat-messages{background-color:#E8EDF5;background-image:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%231565C0' fill-opacity='0.04'%3E%3Cpath d='M20 20.5V18H0v5h5v5H0v5h20v-5h15v-5H20v-.5z'/%3E%3C/g%3E%3C/svg%3E")}
 
@@ -189,14 +192,24 @@
     <span id="chatFileIcon" style="font-size:22px">📎</span>
     <div style="flex:1;min-width:0">
       <div class="chat-file-preview-name" id="chatFileName">-</div>
+      <input class="chat-file-title-in" id="chatFileTitleIn" placeholder="শিরোনাম দিন (আবশ্যিক)…" maxlength="80">
       <div class="chat-file-preview-size" id="chatFileSize">-</div>
     </div>
     <button class="chat-file-cancel" onclick="cancelChatFile()">✕</button>
   </div>
+  <!-- Reply preview bar -->
+  <div class="reply-preview-bar" id="replyPreviewBar" style="display:none">
+    <span style="font-size:16px;color:var(--gray-500)">↩</span>
+    <div class="reply-preview-content">
+      <div class="reply-preview-sender" id="replyPreviewSender"></div>
+      <div class="reply-preview-text" id="replyPreviewText"></div>
+    </div>
+    <button onclick="cancelReply()" style="background:none;border:none;font-size:18px;color:var(--gray-400);cursor:pointer;padding:4px;flex-shrink:0">✕</button>
+  </div>
   <input type="file" id="chatFileInput" style="display:none" multiple accept="image/*,.pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx" onchange="onChatFileChosen(this)">
   <div class="chat-input-bar">
     <button class="attach-btn" onclick="document.getElementById('chatFileInput').click()" title="ফাইল পাঠান">📎</button>
-    <div class="chat-input-wrap"><textarea id="msgIn" placeholder="উস্তাদকে বার্তা লিখুন..." rows="1" oninput="autoResize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"></textarea></div>
+    <div class="chat-input-wrap"><textarea id="msgIn" placeholder="উস্তাদকে বার্তা লিখুন..." rows="1" oninput="autoResize(this)"></textarea></div>
     <button class="send-btn" onclick="sendMsg()">➤</button>
   </div>
 </div>
@@ -316,7 +329,7 @@
 <script src="pwa-notify.js"></script>
 <script>
 // ══ State ══════════════════════════════════════════════════
-let me=null, tFilter='all', gFilter='all';
+let me=null, tFilter='all', gFilter='all', replyingTo=null;
 let activeQuizId=null, quizAnswers={}, quizTimerInterval=null, quizSecondsLeft=0;
 let pendingFile=null, chatPendingFile=null;
 let studentChatPreviewDocId=null;
@@ -490,28 +503,24 @@ function renderChat(){
   let h='', _lastDs=null;
   msgs.forEach(m=>{
     const _ds=_mds(m); if(_ds&&_ds!==_lastDs){ const _l=_dlbl(_ds); if(_l) h+=`<div class="msg-date-sep"><span>${_l}</span></div>`; _lastDs=_ds; }
-    // From student's view: role='in' is messages student sent (shown on right), role='out' is from teacher (shown on left)
-    const viewRole=m.role==='in'?'out':'in';
+    const replyRef=m.replyTo?`<div class="msg-reply-ref" onclick="scrollToMsg('${m.replyTo.id}')"><div class="rr-sender">${esc(m.replyTo.senderLabel||'')}</div><div class="rr-text">${esc(m.replyTo.text||'')}</div></div>`:'';
+    const swiIcon=`<div class="swipe-reply-icon">↩</div>`;
     if(m.type==='task'){
       const tLabel=m.task?.taskType==='daily'?'🔁 দৈনিক':'📌 এককালীন';
-      h+=`<div class="msg-wrap in"><div class="task-bubble"><div class="task-bubble-hd">📋 উস্তাদ টাস্ক দিয়েছেন · ${tLabel}</div><div class="task-bubble-bd"><div class="task-bubble-title">${esc(m.task.title)}</div><div class="task-bubble-desc">${esc(m.task.desc)}</div>${m.task.deadline?`<div class="task-bubble-dl">📅 শেষ তারিখ: ${m.task.deadline}</div>`:''}</div></div><div style="font-size:11px;color:var(--gray-400);text-align:left;margin-top:2px;padding-left:4px">${m.time}</div></div>`;
+      h+=`<div class="msg-wrap in" data-mid="${m.id}">${swiIcon}<div class="task-bubble"><div class="task-bubble-hd">📋 উস্তাদ টাস্ক দিয়েছেন · ${tLabel}</div><div class="task-bubble-bd">${replyRef}<div class="task-bubble-title">${esc(m.task.title)}</div><div class="task-bubble-desc">${esc(m.task.desc)}</div>${m.task.deadline?`<div class="task-bubble-dl">📅 শেষ তারিখ: ${m.task.deadline}</div>`:''}</div></div><div style="font-size:11px;color:var(--gray-400);text-align:left;margin-top:2px;padding-left:4px">${m.time}</div></div>`;
     } else if(m.type==='doc'){
       const ic=fileIcon(m.fileType);
       const viewBtn=m.docId?`<button type="button" class="chat-doc-view-btn" onclick="previewStudentChatDoc('${m.docId}')">👁 দেখুন</button>`:'';
       if(m.role==='in'){
-        // Student sent this file (shown right side, with tick)
-        h+=`<div class="msg-wrap out"><div class="msg-doc-bubble"><div class="msg-doc-icon">${ic}</div><div class="msg-doc-info"><div class="msg-doc-name">${esc(m.fileName)}</div><div class="msg-doc-size">${m.fileSize?formatBytes(m.fileSize):''}</div>${viewBtn}</div></div><div class="msg-meta" style="position:static;display:flex;gap:3px;justify-content:flex-end;margin-top:3px;padding-right:4px"><span class="msg-time">${m.time}</span>${tickHtml(m)}</div></div>`;
+        h+=`<div class="msg-wrap out" data-mid="${m.id}">${swiIcon}<div class="msg-doc-bubble">${replyRef}<div class="msg-doc-icon">${ic}</div><div class="msg-doc-info"><div class="msg-doc-name">${esc(m.fileName)}</div><div class="msg-doc-size">${m.fileSize?formatBytes(m.fileSize):''}</div>${viewBtn}</div></div><div class="msg-meta" style="position:static;display:flex;gap:3px;justify-content:flex-end;margin-top:3px;padding-right:4px"><span class="msg-time">${m.time}</span>${tickHtml(m)}</div></div>`;
       } else {
-        // Teacher sent a file (shown left side)
-        h+=`<div class="msg-wrap in"><div class="msg-doc-bubble"><div class="msg-doc-icon">${ic}</div><div class="msg-doc-info"><div class="msg-doc-name">${esc(m.fileName)}</div><div class="msg-doc-size">${m.fileSize?formatBytes(m.fileSize):''}</div>${viewBtn}</div></div><div style="font-size:11px;color:var(--gray-400);margin-top:2px;padding-left:4px">${m.time}</div></div>`;
+        h+=`<div class="msg-wrap in" data-mid="${m.id}">${swiIcon}<div class="msg-doc-bubble">${replyRef}<div class="msg-doc-icon">${ic}</div><div class="msg-doc-info"><div class="msg-doc-name">${esc(m.fileName)}</div><div class="msg-doc-size">${m.fileSize?formatBytes(m.fileSize):''}</div>${viewBtn}</div></div><div style="font-size:11px;color:var(--gray-400);margin-top:2px;padding-left:4px">${m.time}</div></div>`;
       }
     } else {
       if(m.role==='in'){
-        // Student sent this text (shown right)
-        h+=`<div class="msg-wrap out"><div class="msg-bubble out">${esc(m.text)}<div class="msg-meta"><span class="msg-time">${m.time}</span>${tickHtml(m)}</div></div></div>`;
+        h+=`<div class="msg-wrap out" data-mid="${m.id}">${swiIcon}<div class="msg-bubble out">${replyRef}${esc(m.text)}<div class="msg-meta"><span class="msg-time">${m.time}</span>${tickHtml(m)}</div></div></div>`;
       } else {
-        // Teacher sent this text (shown left)
-        h+=`<div class="msg-wrap in"><div class="msg-bubble in">${esc(m.text)}<div class="msg-meta"><span class="msg-time">${m.time}</span></div></div></div>`;
+        h+=`<div class="msg-wrap in" data-mid="${m.id}">${swiIcon}<div class="msg-bubble in">${replyRef}${esc(m.text)}<div class="msg-meta"><span class="msg-time">${m.time}</span></div></div></div>`;
       }
     }
   });
@@ -519,10 +528,12 @@ function renderChat(){
 }
 function sendMsg(){
   if(!me) return;
-  // If a file is pending, send it
   if(chatPendingFile){ sendChatFile(); return; }
   const inp=document.getElementById('msgIn'); const text=inp.value.trim(); if(!text) return;
-  API.Messages.sendFromStudent(me.id,text); inp.value=''; inp.style.height='auto'; renderChat(); updateBadges();
+  const rt=replyingTo?{...replyingTo}:null;
+  cancelReply();
+  API.Messages.sendFromStudent(me.id, text, 'text', rt?{replyTo:rt}:{});
+  inp.value=''; inp.style.height='auto'; renderChat(); updateBadges();
 }
 
 // ── Chat file attachment ─────────────────────────────────
@@ -545,14 +556,19 @@ async function onChatFileChosen(input){
 function cancelChatFile(){
   chatPendingFile=null;
   document.getElementById('chatFileInput').value='';
+  document.getElementById('chatFileTitleIn').value='';
   document.getElementById('chatFilePreview').style.display='none';
 }
 async function sendChatFile(){
   if(!chatPendingFile||!me) return;
-  const f=chatPendingFile;
-  cancelChatFile();
+  const titleEl=document.getElementById('chatFileTitleIn');
+  const title=titleEl.value.trim();
+  if(!title){ titleEl.classList.add('error'); titleEl.focus(); setTimeout(()=>titleEl.classList.remove('error'),400); showToast('ফাইলের শিরোনাম দিন!'); return; }
+  const f=new File([chatPendingFile], title, {type:chatPendingFile.type});
+  const rt=replyingTo?{...replyingTo}:null;
+  cancelChatFile(); cancelReply();
   try{
-    await API.Messages.sendFileFromStudent(me.id, f);
+    await API.Messages.sendFileFromStudent(me.id, f, {replyTo:rt});
     renderChat(); renderSentDocs(); updateBadges();
     showToast('✅ ফাইল পাঠানো হয়েছে!');
   } catch(e){
@@ -561,6 +577,66 @@ async function sendChatFile(){
     else showToast('❌ পাঠানো ব্যর্থ হয়েছে!');
   }
 }
+
+// ── Reply-to ────────────────────────────────────────────────
+function triggerReply(mid){
+  const msgs=API.Messages.getThread(me.id);
+  const m=msgs.find(x=>x.id===mid); if(!m) return;
+  const senderLabel=m.role==='in'?'আপনি':'উস্তাদ';
+  replyingTo={id:m.id, text:m.text||m.fileName||'(ফাইল)', role:m.role, senderLabel};
+  document.getElementById('replyPreviewSender').textContent=senderLabel;
+  document.getElementById('replyPreviewText').textContent=replyingTo.text;
+  document.getElementById('replyPreviewBar').style.display='flex';
+  document.getElementById('msgIn').focus();
+}
+function cancelReply(){
+  replyingTo=null;
+  const bar=document.getElementById('replyPreviewBar'); if(bar) bar.style.display='none';
+}
+function scrollToMsg(mid){
+  const el=document.querySelector(`.msg-wrap[data-mid="${mid}"]`);
+  if(!el) return;
+  el.scrollIntoView({behavior:'smooth',block:'center'});
+  el.classList.add('msg-highlight');
+  setTimeout(()=>el.classList.remove('msg-highlight'),1200);
+}
+// ── Swipe-to-reply ──────────────────────────────────────────
+(function initSwipeReply(){
+  let _st=null;
+  const THRESH=60;
+  function _getBubble(wrap){ return wrap.querySelector('.msg-bubble')||wrap.querySelector('.msg-doc-bubble')||wrap.querySelector('.task-bubble'); }
+  document.addEventListener('touchstart',e=>{
+    const wrap=e.target.closest('#chatMsgs .msg-wrap[data-mid]');
+    if(!wrap){_st=null;return;}
+    _st={wrap,sx:e.touches[0].clientX,sy:e.touches[0].clientY,dx:0,locked:false};
+  },{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(!_st) return;
+    const dx=e.touches[0].clientX-_st.sx, dy=e.touches[0].clientY-_st.sy;
+    if(!_st.locked){
+      if(Math.abs(dy)>Math.abs(dx)+6){_st=null;return;}
+      if(Math.abs(dx)<8) return;
+      _st.locked=true;
+    }
+    const isIn=_st.wrap.classList.contains('in'), isOut=_st.wrap.classList.contains('out');
+    let clamped=0;
+    if(isIn&&dx>0) clamped=Math.min(dx,THRESH+20);
+    else if(isOut&&dx<0) clamped=Math.max(dx,-(THRESH+20));
+    else{_st=null;return;}
+    _st.dx=clamped;
+    const b=_getBubble(_st.wrap); if(b) b.style.transform=`translateX(${clamped}px)`;
+    const ic=_st.wrap.querySelector('.swipe-reply-icon');
+    if(ic) ic.style.opacity=Math.min(Math.abs(clamped)/THRESH,1);
+  },{passive:true});
+  document.addEventListener('touchend',()=>{
+    if(!_st) return;
+    const {wrap,dx}=_st; _st=null;
+    const b=_getBubble(wrap);
+    if(b){b.style.transition='transform .2s ease';b.style.transform='';setTimeout(()=>{b.style.transition=''},200);}
+    const ic=wrap.querySelector('.swipe-reply-icon'); if(ic) ic.style.opacity='0';
+    if(Math.abs(dx)>=THRESH) triggerReply(wrap.dataset.mid);
+  });
+})();
 
 // ══ TASKS ══════════════════════════════════════════════════
 function atCardHtml(task, compact){

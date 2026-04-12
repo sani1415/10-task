@@ -342,6 +342,11 @@ const API = (() => {
       Docs.deleteAllForStudent(sid);
     },
 
+    /** সব ছাত্রের সংশ্লিষ্ট ডেটা মুছে — নাম/ওয়াকফ/পিন অপরিবর্তিত থাকে। */
+    clearAllStudentsData() {
+      for (const s of this.getAll()) this.clearAllRelatedData(s.id);
+    },
+
     /** ছাত্র + সব সংশ্লিষ্ট ডেটা মুছে; ওয়াকফ নম্বর পরে নতুন ছাত্রের জন্য পুনরায় বরাদ্দ হতে পারে। */
     deleteCompletely(sid) {
       if (!this.getById(sid)) throw new Error('student_not_found');
@@ -489,7 +494,7 @@ const API = (() => {
       db.chats[sid].push(m); stampNotify(db); DB.save(db); return m;
     },
     // Send a file directly from chat (student → teacher)
-    sendFileFromStudent(sid, file, { category='general', note='' } = {}) {
+    sendFileFromStudent(sid, file, { category='general', note='', replyTo=null } = {}) {
       return new Promise((resolve, reject) => {
         const student=Students.getById(sid);
         if(!student){ reject(new Error('student_not_found')); return; }
@@ -511,7 +516,8 @@ const API = (() => {
             RS.schedule('docs_meta', ()=>JSON.parse(JSON.stringify(RS.mem.docs)));
             const db=DB.get(); if(!db.chats[sid]) db.chats[sid]=[];
             const m={id:uid('m'),role:'in',type:'doc',text:file.name,time:nowTime(),read:false,
-                     fileName:file.name, fileType:file.type, fileSize:file.size, docId, fileUrl, storage_path: storagePath || path};
+                     fileName:file.name, fileType:file.type, fileSize:file.size, docId, fileUrl, storage_path: storagePath || path,
+                     ...(replyTo?{replyTo}:{})};
             db.chats[sid].push(m); stampNotify(db); DB.save(db);
             resolve({ meta, msg: m });
           }).catch(err=>reject(err));
@@ -531,7 +537,8 @@ const API = (() => {
           list.unshift(meta); localStorage.setItem('madrasa_docs', JSON.stringify(list));
           const db=DB.get(); if(!db.chats[sid]) db.chats[sid]=[];
           const m={id:uid('m'),role:'in',type:'doc',text:file.name,time:nowTime(),read:false,
-                   fileName:file.name, fileType:file.type, fileSize:file.size, docId};
+                   fileName:file.name, fileType:file.type, fileSize:file.size, docId,
+                   ...(replyTo?{replyTo}:{})};
           db.chats[sid].push(m); DB.save(db);
           resolve({ meta, msg: m });
         };
@@ -539,7 +546,7 @@ const API = (() => {
         reader.readAsDataURL(file);
       });
     },
-    sendFileFromTeacher(sid, file) {
+    sendFileFromTeacher(sid, file, { replyTo=null } = {}) {
       return new Promise((resolve, reject) => {
         if(!fileWithinUploadLimit(file)){ reject(new Error('file_too_large')); return; }
         if (_useRemote) {
@@ -560,7 +567,8 @@ const API = (() => {
             RS.schedule('docs_meta', ()=>JSON.parse(JSON.stringify(RS.mem.docs)));
             const db=DB.get(); if(!db.chats[sid]) db.chats[sid]=[];
             const m={id:uid('m'),role:'out',type:'doc',text:file.name,time:nowTime(),read:false,
-                     fileName:file.name, fileType:file.type, fileSize:file.size, docId, fileUrl, storage_path: storagePath || path};
+                     fileName:file.name, fileType:file.type, fileSize:file.size, docId, fileUrl, storage_path: storagePath || path,
+                     ...(replyTo?{replyTo}:{})};
             db.chats[sid].push(m); stampNotify(db); DB.save(db);
             resolve({ msg: m });
           }).catch(err=>reject(err));
@@ -573,7 +581,8 @@ const API = (() => {
           catch { reject(new Error('storage_full')); return; }
           const db=DB.get(); if(!db.chats[sid]) db.chats[sid]=[];
           const m={id:uid('m'),role:'out',type:'doc',text:file.name,time:nowTime(),read:false,
-                   fileName:file.name, fileType:file.type, fileSize:file.size, docId};
+                   fileName:file.name, fileType:file.type, fileSize:file.size, docId,
+                   ...(replyTo?{replyTo}:{})};
           db.chats[sid].push(m); DB.save(db);
           resolve({ msg: m });
         };
