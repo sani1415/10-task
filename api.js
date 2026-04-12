@@ -494,11 +494,12 @@ const API = (() => {
       db.chats[sid].push(m); stampNotify(db); DB.save(db); return m;
     },
     // Send a file directly from chat (student → teacher)
-    sendFileFromStudent(sid, file, { category='general', note='', replyTo=null } = {}) {
+    sendFileFromStudent(sid, file, { category='general', note='', replyTo=null, displayName=null } = {}) {
       return new Promise((resolve, reject) => {
         const student=Students.getById(sid);
         if(!student){ reject(new Error('student_not_found')); return; }
         if(!fileWithinUploadLimit(file)){ reject(new Error('file_too_large')); return; }
+        const dispName = displayName || file.name;
         if (_useRemote) {
           const docId=uid('doc');
           const path=`${sid}/${docId}_${safeFilePart(file.name)}`;
@@ -506,7 +507,7 @@ const API = (() => {
             const { fileUrl, storagePath } = RS.consumeUploadResult(res);
             const meta={
               id:docId, studentId:sid, studentName:student.name,
-              fileName:file.name, fileType:file.type, fileSize:file.size,
+              fileName:dispName, fileType:file.type, fileSize:file.size,
               category, note, uploadedAt:new Date().toISOString(), read:false,
               fileUrl, storage_path: storagePath || path,
             };
@@ -515,8 +516,8 @@ const API = (() => {
             RS.mem.docs=list;
             RS.schedule('docs_meta', ()=>JSON.parse(JSON.stringify(RS.mem.docs)));
             const db=DB.get(); if(!db.chats[sid]) db.chats[sid]=[];
-            const m={id:uid('m'),role:'in',type:'doc',text:file.name,time:nowTime(),read:false,
-                     fileName:file.name, fileType:file.type, fileSize:file.size, docId, fileUrl, storage_path: storagePath || path,
+            const m={id:uid('m'),role:'in',type:'doc',text:dispName,time:nowTime(),read:false,
+                     fileName:dispName, fileType:file.type, fileSize:file.size, docId, fileUrl, storage_path: storagePath || path,
                      ...(replyTo?{replyTo}:{})};
             db.chats[sid].push(m); stampNotify(db); DB.save(db);
             resolve({ meta, msg: m });
@@ -528,7 +529,7 @@ const API = (() => {
           const docId=uid('doc');
           const meta={
             id:docId, studentId:sid, studentName:student.name,
-            fileName:file.name, fileType:file.type, fileSize:file.size,
+            fileName:dispName, fileType:file.type, fileSize:file.size,
             category, note, uploadedAt:new Date().toISOString(), read:false,
           };
           try { localStorage.setItem('madrasa_doc_'+docId, e.target.result); }
@@ -536,8 +537,8 @@ const API = (() => {
           const list=JSON.parse(localStorage.getItem('madrasa_docs')||'[]');
           list.unshift(meta); localStorage.setItem('madrasa_docs', JSON.stringify(list));
           const db=DB.get(); if(!db.chats[sid]) db.chats[sid]=[];
-          const m={id:uid('m'),role:'in',type:'doc',text:file.name,time:nowTime(),read:false,
-                   fileName:file.name, fileType:file.type, fileSize:file.size, docId,
+          const m={id:uid('m'),role:'in',type:'doc',text:dispName,time:nowTime(),read:false,
+                   fileName:dispName, fileType:file.type, fileSize:file.size, docId,
                    ...(replyTo?{replyTo}:{})};
           db.chats[sid].push(m); DB.save(db);
           resolve({ meta, msg: m });
@@ -546,9 +547,10 @@ const API = (() => {
         reader.readAsDataURL(file);
       });
     },
-    sendFileFromTeacher(sid, file, { replyTo=null } = {}) {
+    sendFileFromTeacher(sid, file, { replyTo=null, displayName=null } = {}) {
       return new Promise((resolve, reject) => {
         if(!fileWithinUploadLimit(file)){ reject(new Error('file_too_large')); return; }
+        const dispName = displayName || file.name;
         if (_useRemote) {
           const docId=uid('tdoc');
           const path=`teacher/${sid}/${docId}_${safeFilePart(file.name)}`;
@@ -557,7 +559,7 @@ const API = (() => {
             const { fileUrl, storagePath } = RS.consumeUploadResult(res);
             const meta={
               id:docId, studentId:sid, studentName:st?.name||'',
-              fileName:file.name, fileType:file.type, fileSize:file.size,
+              fileName:dispName, fileType:file.type, fileSize:file.size,
               category:'general', note:'', uploadedAt:new Date().toISOString(), read:true,
               fileUrl, storage_path: storagePath || path,
             };
@@ -566,8 +568,8 @@ const API = (() => {
             RS.mem.docs=list;
             RS.schedule('docs_meta', ()=>JSON.parse(JSON.stringify(RS.mem.docs)));
             const db=DB.get(); if(!db.chats[sid]) db.chats[sid]=[];
-            const m={id:uid('m'),role:'out',type:'doc',text:file.name,time:nowTime(),read:false,
-                     fileName:file.name, fileType:file.type, fileSize:file.size, docId, fileUrl, storage_path: storagePath || path,
+            const m={id:uid('m'),role:'out',type:'doc',text:dispName,time:nowTime(),read:false,
+                     fileName:dispName, fileType:file.type, fileSize:file.size, docId, fileUrl, storage_path: storagePath || path,
                      ...(replyTo?{replyTo}:{})};
             db.chats[sid].push(m); stampNotify(db); DB.save(db);
             resolve({ msg: m });
@@ -579,9 +581,16 @@ const API = (() => {
           const docId=uid('tdoc');
           try { localStorage.setItem('madrasa_doc_'+docId, e.target.result); }
           catch { reject(new Error('storage_full')); return; }
+          // Add metadata so Docs.getById() can find this file for preview
+          const st=Students.getById(sid);
+          const meta={id:docId, studentId:sid, studentName:st?.name||'',
+                      fileName:dispName, fileType:file.type, fileSize:file.size,
+                      category:'general', note:'', uploadedAt:new Date().toISOString(), read:true};
+          const mList=JSON.parse(localStorage.getItem(DOCS_KEY)||'[]');
+          mList.unshift(meta); localStorage.setItem(DOCS_KEY, JSON.stringify(mList));
           const db=DB.get(); if(!db.chats[sid]) db.chats[sid]=[];
-          const m={id:uid('m'),role:'out',type:'doc',text:file.name,time:nowTime(),read:false,
-                   fileName:file.name, fileType:file.type, fileSize:file.size, docId,
+          const m={id:uid('m'),role:'out',type:'doc',text:dispName,time:nowTime(),read:false,
+                   fileName:dispName, fileType:file.type, fileSize:file.size, docId,
                    ...(replyTo?{replyTo}:{})};
           db.chats[sid].push(m); DB.save(db);
           resolve({ msg: m });

@@ -564,11 +564,11 @@ async function sendChatFile(){
   const titleEl=document.getElementById('chatFileTitleIn');
   const title=titleEl.value.trim();
   if(!title){ titleEl.classList.add('error'); titleEl.focus(); setTimeout(()=>titleEl.classList.remove('error'),400); showToast('ফাইলের শিরোনাম দিন!'); return; }
-  const f=new File([chatPendingFile], title, {type:chatPendingFile.type});
+  const f=chatPendingFile;
   const rt=replyingTo?{...replyingTo}:null;
   cancelChatFile(); cancelReply();
   try{
-    await API.Messages.sendFileFromStudent(me.id, f, {replyTo:rt});
+    await API.Messages.sendFileFromStudent(me.id, f, {replyTo:rt, displayName:title});
     renderChat(); renderSentDocs(); updateBadges();
     showToast('✅ ফাইল পাঠানো হয়েছে!');
   } catch(e){

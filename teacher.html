@@ -801,11 +801,11 @@ async function sendTeacherChatFile(){
   const titleEl=document.getElementById('chatFileTitleIn');
   const title=titleEl.value.trim();
   if(!title){ titleEl.classList.add('error'); titleEl.focus(); setTimeout(()=>titleEl.classList.remove('error'),400); showToast('ফাইলের শিরোনাম দিন!'); return; }
-  const f=new File([chatTeacherPendingFile], title, {type:chatTeacherPendingFile.type});
+  const f=chatTeacherPendingFile;
   const rt=replyingTo?{...replyingTo}:null;
   cancelTeacherChatFile(); cancelReply();
   try{
-    await API.Messages.sendFileFromTeacher(curChat, f, {replyTo:rt});
+    await API.Messages.sendFileFromTeacher(curChat, f, {replyTo:rt, displayName:title});
     renderMsgs(curChat); renderChatList(); updateBadge();
     showToast('✅ ফাইল পাঠানো হয়েছে!');
   } catch(e){
