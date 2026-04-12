@@ -489,8 +489,12 @@ async function downloadStudentChatDoc(){
 function renderChat(){
   const msgs=API.Messages.getThread(me.id); const el=document.getElementById('chatMsgs');
   if(!msgs.length){ el.innerHTML='<div style="text-align:center;padding:40px;color:var(--gray-400);font-size:14px">📖 উস্তাদকে সালাম দিন! 👋</div>'; return; }
-  let h='<div class="msg-date-sep"><span>আজ</span></div>';
+  const _todayStr=new Date().toISOString().split('T')[0];
+  function _mds(m){ const ts=m._ts||(m.id&&m.id[0]==='m'?parseInt(m.id.slice(1)):0); if(!ts) return null; return new Date(ts).toISOString().split('T')[0]; }
+  function _dlbl(ds){ if(!ds) return null; if(ds===_todayStr) return 'আজ'; const d=new Date(ds); return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`; }
+  let h='', _lastDs=null;
   msgs.forEach(m=>{
+    const _ds=_mds(m); if(_ds&&_ds!==_lastDs){ const _l=_dlbl(_ds); if(_l) h+=`<div class="msg-date-sep"><span>${_l}</span></div>`; _lastDs=_ds; }
     // From student's view: role='in' is messages student sent (shown on right), role='out' is from teacher (shown on left)
     const viewRole=m.role==='in'?'out':'in';
     if(m.type==='task'){

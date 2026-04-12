@@ -335,7 +335,7 @@
     const sb = getClient(); if (!sb || realtimeChannel) return;
     const pull = () => setTimeout(() => void pullRemoteSnapshot(), 200);
     realtimeChannel = sb.channel('madrasa_rel_changes')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, pull)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, pull)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'students' }, pull)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, pull)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'task_assignments' }, pull)

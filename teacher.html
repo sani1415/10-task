@@ -410,6 +410,25 @@
   <button class="btn-secondary" onclick="closeModal('docPreviewModal')">বন্ধ করুন</button>
 </div></div>
 
+<!-- Exam creation from chat modal -->
+<div class="modal-overlay" id="addExamFromChatModal"><div class="modal-sheet" style="max-height:90vh;overflow-y:auto">
+  <div class="modal-handle"></div>
+  <div class="modal-title">📝 নতুন পরীক্ষা দিন</div>
+  <div style="background:#E8EAF6;border-radius:8px;padding:8px 12px;font-size:13px;color:#3949AB;margin-bottom:12px;font-weight:600">👤 <span id="ecStudentName"></span></div>
+  <div class="form-group"><label class="form-label">শিরোনাম *</label><input class="form-input" id="ec_title" placeholder="পরীক্ষার নাম"></div>
+  <div class="form-group"><label class="form-label">বিষয়</label><input class="form-input" id="ec_subject" placeholder="কুরআন / হাদিস..."></div>
+  <div class="form-group"><label class="form-label">বিবরণ</label><textarea class="form-input" id="ec_desc" rows="2" placeholder="পরীক্ষার বিবরণ..."></textarea></div>
+  <div style="display:flex;gap:10px">
+    <div class="form-group" style="flex:1"><label class="form-label">সময় (মিনিট)</label><input class="form-input" type="number" id="ec_time" value="30" min="1"></div>
+    <div class="form-group" style="flex:1"><label class="form-label">পাস (%)</label><input class="form-input" type="number" id="ec_pass" value="60" min="0" max="100"></div>
+  </div>
+  <div class="form-group"><label class="form-label">শেষ তারিখ</label><input class="form-input" type="date" id="ec_deadline"></div>
+  <div id="ecQList"></div>
+  <button onclick="addQuestion()" style="width:100%;background:var(--gray-100);border:1.5px dashed var(--gray-300);color:var(--gray-600);border-radius:10px;padding:10px;font-family:var(--font);font-size:13px;cursor:pointer;margin-bottom:12px">＋ প্রশ্ন যোগ করুন</button>
+  <button class="btn-primary" onclick="saveExamFromChat()">✅ পরীক্ষা সংরক্ষণ করুন</button>
+  <button class="btn-secondary" onclick="closeModal('addExamFromChatModal');curQContainer='questionList'">বাতিল</button>
+</div></div>
+
 <div class="toast" id="toast"></div>
 <script>window.__MADRASA_ROLE__='teacher';</script>
 <script src="https://unpkg.com/@supabase/supabase-js@2.49.8/dist/umd/supabase.js"></script>
@@ -426,7 +445,7 @@
 let pin='', curTab='chats', curChat=null, curChatTab='msg', tFilter='all', docFilter='all', editSid=null;
 let newTaskType='daily';
 let examTab='list', docViewTab='received';
-let questions=[];
+let questions=[], curQContainer='questionList', examChatSid=null;
 let curPreviewDocId=null;
 let chatTeacherPendingFile=null;
 let curProfileSid=null;
@@ -482,7 +501,16 @@ async function chkPin(){
   if(API.Auth.checkTeacherPin(pin)){ localStorage.setItem('madrasa_lastPanel','teacher'); document.getElementById('lockScreen').style.display='none'; renderAll(); void API.Pwa.enableNotificationsAfterAuth('teacher'); }
   else { document.getElementById('pinErr').textContent='❌ পিন ভুল হয়েছে'; pin=''; dots(); setTimeout(()=>document.getElementById('pinErr').textContent='',2000); }
 }
-function renderAll(){ renderChatList(); renderStudentList(); renderTaskList(); renderQuizList(); renderDocsGrouped(); updateBadge(); updateDocBadge(); }
+function renderAll(){
+  renderChatList(); renderStudentList(); renderTaskList(); renderQuizList(); renderDocsGrouped(); updateBadge(); updateDocBadge();
+  if(curChat){
+    if(curChatTab==='msg') renderMsgs(curChat);
+    else if(curChatTab==='task') renderChatTasks();
+    else if(curChatTab==='exam') renderChatExams();
+    else if(curChatTab==='goal') renderChatGoals();
+    else if(curChatTab==='doc') renderChatDocs();
+  }
+}
 
 // ══ CHAT LIST ══════════════════════════════════════════════
 function renderChatList(f=''){
@@ -575,10 +603,11 @@ function switchChatTab(tab,btn){
 function renderChatTasks(){
   const el=document.getElementById('csp-task'); if(!el||!curChat) return;
   const tasks=API.Tasks.getAll().filter(t=>t.assignees&&curChat in t.assignees);
-  if(!tasks.length){ el.innerHTML='<div class="csp-empty">📋 কোনো টাস্ক নেই।</div>'; return; }
   const bm={done:'badge-done',pending:'badge-pending',late:'badge-late'};
   const lm={done:'✅ সম্পন্ন',pending:'⏳ বকেয়া',late:'❌ দেরি'};
-  el.innerHTML=tasks.map(t=>{
+  const addBtn=`<button onclick="openAddTask('${curChat}')" style="width:100%;background:#E8F5E9;border:1.5px dashed #25D366;color:#2E7D32;border-radius:10px;padding:10px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:4px">＋ নতুন টাস্ক দিন</button>`;
+  if(!tasks.length){ el.innerHTML=addBtn+'<div class="csp-empty">📋 কোনো টাস্ক নেই।</div>'; return; }
+  el.innerHTML=addBtn+tasks.map(t=>{
     const isDaily=t.type==='daily';
     const st=isDaily?(API.Tasks.isDailyDoneToday(t,curChat)?'done':'pending'):(t.assignees[curChat]||'pending');
     return `<div class="csp-task-card">
@@ -608,8 +637,9 @@ function renderChatDocs(){
 function renderChatExams(){
   const el=document.getElementById('csp-exam'); if(!el||!curChat) return;
   const quizzes=API.Exams.getQuizzes().filter(q=>q.assigneeIds?.includes(curChat));
-  if(!quizzes.length){ el.innerHTML='<div class="csp-empty">📝 কোনো পরীক্ষা নেই।</div>'; return; }
-  el.innerHTML=quizzes.map(q=>{
+  const addBtn=`<button onclick="openAddExamForChat('${curChat}')" style="width:100%;background:#E8EAF6;border:1.5px dashed #3949AB;color:#3949AB;border-radius:10px;padding:10px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:4px">＋ নতুন পরীক্ষা দিন</button>`;
+  if(!quizzes.length){ el.innerHTML=addBtn+'<div class="csp-empty">📝 কোনো পরীক্ষা নেই।</div>'; return; }
+  el.innerHTML=addBtn+quizzes.map(q=>{
     const subs=API.Exams.getSubmissionsForQuiz(q.id);
     const sub=subs.find(s=>s.studentId===curChat);
     let statusHtml;
@@ -657,8 +687,13 @@ function renderMsgs(id){
   const msgs=API.Messages.getThread(id==='_broadcast'?'_bc':id);
   const el=document.getElementById('chatMsgs');
   if(!msgs.length){ el.innerHTML='<div style="text-align:center;padding:30px;color:var(--gray-400);font-size:13px">কথোপকথন শুরু করুন 👋</div>'; return; }
-  let h='<div class="msg-date-sep"><span>আজ</span></div>';
+  const todayStr=new Date().toISOString().split('T')[0];
+  function _msgDateStr(m){ const ts=m._ts||(m.id&&m.id[0]==='m'?parseInt(m.id.slice(1)):0); if(!ts) return null; return new Date(ts).toISOString().split('T')[0]; }
+  function _dateSepLabel(ds){ if(!ds) return null; if(ds===todayStr) return 'আজ'; const d=new Date(ds); return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`; }
+  let h='', lastDs=null;
   msgs.forEach(m=>{
+    const ds=_msgDateStr(m);
+    if(ds && ds!==lastDs){ const lbl=_dateSepLabel(ds); if(lbl) h+=`<div class="msg-date-sep"><span>${lbl}</span></div>`; lastDs=ds; }
     if(m.type==='task'){
       const tLabel=m.task?.taskType==='daily'?'🔁 দৈনিক':'📌 এককালীন';
       h+=`<div class="msg-wrap out"><div class="task-bubble"><div class="task-bubble-hd">📋 টাস্ক · ${tLabel}</div><div class="task-bubble-bd"><div class="task-bubble-title">${esc(m.task.title)}</div><div class="task-bubble-desc">${esc(m.task.desc)}</div>${m.task.deadline?`<div class="task-bubble-dl">📅 ${m.task.deadline}</div>`:''}</div></div><div style="font-size:11px;color:var(--gray-400);text-align:right;margin-top:2px">${m.time}</div></div>`;
@@ -908,7 +943,7 @@ function goExamTab(tab,btn){
 }
 
 function initCreateQuiz(){
-  questions=[];
+  questions=[]; curQContainer='questionList';
   document.getElementById('q_title').value='';
   document.getElementById('q_subject').value='';
   document.getElementById('q_desc').value='';
@@ -928,7 +963,7 @@ function addQuestion(){
   renderQuestions();
 }
 function renderQuestions(){
-  const el=document.getElementById('questionList');
+  const el=document.getElementById(curQContainer);
   if(!questions.length){ el.innerHTML='<div style="text-align:center;padding:16px;color:var(--gray-400);font-size:13px">প্রশ্ন যোগ করুন।</div>'; return; }
   el.innerHTML=questions.map((q,i)=>`
     <div class="question-card">
@@ -997,6 +1032,32 @@ function saveQuiz(){
   goExamTab('list', document.querySelector('.exam-tab-btn'));
 }
 
+function openAddExamForChat(sid){
+  examChatSid=sid; questions=[]; curQContainer='ecQList';
+  const s=API.Students.getById(sid);
+  document.getElementById('ecStudentName').textContent=s?(s.waqfId?s.waqfId+' · ':'')+s.name:'';
+  ['ec_title','ec_subject','ec_desc'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('ec_time').value='30';
+  document.getElementById('ec_pass').value='60';
+  document.getElementById('ec_deadline').value='';
+  renderQuestions();
+  openModal('addExamFromChatModal');
+}
+function saveExamFromChat(){
+  const title=document.getElementById('ec_title').value.trim(); if(!title){ showToast('শিরোনাম লিখুন!'); return; }
+  if(!questions.length){ showToast('কমপক্ষে একটি প্রশ্ন যোগ করুন!'); return; }
+  API.Exams.addQuiz({
+    title, subject:document.getElementById('ec_subject').value.trim(),
+    desc:document.getElementById('ec_desc').value.trim(),
+    timeLimit:document.getElementById('ec_time').value,
+    passPercent:document.getElementById('ec_pass').value,
+    deadline:document.getElementById('ec_deadline').value,
+    assigneeIds:[examChatSid], questions,
+  });
+  closeModal('addExamFromChatModal');
+  curQContainer='questionList'; questions=[];
+  renderAll(); showToast('✅ পরীক্ষা সংরক্ষিত হয়েছে!');
+}
 function renderQuizList(){
   const quizzes=API.Exams.getQuizzes();
   const el=document.getElementById('quizList');
