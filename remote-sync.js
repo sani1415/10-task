@@ -41,6 +41,17 @@
 
   function isRemote() { return !!(w.SUPABASE_URL && w.SUPABASE_ANON_KEY && getCreateClient()); }
 
+  /** "001" / "waqf_001" → `waqf_001` for RPC (matches `students.waqf_id`). */
+  function normalizeWaqfForRpc(raw) {
+    const t = String(raw || '').trim().replace(/\s/g, '');
+    if (!t) return '';
+    let n;
+    if (/^waqf_/i.test(t)) n = parseInt(t.slice(5), 10);
+    else n = parseInt(t, 10);
+    if (Number.isNaN(n) || n < 0) return t;
+    return 'waqf_' + String(n).padStart(3, '0');
+  }
+
   // Write module context — wired up at bottom
   const _write = (w._RSWrite || { init: () => ({}) }).init({
     getPin: () => _teacherPin,
@@ -293,13 +304,14 @@
 
   async function unlockStudentWithWaqfPin(waqfRaw, pin) {
     const sb = getClient(); if (!sb) throw new Error('Supabase client unavailable');
+    const waqfNorm = normalizeWaqfForRpc(waqfRaw);
     const { data, error } = await sb.rpc('madrasa_rel_student_bootstrap',
-      { p_waqf: String(waqfRaw || '').trim(), p_pin: String(pin || '') });
+      { p_waqf: waqfNorm, p_pin: String(pin || '') });
     if (error) throw error;
     assembleStudentBundle(data);
     mem.teacherPin = null;
     const stu = mem.core?.students?.[0];
-    _studentWaqf = stu?.waqfId || String(waqfRaw || '').trim();
+    _studentWaqf = stu?.waqfId || waqfNorm;
     _studentPin = String(pin || '');
     _studentId = stu?.id || '';
     mem.lockHints = []; mem.loaded = true;

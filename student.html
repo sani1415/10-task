@@ -14,6 +14,7 @@
 <title>ছাত্র প্যানেল · Waqful Madinah</title>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="tablet-desktop.css">
 <style>
 /* ── Student theme ── */
 #lockScreen{background:linear-gradient(160deg,#0D47A1 0%,#1565C0 60%,#1976D2 100%)}
@@ -139,7 +140,7 @@
     <div class="login-field">
       <label class="login-lbl">ওয়াকফ আইডি</label>
       <input id="loginId" class="login-input login-input-waqf" type="text" inputmode="text" maxlength="16" spellcheck="false"
-             placeholder="waqf_001" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('loginPin').focus()">
+             placeholder="001" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('loginPin').focus()">
     </div>
     <div class="login-field">
       <label class="login-lbl">পিন কোড</label>
@@ -373,10 +374,10 @@ function renderPendingSection(){
   sec.style.display='block';
   document.getElementById('pendingList').innerHTML=pending.map(s=>{
     const msgCnt=s.unreadCount!=null?s.unreadCount:API.Messages.unreadCount(s.id,'out');
-    const waqf=s.waqfId||API.Students.getShortId(s)||'---';
+    const waqf=API.Students.getShortId(s)||'---';
     return `<button class="pending-item" onclick="prefillId('${esc(waqf)}')">
       <div class="pending-avatar" style="background:${s.color||'#1565C0'}">${(s.name||'?').charAt(0)}</div>
-      <div class="pending-name">${esc(s.name||'')}<span class="pending-waqf">${esc(s.waqfId||'')}</span></div>
+      <div class="pending-name">${esc(s.name||'')}<span class="pending-waqf">${esc(API.Students.getShortId(s)||'')}</span></div>
       ${msgCnt>0?`<span class="pending-badge msg">💬 ${msgCnt}</span>`:''}
     </button>`;
   }).join('');
@@ -425,7 +426,7 @@ function onLogin(){
   localStorage.setItem('madrasa_lastPanel','student');
   document.getElementById('hAvatar').textContent=me.name.charAt(0); document.getElementById('hAvatar').style.background=me.color||'#1565C0';
   document.getElementById('hTitle').textContent=me.name;
-  { const p=[]; if(me.waqfId) p.push(me.waqfId); if(me.cls) p.push(me.cls); document.getElementById('hSub').textContent=p.length?p.join(' · '):'ছাত্র'; }
+  { const p=[]; if(me.waqfId) p.push(API.Students.getShortId(me)); if(me.cls) p.push(me.cls); document.getElementById('hSub').textContent=p.length?p.join(' · '):'ছাত্র'; }
   renderAll();
   goTab('chat');
   void API.Pwa.enableNotificationsAfterAuth('student', { waqfId: me && me.waqfId });

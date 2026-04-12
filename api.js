@@ -102,7 +102,6 @@ const API = (() => {
       localStorage.setItem(T_PIN_KEY, p);
     },
     checkTeacherPin(p)  { return p === this.getTeacherPin(); },
-    findStudentByPin(p) { return readDB()?.students?.find(s=>s.pin===p)||null; },
   };
 
   // ── DB ────────────────────────────────────────────────────
@@ -248,9 +247,25 @@ const API = (() => {
       return 'waqf_' + String(n).padStart(3, '0');
     },
 
-    // Public login/display id, e.g. "waqf_001" (same as waqfId)
+    /** UI-only: "001" from stored `waqf_001` (waqfId in memory/DB unchanged). */
+    displayWaqfId(waqfId) {
+      const w = String(waqfId || '').trim();
+      if (!w) return '';
+      const m = w.match(/^waqf_0*(\d+)$/i);
+      if (m) return String(parseInt(m[1], 10)).padStart(3, '0');
+      return w;
+    },
+    /** ছাত্র তালিকা/চ্যাট ফিল্টার — নাম, waqf_001, বা সংক্ষিপ্ত "001". */
+    matchesSearchQuery(s, rawFilter) {
+      const f = String(rawFilter || '').trim().toLowerCase();
+      if (!f) return true;
+      if ((s.name || '').toLowerCase().includes(f)) return true;
+      if (s.waqfId && String(s.waqfId).toLowerCase().includes(f)) return true;
+      return String(this.displayWaqfId(s.waqfId)).toLowerCase().includes(f);
+    },
+    // Public display id (তিন অঙ্ক); লগইনে `getByWaqfShortId` দিয়ে "001" বা "waqf_001" দুটোই চলে
     getShortId(s) {
-      return s?.waqfId||null;
+      return s?.waqfId ? this.displayWaqfId(s.waqfId) : null;
     },
     getPendingForLockScreen(){ return _useRemote&&RS.mem&&Array.isArray(RS.mem.lockHints)?RS.mem.lockHints.filter(s=>(s.unreadCount||0)>0):this.getAll().filter(s=>Messages.unreadCount(s.id,'out')>0); },
 
@@ -272,7 +287,6 @@ const API = (() => {
     },
     add({ name, cls, roll, note, pin, fatherName='', fatherOccupation='', contact='', district='', upazila='', bloodGroup='', enrollmentDate='' }) {
       const db = DB.get();
-      if(db.students.some(s=>s.pin===pin)) throw new Error('pin_exists');
       const colors=['#128C7E','#1565C0','#6A1B9A','#BF360C','#1B5E20','#E65100','#004D40','#880E4F'];
       const s = {
         id:uid('s'), waqfId:this.getNextWaqfId(),
@@ -293,7 +307,6 @@ const API = (() => {
 
     updatePin(sid, pin) {
       const db=DB.get();
-      if(db.students.some(s=>s.id!==sid&&s.pin===pin)) throw new Error('pin_exists');
       const s=db.students.find(s=>s.id===sid); if(s){ s.pin=pin; DB.save(db); } return s;
     },
 
@@ -395,7 +408,6 @@ const API = (() => {
         const name = r[col('name')]||''; const pin = (r[col('pin')]||'').trim();
         if(!name){ results.errors.push(`Row ${i+1}: name missing`); continue; }
         if(!/^\d{4}$/.test(pin)){ results.errors.push(`Row ${i+1} (${name}): invalid PIN`); continue; }
-        if(db.students.some(s=>s.pin===pin)){ results.errors.push(`Row ${i+1} (${name}): PIN ${pin} already exists`); continue; }
         const colors=['#128C7E','#1565C0','#6A1B9A','#BF360C','#1B5E20','#E65100','#004D40','#880E4F'];
         const s = {
           id:uid('s'), waqfId:this.getNextWaqfId(),

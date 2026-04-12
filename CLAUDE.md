@@ -3,6 +3,7 @@
 ## Architecture Rules
 - ALL data logic in `api.js` only — HTML files just call `API.*`
 - ALL shared CSS in `style.css` — theme overrides in HTML `<style>` are OK
+- `tablet-desktop.css` — optional breakpoint layer (tablet / large); load in HTML **after** `style.css`, **before** the per-page theme `<style>` block
 - Never access localStorage directly in HTML — always use `API.DB.get()`
 - `api.js` is backend-swappable — never hardcode storage logic in HTML
 
@@ -26,6 +27,8 @@
 ## Deployment Context
 - Teacher uses ONE device, students use SEPARATE devices
 - **Backend:** With `supabase-config.js` (URL + anon key) + scripts in HTML, data syncs via **Supabase** (relational tables + Storage bucket `waqf-files`). Without that file, the app falls back to **LocalStorage** (single-browser).
+- **Firestore → Supabase (ছাত্র মাত্র):** `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `TEACHER_PIN` সেট করে `npm run import-firestore-students -- [firestore-export.json] [--dry-run] [--fix-duplicate-pins]` — প্রতিটি ছাত্রের Firestore `id` অপরিবর্তিত রাখে (পরে চ্যাট ইমপোর্টের জন্য); `studentId` (`waqf-001`) → `waqf_001`।
+- **Firestore → chat (`messages`):** `npm run import-firestore-messages -- [firestore-export.json] [--dry-run] [--print-sql | --out-sql path.sql] [--batch 150]` — maps top-level `messages` to `public.messages` (`thread_id` = Firestore student doc `id`). SQL must run in **Supabase SQL Editor** (RLS blocks anon REST on `messages`). Skips unknown `studentId` (e.g. legacy `1`). `ON CONFLICT (id) DO NOTHING` for safe re-run.
 - **Production DB — migration order:**
   1. `001_app_kv_and_storage.sql` — legacy KV table + storage bucket
   2. `002_production_rpc_rls.sql` — RLS + legacy PIN-gated RPCs (`madrasa_*`)
@@ -37,6 +40,10 @@
   8. `008_relational_rpc.sql` — PIN-gated RPCs (`madrasa_rel_*` prefix); also needs `private` schema (`CREATE SCHEMA IF NOT EXISTS private`)
   9. `008b_fix_bootstrap_order_by.sql` — patches the two bootstrap RPCs to wrap ORDER BY in subqueries (PostgreSQL requires this inside `jsonb_agg` scalar subqueries)
   10. `009_data_migration.sql` — one-time copy of `app_kv` data into relational tables
+  11. `010_clear_student_data_rpc.sql` — RPC দিয়ে ছাত্রের সংশ্লিষ্ট ডেটা মুছে ফেলা
+  12. `011_drop_students_pin_unique.sql` — `students.pin` গ্লোবাল ইউনিক ইনডেক্স সরানো (লগইন `(waqf_id, pin)`)
+- **ছাত্র ওয়াকফ আইডি:** ডাটাবেস ও সিঙ্কে `waqf_001` রাখা হয়; UI-তে `API.Students.displayWaqfId` / `getShortId` দিয়ে `001` দেখানো।
+- **`students.pin`:** আর গ্লোবালি ইউনিক নয় — একই পিন একাধিক ছাত্রে থাকতে পারে; রিমোট লগইন `madrasa_rel_student_bootstrap(p_waqf, p_pin)` জোড়ায়।
 - **Relational tables:** `madrasa_config`, `students`, `messages`, `tasks`, `task_assignments`, `goals`, `quizzes`, `quiz_questions`, `quiz_assignees`, `quiz_submissions`, `documents`, `academic_history`, `teacher_notes`, `pwa_subscriptions`. All have RLS enabled; zero direct REST access — everything goes through `madrasa_rel_*` RPCs.
 - **RPC functions (`madrasa_rel_*`, all `GRANT EXECUTE TO anon`):**
   - `madrasa_rel_public_branding()` — no PIN

@@ -14,6 +14,7 @@
 <title>শিক্ষক প্যানেল · Waqful Madinah</title>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="tablet-desktop.css">
 <style>
 /* ── Teacher theme ── */
 #lockScreen{background:linear-gradient(160deg,#075E54 0%,#128C7E 70%)}
@@ -551,7 +552,7 @@ function renderAll(){
 function renderChatList(f=''){
   const msgTs=s=>{ const m=API.Messages.getThread(s.id); if(!m.length) return 0; const last=m[m.length-1]; return last._ts||parseInt(last.id.slice(1))||0; };
   const students=API.Students.getAll()
-    .filter(s=>!f||s.name.toLowerCase().includes(f.toLowerCase())||(s.waqfId&&s.waqfId.toLowerCase().includes(f.toLowerCase())))
+    .filter(s=>API.Students.matchesSearchQuery(s, f))
     .sort((a,b)=>msgTs(b)-msgTs(a));
   let h='';
   if(!f){ const bc=API.Messages.getThread('_bc'); const last=bc[bc.length-1];
@@ -568,7 +569,7 @@ function renderChatList(f=''){
     // Badge: green = student sent a message teacher hasn't read yet
     let badgeHtml='';
     if(ur) badgeHtml+=`<span class="chat-badge">${ur}</span>`;
-    h+=`<div class="chat-item" onclick="openChat('${s.id}')"><div class="chat-avatar" style="background:${s.color||C[0]}">${s.name.charAt(0)}</div><div class="chat-body"><div class="chat-row1"><span class="chat-name">${esc(s.name)}</span><span class="chat-time">${last?.time||''}</span></div><div class="chat-row2">${s.waqfId?`<span class="chat-waqf">${esc(s.waqfId)}</span> · `:''}<span class="chat-preview">${preview}</span>${badgeHtml}</div></div></div>`;
+    h+=`<div class="chat-item" onclick="openChat('${s.id}')"><div class="chat-avatar" style="background:${s.color||C[0]}">${s.name.charAt(0)}</div><div class="chat-body"><div class="chat-row1"><span class="chat-name">${esc(s.name)}</span><span class="chat-time">${last?.time||''}</span></div><div class="chat-row2">${s.waqfId?`<span class="chat-waqf">${esc(API.Students.displayWaqfId(s.waqfId))}</span> · `:''}<span class="chat-preview">${preview}</span>${badgeHtml}</div></div></div>`;
   });
   document.getElementById('chatList').innerHTML=h||'<div class="empty-state"><div class="icon">💬</div><p>ছাত্র যোগ করুন।</p></div>';
 }
@@ -581,7 +582,7 @@ function openChat(id){
   document.getElementById('hAvatar').textContent=isBC?'📢':s?.name.charAt(0);
   document.getElementById('hAvatar').style.background=isBC?'#7B1FA2':(s?.color||C[0]);
   document.getElementById('hTitle').textContent=isBC?'সবাইকে বার্তা':s?.name;
-  document.getElementById('hSub').textContent=isBC?`${API.Students.getAll().length} জন`:(s?(s.waqfId?s.waqfId+' · ':'')+(s.cls||''):'');
+  document.getElementById('hSub').textContent=isBC?`${API.Students.getAll().length} জন`:(s?(s.waqfId?API.Students.displayWaqfId(s.waqfId)+' · ':'')+(s.cls||''):'');
   document.getElementById('tabBar').style.display='none';
   document.getElementById('fab').style.display='none';
   document.getElementById('searchToggleBtn').style.display='none';
@@ -757,7 +758,7 @@ async function openDocPreview(docId, markAsRead){
   const data=await API.Docs.resolveFileUrl(docId);
   document.getElementById('docPreviewTitle').textContent=meta.fileName;
   { const st=meta.studentId?API.Students.getById(meta.studentId):null;
-    document.getElementById('docPreviewMeta').textContent=`${formatBytes(meta.fileSize)}${st?.waqfId?' · '+st.waqfId:''}${meta.studentName?' · '+meta.studentName:''} · ${formatDate(meta.uploadedAt)}`;
+    document.getElementById('docPreviewMeta').textContent=`${formatBytes(meta.fileSize)}${st?.waqfId?' · '+API.Students.displayWaqfId(st.waqfId):''}${meta.studentName?' · '+meta.studentName:''} · ${formatDate(meta.uploadedAt)}`;
   }
   const content=document.getElementById('docPreviewContent');
   if(meta.fileType?.startsWith('image/') && data){
@@ -896,14 +897,14 @@ function sendMsg(){
 
 // ══ STUDENTS ═══════════════════════════════════════════════
 function renderStudentList(f=''){
-  const list=API.Students.getAll().filter(s=>!f||s.name.toLowerCase().includes(f.toLowerCase())||(s.waqfId&&s.waqfId.toLowerCase().includes(f.toLowerCase())));
+  const list=API.Students.getAll().filter(s=>API.Students.matchesSearchQuery(s, f));
   if(!list.length){ document.getElementById('studentList').innerHTML='<div class="empty-state"><div class="icon">👥</div><p>ছাত্র নেই।</p></div>'; return; }
   document.getElementById('studentList').innerHTML=list.map(s=>{
     return `<div class="student-item" onclick="openStudentProfile('${s.id}')">
       <div class="s-avatar" style="background:${s.color||C[0]}">${s.name.charAt(0)}</div>
       <div class="s-info">
         <div class="s-name">${esc(s.name)}</div>
-        <div class="s-meta"><span style="color:#128C7E;font-weight:600">${esc(s.waqfId||'—')}</span></div>
+        <div class="s-meta"><span style="color:#128C7E;font-weight:600">${esc(s.waqfId?API.Students.displayWaqfId(s.waqfId):'—')}</span></div>
       </div>
       <div class="s-actions">
         <button class="s-btn chat" onclick="event.stopPropagation();goTab('chats');openChat('${s.id}')">💬</button>
@@ -935,11 +936,11 @@ function addStudent(){
     ['ns_name','ns_cls','ns_roll','ns_pin','ns_note','ns_father','ns_contact','ns_district','ns_upazila'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('ns_blood').value='';
     document.getElementById('ns_enroll').value='';
-    renderAll(); showToast(`✅ ${s.name} যোগ হয়েছে · ID: ${s.waqfId}`);
-  } catch(e){ showToast(e.message==='pin_exists'?'এই পিন আগে থেকে আছে!':'ত্রুটি!'); }
+    renderAll(); showToast(`✅ ${s.name} যোগ হয়েছে · ID: ${API.Students.displayWaqfId(s.waqfId)}`);
+  } catch(e){ showToast(e.message||'ত্রুটি!'); }
 }
-function viewPin(id){ editSid=id; const s=API.Students.getById(id); document.getElementById('pinMTitle').textContent=(s.waqfId?s.waqfId+' · ':'')+s.name+'-এর পিন'; document.getElementById('pinDisp').textContent=s.pin||'----'; document.getElementById('newSPin').value=''; openModal('pinModal'); }
-function updateSPin(){ const p=String(document.getElementById('newSPin').value).trim(); if(!/^\d{4}$/.test(p)){ showToast('৪ সংখ্যার পিন দিন!'); return; } try{ API.Students.updatePin(editSid,p); document.getElementById('pinDisp').textContent=p; renderStudentList(); showToast('✅ পিন আপডেট'); } catch{ showToast('এই পিন অন্যের!'); } }
+function viewPin(id){ editSid=id; const s=API.Students.getById(id); document.getElementById('pinMTitle').textContent=(s.waqfId?API.Students.displayWaqfId(s.waqfId)+' · ':'')+s.name+'-এর পিন'; document.getElementById('pinDisp').textContent=s.pin||'----'; document.getElementById('newSPin').value=''; openModal('pinModal'); }
+function updateSPin(){ const p=String(document.getElementById('newSPin').value).trim(); if(!/^\d{4}$/.test(p)){ showToast('৪ সংখ্যার পিন দিন!'); return; } try{ API.Students.updatePin(editSid,p); document.getElementById('pinDisp').textContent=p; renderStudentList(); showToast('✅ পিন আপডেট'); } catch{ showToast('সেভ করা যায়নি'); } }
 function copyPin(){ const p=document.getElementById('pinDisp').textContent; navigator.clipboard?.writeText(p).catch(()=>{}); showToast('কপি: '+p); }
 
 // ══ TASKS ══════════════════════════════════════════════════
@@ -977,7 +978,7 @@ function renderTaskList(f){
       </div>
       <div class="task-card-bd"><div class="task-card-desc">${esc(t.desc||'')}</div></div>
       <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-      <div class="assignees">${ids.map(sid=>{ const s=API.Students.getById(sid); if(!s) return ''; const as=isDaily?(API.Tasks.isDailyDoneToday(t,sid)?'done':'pending'):t.assignees[sid]; return `<button class="a-chip ${as}" onclick="toggleA('${t.id}','${sid}')">${ic[as]||'⏳'} ${esc(s.waqfId||'')} · ${s.name.split(' ')[0]}</button>`; }).join('')}</div>
+      <div class="assignees">${ids.map(sid=>{ const s=API.Students.getById(sid); if(!s) return ''; const as=isDaily?(API.Tasks.isDailyDoneToday(t,sid)?'done':'pending'):t.assignees[sid]; return `<button class="a-chip ${as}" onclick="toggleA('${t.id}','${sid}')">${ic[as]||'⏳'} ${esc(API.Students.displayWaqfId(s.waqfId))} · ${s.name.split(' ')[0]}</button>`; }).join('')}</div>
       <div class="task-card-ft">
         <span class="task-meta">${isDaily?'🔄 প্রতিদিন':'📅 '+t.deadline}</span>
         <span class="task-meta">✅ ${doneCount}/${ids.length} জন</span>
@@ -1019,7 +1020,7 @@ function setTaskType(type){
 function openAddTask(preselectId=null){
   document.getElementById('taskStudents').innerHTML=API.Students.getAll().map(s=>`
     <div class="s-check-item"><input type="checkbox" id="tc_${s.id}" value="${s.id}" ${preselectId===s.id?'checked':''} style="accent-color:#128C7E">
-    <label for="tc_${s.id}" style="font-size:14px;cursor:pointer"><span style="color:#128C7E;font-weight:600;font-size:12px">${esc(s.waqfId||'')}</span> · ${esc(s.name)} <span style="color:var(--gray-400);font-size:12px">${s.cls||''}</span></label></div>`).join('');
+    <label for="tc_${s.id}" style="font-size:14px;cursor:pointer"><span style="color:#128C7E;font-weight:600;font-size:12px">${esc(API.Students.displayWaqfId(s.waqfId))}</span> · ${esc(s.name)} <span style="color:var(--gray-400);font-size:12px">${s.cls||''}</span></label></div>`).join('');
   document.getElementById('selAll').checked=false;
   setTaskType('daily');
   openModal('addTaskModal');
@@ -1056,7 +1057,7 @@ function initCreateQuiz(){
   document.getElementById('qSelAll').checked=false;
   document.getElementById('qStudents').innerHTML=API.Students.getAll().map(s=>`
     <div class="s-check-item"><input type="checkbox" id="qc_${s.id}" value="${s.id}" style="accent-color:#128C7E">
-    <label for="qc_${s.id}" style="font-size:14px;cursor:pointer"><span style="color:#128C7E;font-weight:600;font-size:12px">${esc(s.waqfId||'')}</span> · ${esc(s.name)}</label></div>`).join('');
+    <label for="qc_${s.id}" style="font-size:14px;cursor:pointer"><span style="color:#128C7E;font-weight:600;font-size:12px">${esc(API.Students.displayWaqfId(s.waqfId))}</span> · ${esc(s.name)}</label></div>`).join('');
   renderQuestions();
 }
 function toggleQAll(cb){ document.querySelectorAll('#qStudents input').forEach(c=>c.checked=cb.checked); }
@@ -1138,7 +1139,7 @@ function saveQuiz(){
 function openAddExamForChat(sid){
   examChatSid=sid; questions=[]; curQContainer='ecQList';
   const s=API.Students.getById(sid);
-  document.getElementById('ecStudentName').textContent=s?(s.waqfId?s.waqfId+' · ':'')+s.name:'';
+  document.getElementById('ecStudentName').textContent=s?(s.waqfId?API.Students.displayWaqfId(s.waqfId)+' · ':'')+s.name:'';
   ['ec_title','ec_subject','ec_desc'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('ec_time').value='30';
   document.getElementById('ec_pass').value='60';
@@ -1201,7 +1202,7 @@ function renderResults(){
   if(!subs.length){ el.innerHTML='<div style="padding:20px;text-align:center;color:var(--gray-400);font-size:14px">এখনো কেউ দেয়নি।</div>'; return; }
   el.innerHTML=`<div class="quiz-card" style="margin-top:8px">${subs.map(s=>{
     const stu=API.Students.getById(s.studentId);
-    const wid=stu?.waqfId;
+    const wid=stu?.waqfId?API.Students.displayWaqfId(stu.waqfId):'';
     return `
     <div class="result-item">
       <div style="flex:1"><div class="result-name">${wid?'<span style="color:#128C7E;font-weight:600;font-size:13px">'+esc(wid)+'</span> · ':''}${esc(s.studentName)}</div>
@@ -1256,7 +1257,7 @@ function renderDocsGrouped(){
     return `<div class="doc-group">
       <div class="doc-group-hd" onclick="toggleDocGroup('${grpId}','${sid}')">
         <div class="doc-group-avatar" style="background:${color}">${name.charAt(0)}</div>
-        <span class="doc-group-name">${esc(name)}${s?.waqfId?' <span style="color:#128C7E;font-weight:600;font-size:13px">'+esc(s.waqfId)+'</span>':''}</span>
+        <span class="doc-group-name">${esc(name)}${s?.waqfId?' <span style="color:#128C7E;font-weight:600;font-size:13px">'+esc(API.Students.displayWaqfId(s.waqfId))+'</span>':''}</span>
         ${unread?`<span class="unread-dot"></span>`:''}
         <span class="doc-group-count">${docs.length}টি</span>
         <span class="doc-group-chevron" id="chev_${grpId}">›</span>
@@ -1318,7 +1319,7 @@ function renderTeacherSentDocs(){
     return `<div class="doc-group">
       <div class="doc-group-hd" onclick="toggleSentDocGroup('${grpId}')">
         <div class="doc-group-avatar" style="background:${color}">${name.charAt(0)}</div>
-        <span class="doc-group-name">${esc(name)}${s?.waqfId?' <span style="color:#128C7E;font-weight:600;font-size:13px">'+esc(s.waqfId)+'</span>':''}</span>
+        <span class="doc-group-name">${esc(name)}${s?.waqfId?' <span style="color:#128C7E;font-weight:600;font-size:13px">'+esc(API.Students.displayWaqfId(s.waqfId))+'</span>':''}</span>
         <span class="doc-group-count">${docs.length}টি</span>
         <span class="doc-group-chevron" id="chev_${grpId}">›</span>
       </div>
@@ -1429,7 +1430,7 @@ function openStudentProfile(sid){
   const s=API.Students.getById(sid); if(!s) return;
   const batch=API.Students.getBatchYear(s.enrollmentDate);
   document.getElementById('profileHdName').textContent=s.name;
-  document.getElementById('profileHdSub').textContent=(s.waqfId||'')+(batch!=null?' · '+batch+'য় বর্ষ':'');
+  document.getElementById('profileHdSub').textContent=(s.waqfId?API.Students.displayWaqfId(s.waqfId):'')+(batch!=null?' · '+batch+'য় বর্ষ':'');
   // Reset to first tab
   document.querySelectorAll('.prof-tab').forEach((b,i)=>b.classList.toggle('active',i===0));
   renderProfileBody(s);
@@ -1449,7 +1450,7 @@ function renderProfileBody(s){
   const batch=API.Students.getBatchYear(s.enrollmentDate);
   const academic=API.AcademicHistory.getAll(s.id);
   const notes=API.TeacherNotes.getAll(s.id);
-  const subLine=(()=>{ const p=[]; if(s.waqfId) p.push(s.waqfId); if(batch!=null) p.push(batch+'য় বর্ষ'); if(s.enrollmentDate) p.push(s.enrollmentDate.slice(0,4)); return p.length?p.join(' · '):'পরিচয়'; })();
+  const subLine=(()=>{ const p=[]; if(s.waqfId) p.push(API.Students.displayWaqfId(s.waqfId)); if(batch!=null) p.push(batch+'য় বর্ষ'); if(s.enrollmentDate) p.push(s.enrollmentDate.slice(0,4)); return p.length?p.join(' · '):'পরিচয়'; })();
   document.getElementById('profileBody').innerHTML=`
   <!-- ── Tab: তথ্য ───────────────────────────────────── -->
   <div class="prof-pane" id="ppane-info">
@@ -1576,7 +1577,7 @@ function confirmDeleteStudent(){
   if(!curProfileSid) return;
   const st=API.Students.getById(curProfileSid);
   if(!st) return;
-  if(!confirm('«'+st.name+'» ('+(st.waqfId||'')+') সম্পূর্ণ মুছে যাবে। ডেটা ফিরিয়ে আনা যাবে না। চালিয়ে যাবেন?')) return;
+  if(!confirm('«'+st.name+'» ('+(st.waqfId?API.Students.displayWaqfId(st.waqfId):'')+') সম্পূর্ণ মুছে যাবে। ডেটা ফিরিয়ে আনা যাবে না। চালিয়ে যাবেন?')) return;
   if(!confirm('শেষ নিশ্চিতকরণ: আপনি নিশ্চিত?')) return;
   try{
     API.Students.deleteCompletely(curProfileSid);
@@ -1600,7 +1601,7 @@ function saveProfileEdits(){
   const s=API.Students.getById(curProfileSid);
   const batch=API.Students.getBatchYear(s.enrollmentDate);
   document.getElementById('profileHdName').textContent=s.name;
-  document.getElementById('profileHdSub').textContent=(s.waqfId||'')+(batch!=null?' · '+batch+'য় বর্ষ':'');
+  document.getElementById('profileHdSub').textContent=(s.waqfId?API.Students.displayWaqfId(s.waqfId):'')+(batch!=null?' · '+batch+'য় বর্ষ':'');
   renderProfileBody(s);
   renderAll(); showToast('✅ প্রোফাইল সেভ হয়েছে');
 }
@@ -1618,7 +1619,7 @@ function saveProfilePin(){
     document.getElementById('profileNewPin').value='';
     document.getElementById('profilePinReset').style.display='none';
     showToast('✅ পিন পরিবর্তন হয়েছে · নতুন পিন: '+p);
-  } catch{ showToast('এই পিন অন্যের!'); }
+  } catch{ showToast('সেভ করা যায়নি'); }
 }
 // Academic history
 function addAcadRec(){

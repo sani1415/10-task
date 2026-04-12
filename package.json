@@ -2,6 +2,8 @@
   "name": "waqful-madinah",
   "private": true,
   "scripts": {
-    "build": "node scripts/inject-supabase-config.mjs && node scripts/inject-pwa-config.mjs"
+    "build": "node scripts/inject-supabase-config.mjs && node scripts/inject-pwa-config.mjs",
+    "import-firestore-students": "node scripts/import-firestore-students.mjs",
+    "import-firestore-messages": "node scripts/import-firestore-messages.mjs"
   }
 }

@@ -1,3 +1,6 @@
+# Generated SQL (Firestore import scratch)
+tmp-firestore-*.sql
+
 # Local Supabase credentials (never commit)
 supabase-config.js
 supabase/.secrets.local.env
