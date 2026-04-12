@@ -33,6 +33,7 @@
 .reply-preview-bar{background:#EFF4FB;border-top-color:#42A5F5}
 .reply-preview-content{border-left-color:#1565C0}.reply-preview-sender{color:#1565C0}
 .chat-file-title-in:focus{border-color:#1565C0}
+.doc-tab-btn.active{color:#1565C0;border-bottom-color:#1565C0}
 .welcome-card{background:linear-gradient(135deg,#1565C0,#00BCD4)}
 .chat-messages{background-color:#E8EDF5;background-image:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%231565C0' fill-opacity='0.04'%3E%3Cpath d='M20 20.5V18H0v5h5v5H0v5h20v-5h15v-5H20v-.5z'/%3E%3C/g%3E%3C/svg%3E")}
 
@@ -164,6 +165,7 @@
   <button class="tab-btn"        onclick="goTab('tasks')" id="tab-tasks">📋 টাস্ক<span class="tab-badge" id="tBadge"></span></button>
   <button class="tab-btn"        onclick="goTab('exams')" id="tab-exams">📝 পরীক্ষা<span class="tab-badge" id="examBadge"></span></button>
   <button class="tab-btn"        onclick="goTab('goals')" id="tab-goals">🎯 লক্ষ্য</button>
+  <button class="tab-btn"        onclick="goTab('docs')"  id="tab-docs">📎 ফাইল</button>
 </div>
 
 <!-- ══ HOME ══════════════════════════════════════════════ -->
@@ -245,34 +247,41 @@
 
 <!-- ══ DOCUMENTS ══════════════════════════════════════════ -->
 <div class="screen" id="screen-docs">
+  <div class="doc-tabs">
+    <button class="doc-tab-btn active" id="sdtab-sent"     onclick="goStudentDocTab('sent',this)">📤 পাঠানো</button>
+    <button class="doc-tab-btn"        id="sdtab-received" onclick="goStudentDocTab('received',this)">📥 পাওয়া</button>
+  </div>
   <div class="list-scroll">
-    <!-- Upload area -->
-    <div class="doc-upload-area" onclick="document.getElementById('fileInput').click()">
-      <div class="doc-upload-icon">📎</div>
-      <div class="doc-upload-label">ফাইল আপলোড করুন</div>
-      <div class="doc-upload-hint">ক্লিক করুন · একাধিক ছবি একসাথে = একটি PDF · অন্য ফাইল একটিই · সর্বোচ্চ ১০ MB</div>
-    </div>
-    <input type="file" id="fileInput" style="display:none" multiple accept="image/*,.pdf,.doc,.docx,.txt" onchange="handleFileSelect(this)">
-
-    <!-- Category & note before upload -->
-    <div id="uploadPreview" style="display:none;margin:0 12px 12px">
-      <div class="form-group"><label class="form-label">বিভাগ</label>
-        <select class="form-input" id="uploadCat">
-          <option value="general">সাধারণ</option>
-          <option value="question">প্রশ্ন</option>
-          <option value="report">রিপোর্ট</option>
-        </select>
+    <!-- Sent pane: upload + sent list -->
+    <div id="sDocsSentPane">
+      <div class="doc-upload-area" onclick="document.getElementById('fileInput').click()">
+        <div class="doc-upload-icon">📎</div>
+        <div class="doc-upload-label">ফাইল পাঠান</div>
+        <div class="doc-upload-hint">ক্লিক করুন · একাধিক ছবি = একটি PDF · সর্বোচ্চ ১০ MB</div>
       </div>
-      <div class="form-group"><label class="form-label">নোট (ঐচ্ছিক)</label><input class="form-input" id="uploadNote" placeholder="উস্তাদের জন্য নোট..."></div>
-      <div id="uploadProgressWrap" style="display:none"><div class="upload-progress"><div class="upload-progress-fill" id="uploadProgressFill" style="width:0%"></div></div></div>
-      <button class="btn-primary" onclick="confirmUpload()">📤 উস্তাদের কাছে পাঠান</button>
-      <button class="btn-secondary" onclick="cancelUpload()">বাতিল</button>
+      <input type="file" id="fileInput" style="display:none" multiple accept="image/*,.pdf,.doc,.docx,.txt" onchange="handleFileSelect(this)">
+      <div id="uploadPreview" style="display:none;margin:0 12px 12px">
+        <div class="form-group"><label class="form-label">বিভাগ</label>
+          <select class="form-input" id="uploadCat">
+            <option value="general">সাধারণ</option>
+            <option value="question">প্রশ্ন</option>
+            <option value="report">রিপোর্ট</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">নোট (ঐচ্ছিক)</label><input class="form-input" id="uploadNote" placeholder="উস্তাদের জন্য নোট..."></div>
+        <div id="uploadProgressWrap" style="display:none"><div class="upload-progress"><div class="upload-progress-fill" id="uploadProgressFill" style="width:0%"></div></div></div>
+        <button class="btn-primary" onclick="confirmUpload()">📤 উস্তাদের কাছে পাঠান</button>
+        <button class="btn-secondary" onclick="cancelUpload()">বাতিল</button>
+      </div>
+      <div class="sec-hd">পাঠানো ফাইলসমূহ</div>
+      <div id="sentDocsList"></div>
+      <div style="height:20px"></div>
     </div>
-
-    <!-- Sent docs list -->
-    <div class="sec-hd">পাঠানো ডকুমেন্টসমূহ</div>
-    <div id="sentDocsList"></div>
-    <div style="height:20px"></div>
+    <!-- Received pane: teacher-sent docs -->
+    <div id="sDocsReceivedPane" style="display:none">
+      <div id="receivedDocsList"></div>
+      <div style="height:20px"></div>
+    </div>
   </div>
 </div>
 
@@ -329,7 +338,7 @@
 <script src="pwa-notify.js"></script>
 <script>
 // ══ State ══════════════════════════════════════════════════
-let me=null, tFilter='all', gFilter='all', replyingTo=null;
+let me=null, tFilter='all', gFilter='all', replyingTo=null, studentDocTab='sent';
 let activeQuizId=null, quizAnswers={}, quizTimerInterval=null, quizSecondsLeft=0;
 let pendingFile=null, chatPendingFile=null;
 let studentChatPreviewDocId=null;
@@ -430,7 +439,7 @@ function logout(){
   Promise.resolve(API.refreshStudentLockHints()).then(()=>renderPendingSection());
   goTab('chat');
 }
-function renderAll(){ renderHome(); renderChat(); renderTaskList(); renderExamList(); renderSentDocs(); renderGoals(); updateBadges(); }
+function renderAll(){ renderHome(); renderChat(); renderTaskList(); renderExamList(); renderSentDocs(); renderReceivedDocs(); renderGoals(); updateBadges(); }
 
 // ══ HOME ═══════════════════════════════════════════════════
 function renderHome(){
@@ -865,6 +874,30 @@ function renderSentDocs(){
   }).join('');
 }
 
+function goStudentDocTab(tab, btn){
+  studentDocTab=tab;
+  document.querySelectorAll('.doc-tab-btn').forEach(b=>b.classList.remove('active')); if(btn) btn.classList.add('active');
+  document.getElementById('sDocsSentPane').style.display     = tab==='sent'?'block':'none';
+  document.getElementById('sDocsReceivedPane').style.display = tab==='received'?'block':'none';
+  if(tab==='sent') renderSentDocs();
+  if(tab==='received') renderReceivedDocs();
+}
+function renderReceivedDocs(){
+  if(!me) return;
+  const docs=API.Docs.getForStudent(me.id).filter(d=>d.sentBy==='teacher');
+  const el=document.getElementById('receivedDocsList');
+  if(!docs.length){ el.innerHTML='<div style="padding:30px;text-align:center;font-size:13px;color:var(--gray-400)">উস্তাদ এখনো কোনো ফাইল পাঠাননি।</div>'; return; }
+  const fileIc=t=>t?.startsWith('image/')?'🖼️':t==='application/pdf'?'📕':'📄';
+  el.innerHTML=docs.map(d=>`<div class="doc-sent-item">
+    <div class="doc-sent-icon">${fileIc(d.fileType)}</div>
+    <div class="doc-sent-info">
+      <div class="doc-sent-name">${esc(d.fileName)}</div>
+      <div class="doc-sent-meta">${formatBytes(d.fileSize)} · ${formatDate(d.uploadedAt)}</div>
+    </div>
+    <button class="doc-btn view" onclick="previewStudentChatDoc('${d.id}')" style="width:32px;height:32px;border:none;border-radius:8px;background:#E3F2FD;color:#1565C0;cursor:pointer;font-size:15px">👁</button>
+  </div>`).join('');
+}
+
 // ══ GOALS ══════════════════════════════════════════════════
 function catIc(c){ return {ilm:'📚',amal:'🕌',akhlaq:'🌿',afkar:'💡',quran:'📖',study:'📚',ibadah:'🕌',other:'🌟'}[c]||'🌟'; }
 function renderGoals(){
@@ -902,6 +935,7 @@ function goTab(tab){
   document.getElementById('screen-'+tab).classList.add('active');
   if(tab==='chat' && me){ API.Messages.markRead(me.id,'out'); renderChat(); updateBadges(); setTimeout(()=>document.getElementById('chatMsgs').scrollTop=9e9,50); }
   if(tab==='exams') renderExamList();
+  if(tab==='docs'){ renderSentDocs(); renderReceivedDocs(); }
 }
 
 // Fix mobile viewport height (100vh bug on Android)

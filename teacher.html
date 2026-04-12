@@ -227,7 +227,8 @@
 <!-- ══ DOCUMENTS ══════════════════════════════════════════ -->
 <div class="screen" id="screen-docs">
   <div class="doc-tabs">
-    <button class="doc-tab-btn active" onclick="goDocTab('received',this)">📥 পাওয়া</button>
+    <button class="doc-tab-btn active" onclick="goDocTab('received',this)">📥 ছাত্রের পাঠানো</button>
+    <button class="doc-tab-btn"        onclick="goDocTab('sent',this)">📤 আমার পাঠানো</button>
     <button class="doc-tab-btn"        onclick="goDocTab('storage',this)">💾 স্টোরেজ</button>
   </div>
   <div class="list-scroll">
@@ -239,6 +240,9 @@
         <button class="filter-chip"        onclick="fDoc('report',this)">রিপোর্ট</button>
       </div>
       <div id="docsGrouped"></div>
+    </div>
+    <div id="docsSentPane" style="display:none">
+      <div id="docsSentGrouped"></div>
     </div>
     <div id="docsStoragePane" style="display:none;padding:12px">
       <div class="doc-storage-bar">
@@ -1222,8 +1226,10 @@ function goDocTab(tab, btn){
   docViewTab=tab;
   document.querySelectorAll('.doc-tab-btn').forEach(b=>b.classList.remove('active')); if(btn) btn.classList.add('active');
   document.getElementById('docsReceivedPane').style.display = tab==='received'?'block':'none';
+  document.getElementById('docsSentPane').style.display     = tab==='sent'?'block':'none';
   document.getElementById('docsStoragePane').style.display  = tab==='storage'?'block':'none';
   if(tab==='received') renderDocsGrouped();
+  if(tab==='sent') renderTeacherSentDocs();
   if(tab==='storage')  renderStorageTree();
 }
 function fDoc(f,btn){ document.querySelectorAll('.doc-tab-btn').length; // just keep ref
@@ -1231,10 +1237,11 @@ function fDoc(f,btn){ document.querySelectorAll('.doc-tab-btn').length; // just 
   docFilter=f; renderDocsGrouped();
 }
 function renderDocsGrouped(){
-  const all=API.Docs.getAll();
+  // Only show student-sent (received by teacher); sentBy undefined = old records = student-sent
+  const all=API.Docs.getAll().filter(d=>d.sentBy!=='teacher');
   const filtered=docFilter==='all'?all:all.filter(d=>d.category===docFilter);
   const el=document.getElementById('docsGrouped');
-  if(!filtered.length){ el.innerHTML='<div class="empty-state"><div class="icon">📎</div><p>কোনো ডকুমেন্ট নেই।</p></div>'; return; }
+  if(!filtered.length){ el.innerHTML='<div class="empty-state"><div class="icon">📥</div><p>ছাত্ররা এখনো কোনো ফাইল পাঠায়নি।</p></div>'; return; }
 
   // Group by student
   const groups={};
@@ -1296,7 +1303,48 @@ async function triggerDocDownload(){
   if(!data) return;
   const a=document.createElement('a'); a.href=data; a.download=meta.fileName; a.click();
 }
-function deleteDoc(id){ if(!confirm('এই ডকুমেন্ট মুছবেন?')) return; API.Docs.delete(id); renderDocsGrouped(); updateDocBadge(); showToast('🗑 মুছে ফেলা হয়েছে'); }
+function deleteDoc(id){ if(!confirm('এই ডকুমেন্ট মুছবেন?')) return; API.Docs.delete(id); if(docViewTab==='sent') renderTeacherSentDocs(); else renderDocsGrouped(); updateDocBadge(); showToast('🗑 মুছে ফেলা হয়েছে'); }
+function renderTeacherSentDocs(){
+  const all=API.Docs.getAll().filter(d=>d.sentBy==='teacher');
+  const el=document.getElementById('docsSentGrouped');
+  if(!all.length){ el.innerHTML='<div class="empty-state"><div class="icon">📤</div><p>এখনো কোনো ফাইল পাঠাননি।</p></div>'; return; }
+  const groups={};
+  all.forEach(d=>{ if(!groups[d.studentId]) groups[d.studentId]=[]; groups[d.studentId].push(d); });
+  el.innerHTML=Object.entries(groups).map(([sid,docs])=>{
+    const s=API.Students.getById(sid);
+    const name=s?.name||docs[0]?.studentName||'অজানা';
+    const color=s?.color||C[0];
+    const grpId='sgrp_'+sid;
+    return `<div class="doc-group">
+      <div class="doc-group-hd" onclick="toggleSentDocGroup('${grpId}')">
+        <div class="doc-group-avatar" style="background:${color}">${name.charAt(0)}</div>
+        <span class="doc-group-name">${esc(name)}${s?.waqfId?' <span style="color:#128C7E;font-weight:600;font-size:13px">'+esc(s.waqfId)+'</span>':''}</span>
+        <span class="doc-group-count">${docs.length}টি</span>
+        <span class="doc-group-chevron" id="chev_${grpId}">›</span>
+      </div>
+      <div id="${grpId}" style="display:none">
+        ${docs.map(d=>`<div class="doc-item">
+          <div class="doc-icon">${fileIcon(d.fileType)}</div>
+          <div class="doc-info">
+            <div class="doc-name">${esc(d.fileName)}</div>
+            <div class="doc-meta">${formatBytes(d.fileSize)} · ${formatDate(d.uploadedAt)}</div>
+          </div>
+          <div class="doc-actions">
+            <button class="doc-btn view" onclick="previewDoc('${d.id}')" title="দেখুন">👁</button>
+            <button class="doc-btn del"  onclick="deleteDoc('${d.id}')" title="মুছুন">🗑</button>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleSentDocGroup(grpId){
+  const el=document.getElementById(grpId); const chev=document.getElementById('chev_'+grpId);
+  const open=el.style.display==='none';
+  el.style.display=open?'block':'none';
+  chev.classList.toggle('open',open);
+  chev.textContent=open?'⌄':'›';
+}
 
 function renderStorageTree(){
   const docs=API.Docs.getAll();

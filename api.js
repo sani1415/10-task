@@ -509,7 +509,7 @@ const API = (() => {
               id:docId, studentId:sid, studentName:student.name,
               fileName:dispName, fileType:file.type, fileSize:file.size,
               category, note, uploadedAt:new Date().toISOString(), read:false,
-              fileUrl, storage_path: storagePath || path,
+              fileUrl, storage_path: storagePath || path, sentBy:'student',
             };
             const list=RS.mem.docs||[];
             list.unshift(meta);
@@ -530,7 +530,7 @@ const API = (() => {
           const meta={
             id:docId, studentId:sid, studentName:student.name,
             fileName:dispName, fileType:file.type, fileSize:file.size,
-            category, note, uploadedAt:new Date().toISOString(), read:false,
+            category, note, uploadedAt:new Date().toISOString(), read:false, sentBy:'student',
           };
           try { localStorage.setItem('madrasa_doc_'+docId, e.target.result); }
           catch { reject(new Error('storage_full')); return; }
@@ -561,7 +561,7 @@ const API = (() => {
               id:docId, studentId:sid, studentName:st?.name||'',
               fileName:dispName, fileType:file.type, fileSize:file.size,
               category:'general', note:'', uploadedAt:new Date().toISOString(), read:true,
-              fileUrl, storage_path: storagePath || path,
+              fileUrl, storage_path: storagePath || path, sentBy:'teacher',
             };
             const list=RS.mem.docs||[];
             list.unshift(meta);
@@ -585,7 +585,7 @@ const API = (() => {
           const st=Students.getById(sid);
           const meta={id:docId, studentId:sid, studentName:st?.name||'',
                       fileName:dispName, fileType:file.type, fileSize:file.size,
-                      category:'general', note:'', uploadedAt:new Date().toISOString(), read:true};
+                      category:'general', note:'', uploadedAt:new Date().toISOString(), read:true, sentBy:'teacher'};
           const mList=JSON.parse(localStorage.getItem(DOCS_KEY)||'[]');
           mList.unshift(meta); localStorage.setItem(DOCS_KEY, JSON.stringify(mList));
           const db=DB.get(); if(!db.chats[sid]) db.chats[sid]=[];
@@ -887,7 +887,7 @@ const API = (() => {
               id, studentId:sid, studentName:student.name,
               fileName:file.name, fileType:file.type, fileSize:file.size,
               category, note, uploadedAt:new Date().toISOString(), read:false,
-              fileUrl, storage_path: storagePath || path,
+              fileUrl, storage_path: storagePath || path, sentBy:'student',
             };
             const list=this._readMeta(); list.unshift(meta); this._writeMeta(list);
             resolve(meta);
@@ -901,7 +901,7 @@ const API = (() => {
           const meta={
             id, studentId:sid, studentName:student.name,
             fileName:file.name, fileType:file.type, fileSize:file.size,
-            category, note, uploadedAt:new Date().toISOString(), read:false,
+            category, note, uploadedAt:new Date().toISOString(), read:false, sentBy:'student',
           };
           try {
             localStorage.setItem('madrasa_doc_'+id, e.target.result);
