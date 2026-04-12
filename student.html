@@ -166,7 +166,6 @@
 <!-- ══ HOME ══════════════════════════════════════════════ -->
 <div class="screen" id="screen-home">
   <div class="list-scroll">
-    <div class="welcome-card"><div class="welcome-avatar" id="wAvatar">?</div><div class="welcome-text"><h2 id="wName">আস-সালামু আলাইকুম</h2><p id="wCls">লোড হচ্ছে...</p></div></div>
     <div class="stats-row">
       <div class="stat-card green"><div class="stat-num" id="sDone">0</div><div class="stat-label">✅ সম্পন্ন</div></div>
       <div class="stat-card orange"><div class="stat-num" id="sPend">0</div><div class="stat-label">⏳ বকেয়া</div></div>
@@ -267,17 +266,16 @@
 <!-- ══ GOALS ══════════════════════════════════════════════ -->
 <div class="screen" id="screen-goals">
   <div class="goal-add-bar">
-    <input id="goalIn" placeholder="নতুন লক্ষ্য লিখুন..." onkeydown="if(event.key==='Enter')quickGoal()">
-    <button class="goal-add-btn" onclick="openModal('addGoalModal')">＋ যোগ</button>
+    <button class="goal-add-btn" style="width:100%" onclick="openModal('addGoalModal')">＋ নতুন লক্ষ্য যোগ করুন</button>
   </div>
   <div class="list-scroll">
     <div id="goalProgress"></div>
     <div class="filter-bar">
       <button class="filter-chip active" onclick="fGoal('all',this)">সব</button>
-      <button class="filter-chip"        onclick="fGoal('quran',this)">📖 কুরআন</button>
-      <button class="filter-chip"        onclick="fGoal('study',this)">📚 পড়াশোনা</button>
-      <button class="filter-chip"        onclick="fGoal('ibadah',this)">🕌 ইবাদত</button>
-      <button class="filter-chip"        onclick="fGoal('other',this)">🌟 অন্য</button>
+      <button class="filter-chip"        onclick="fGoal('ilm',this)">📚 ইলম</button>
+      <button class="filter-chip"        onclick="fGoal('amal',this)">🕌 আমল</button>
+      <button class="filter-chip"        onclick="fGoal('akhlaq',this)">🌿 আখলাক</button>
+      <button class="filter-chip"        onclick="fGoal('afkar',this)">💡 আফকার</button>
     </div>
     <div id="goalList"></div>
     <div style="height:20px"></div>
@@ -289,7 +287,7 @@
   <div class="modal-handle"></div><div class="modal-title">🎯 নতুন লক্ষ্য</div>
   <div class="form-group"><label class="form-label">লক্ষ্যের বিবরণ *</label><input class="form-input" id="gm_title" placeholder="যেমন: প্রতিদিন ১ পারা তেলাওয়াত"></div>
   <div class="form-group"><label class="form-label">বিভাগ</label>
-    <select class="form-input" id="gm_cat"><option value="quran">📖 কুরআন</option><option value="study">📚 পড়াশোনা</option><option value="ibadah">🕌 ইবাদত</option><option value="other">🌟 অন্যান্য</option></select>
+    <select class="form-input" id="gm_cat"><option value="ilm">📚 ইলম</option><option value="amal">🕌 আমল</option><option value="akhlaq">🌿 আখলাক</option><option value="afkar">💡 আফকার</option></select>
   </div>
   <div class="form-group"><label class="form-label">শেষ তারিখ (ঐচ্ছিক)</label><input class="form-input" type="date" id="gm_dl"></div>
   <div class="form-group"><label class="form-label">নোট</label><textarea class="form-input" id="gm_note" rows="2" placeholder="কোনো পরিকল্পনা..."></textarea></div>
@@ -406,9 +404,6 @@ function onLogin(){
   document.getElementById('hAvatar').textContent=me.name.charAt(0); document.getElementById('hAvatar').style.background=me.color||'#1565C0';
   document.getElementById('hTitle').textContent=me.name;
   { const p=[]; if(me.waqfId) p.push(me.waqfId); if(me.cls) p.push(me.cls); document.getElementById('hSub').textContent=p.length?p.join(' · '):'ছাত্র'; }
-  document.getElementById('wAvatar').textContent=me.name.charAt(0);
-  document.getElementById('wName').textContent='আস-সালামু আলাইকুম, '+me.name;
-  document.getElementById('wCls').textContent=(me.waqfId?me.waqfId+' · ':'')+(me.cls||'')+(me.roll?' · রোল '+me.roll:'');
   renderAll();
   goTab('chat');
   void API.Pwa.enableNotificationsAfterAuth('student', { waqfId: me && me.waqfId });
@@ -508,7 +503,7 @@ function renderChat(){
         h+=`<div class="msg-wrap out"><div class="msg-doc-bubble"><div class="msg-doc-icon">${ic}</div><div class="msg-doc-info"><div class="msg-doc-name">${esc(m.fileName)}</div><div class="msg-doc-size">${m.fileSize?formatBytes(m.fileSize):''}</div>${viewBtn}</div></div><div class="msg-meta" style="position:static;display:flex;gap:3px;justify-content:flex-end;margin-top:3px;padding-right:4px"><span class="msg-time">${m.time}</span>${tickHtml(m)}</div></div>`;
       } else {
         // Teacher sent a file (shown left side)
-        h+=`<div class="msg-wrap in"><div class="msg-sender">${esc(API.DB.getTeacher().name||'উস্তাদ')}</div><div class="msg-doc-bubble"><div class="msg-doc-icon">${ic}</div><div class="msg-doc-info"><div class="msg-doc-name">${esc(m.fileName)}</div><div class="msg-doc-size">${m.fileSize?formatBytes(m.fileSize):''}</div>${viewBtn}</div></div><div style="font-size:11px;color:var(--gray-400);margin-top:2px;padding-left:4px">${m.time}</div></div>`;
+        h+=`<div class="msg-wrap in"><div class="msg-doc-bubble"><div class="msg-doc-icon">${ic}</div><div class="msg-doc-info"><div class="msg-doc-name">${esc(m.fileName)}</div><div class="msg-doc-size">${m.fileSize?formatBytes(m.fileSize):''}</div>${viewBtn}</div></div><div style="font-size:11px;color:var(--gray-400);margin-top:2px;padding-left:4px">${m.time}</div></div>`;
       }
     } else {
       if(m.role==='in'){
@@ -516,7 +511,7 @@ function renderChat(){
         h+=`<div class="msg-wrap out"><div class="msg-bubble out">${esc(m.text)}<div class="msg-meta"><span class="msg-time">${m.time}</span>${tickHtml(m)}</div></div></div>`;
       } else {
         // Teacher sent this text (shown left)
-        h+=`<div class="msg-wrap in"><div class="msg-sender">${esc(API.DB.getTeacher().name||'উস্তাদ')}</div><div class="msg-bubble in">${esc(m.text)}<div class="msg-meta"><span class="msg-time">${m.time}</span></div></div></div>`;
+        h+=`<div class="msg-wrap in"><div class="msg-bubble in">${esc(m.text)}<div class="msg-meta"><span class="msg-time">${m.time}</span></div></div></div>`;
       }
     }
   });
@@ -795,13 +790,13 @@ function renderSentDocs(){
 }
 
 // ══ GOALS ══════════════════════════════════════════════════
-function catIc(c){ return {quran:'📖',study:'📚',ibadah:'🕌',other:'🌟'}[c]||'🌟'; }
+function catIc(c){ return {ilm:'📚',amal:'🕌',akhlaq:'🌿',afkar:'💡',quran:'📖',study:'📚',ibadah:'🕌',other:'🌟'}[c]||'🌟'; }
 function renderGoals(){
   const goals=API.Goals.getAll(me.id); const el=document.getElementById('goalList'); const wp=document.getElementById('goalProgress');
   const total=goals.length; const done=goals.filter(g=>g.done).length; const pct=total?Math.round(done/total*100):0;
   wp.innerHTML=total?`<div style="margin:12px 12px 0"><div class="goal-progress-wrap"><div class="goal-progress-label"><span>🎯 আমার লক্ষ্য</span><span>${done}/${total} (${pct}%)</span></div><div class="goal-progress-bar"><div class="goal-progress-fill" style="width:${pct}%"></div></div></div></div>`:'' ;
   const filtered=gFilter==='all'?goals:goals.filter(g=>g.cat===gFilter);
-  if(!filtered.length){ el.innerHTML='<div class="empty-state"><div class="icon">🎯</div><p>কোনো লক্ষ্য নেই।<br>উপরে লিখে Enter দিন।</p></div>'; return; }
+  if(!filtered.length){ el.innerHTML='<div class="empty-state"><div class="icon">🎯</div><p>কোনো লক্ষ্য নেই।<br>উপরে ＋ বোতামে যোগ করুন।</p></div>'; return; }
   const active=filtered.filter(g=>!g.done); const comp=filtered.filter(g=>g.done);
   let h='';
   if(active.length){ h+='<div class="goal-section">চলমান লক্ষ্য</div>'; h+=active.map(g=>gItem(g)).join(''); }

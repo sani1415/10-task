@@ -130,7 +130,7 @@
   <button class="header-back" id="backBtn" onclick="closeChat()">‹</button>
   <div class="header-avatar" id="hAvatar" style="background:#128C7E">শি</div>
   <div class="header-info"><div class="header-title" id="hTitle">Waqful Madinah</div><div class="header-sub" id="hSub">শিক্ষক প্যানেল</div></div>
-  <div class="header-actions"><button class="header-btn" id="searchToggleBtn" onclick="toggleSearch()">🔍</button><button class="header-btn" onclick="openModal('fabMenu')">⋮</button></div>
+  <div class="header-actions"><button class="header-btn" id="searchToggleBtn" onclick="toggleSearch()">🔍</button><button class="header-btn" onclick="headerMenuClick()">⋮</button></div>
 </div>
 
 <!-- ══ TAB BAR ═══════════════════════════════════════════ -->
@@ -338,6 +338,15 @@
   <button class="btn-primary" style="background:var(--orange);margin-bottom:8px" onclick="closeModal('fabMenu');openAddTask()">📋 টাস্ক দিন</button>
   <button class="btn-primary" style="background:var(--purple);margin-bottom:8px" onclick="closeModal('fabMenu');openModal('bcModal')">📢 সবাইকে বার্তা</button>
   <button class="btn-secondary" onclick="closeModal('fabMenu')">বাতিল</button>
+</div></div>
+
+<div class="modal-overlay" id="chatMenu"><div class="modal-sheet">
+  <div class="modal-handle"></div><div class="modal-title" id="chatMenuTitle">ছাত্রের বিকল্প</div>
+  <button class="btn-primary" style="margin-bottom:8px" onclick="closeModal('chatMenu');openStudentProfile(curChat)">👤 ছাত্রের বিস্তারিত তথ্য</button>
+  <button class="btn-primary" style="background:var(--orange);margin-bottom:8px" onclick="closeModal('chatMenu');openAddTask(curChat)">📋 টাস্ক দিন</button>
+  <button class="btn-primary" style="background:#3949AB;margin-bottom:8px" onclick="closeModal('chatMenu');openAddExamForChat(curChat)">📝 পরীক্ষা দিন</button>
+  <button class="btn-primary" style="background:#128C7E;margin-bottom:8px" onclick="closeModal('chatMenu');viewPin(curChat)">🔑 পিন দেখুন</button>
+  <button class="btn-secondary" onclick="closeModal('chatMenu')">বাতিল</button>
 </div></div>
 
 <div class="modal-overlay" id="addStudentModal"><div class="modal-sheet">
@@ -1266,6 +1275,13 @@ function fabClick(){
   else if(curTab==='tasks') openAddTask();
   else if(curTab==='exams') goExamTab('create', document.querySelectorAll('.exam-tab-btn')[1]);
   else openModal('fabMenu');
+}
+function headerMenuClick(){
+  if(curChat && curChat!=='_broadcast'){
+    const s=API.Students.getById(curChat);
+    document.getElementById('chatMenuTitle').textContent=s?s.name+'-এর বিকল্প':'ছাত্রের বিকল্প';
+    openModal('chatMenu');
+  } else { openModal('fabMenu'); }
 }
 function toggleSearch(){ const b=document.getElementById('searchBar'); b.style.display=b.style.display==='none'?'block':'none'; if(b.style.display==='block') b.querySelector('input').focus(); }
 
