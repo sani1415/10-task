@@ -136,7 +136,10 @@
 <!-- ══ LOCK ══════════════════════════════════════════════ -->
 <div id="lockScreen">
   <!-- Sticky header — always visible -->
-  <div class="lock-sticky-header">📖 ছাত্র লগইন</div>
+  <div class="lock-sticky-header">
+    <span>📖 ছাত্র লগইন</span>
+    <button id="notifBtn" onclick="enableSharedNotif()" title="নোটিফিকেশন চালু করুন" style="background:none;border:none;cursor:pointer;font-size:18px;padding:0 0 0 8px;vertical-align:middle;opacity:.8"></button>
+  </div>
   <!-- TOP: scrollable area — pending list -->
   <div class="lock-top">
     <div id="pendingSection" style="display:none;width:100%;max-width:340px">
@@ -447,12 +450,36 @@ function init(){
     document.getElementById('lockName').textContent=API.DB.getTeacher().madrasa||'Waqful Madinah';
     document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); }));
     renderPendingSection();
+    updateNotifBtn();
     // Subscribe this device for all student notifications (shared device mode)
     // Delay slightly so RemoteSync bootstrap has time to complete
-    setTimeout(() => void API.Pwa.enableSharedStudentDevice(), 2000);
+    setTimeout(() => void API.Pwa.enableSharedStudentDevice().then(updateNotifBtn), 2000);
   }).catch(e=>{ console.error(e); document.getElementById('lockName').textContent='সার্ভার সংযোগ ব্যর্থ'; });
 }
 window.addEventListener('madrasa-remote-sync',()=>{ try{ const u=document.getElementById('lockScreen').style.display==='none'; if(u&&me) renderAll(); else renderPendingSection(); }catch(e){ console.error(e); } });
+
+// ══ NOTIFICATION BUTTON (lock screen) ══════════════════════
+function updateNotifBtn(){
+  const btn=document.getElementById('notifBtn');
+  if(!btn) return;
+  if(!('Notification' in window)){ btn.style.display='none'; return; }
+  const perm=Notification.permission;
+  if(perm==='granted') btn.textContent='🔔';
+  else if(perm==='denied') btn.textContent='🔕';
+  else btn.textContent='🔔';
+  btn.title=perm==='granted'?'নোটিফিকেশন চালু আছে':perm==='denied'?'নোটিফিকেশন বন্ধ আছে (browser সেটিং থেকে চালু করুন)':'নোটিফিকেশন চালু করুন';
+}
+async function enableSharedNotif(){
+  const btn=document.getElementById('notifBtn');
+  if(btn){ btn.textContent='⏳'; btn.disabled=true; }
+  try{
+    await API.Pwa.enableSharedStudentDevice();
+    updateNotifBtn();
+    if(Notification.permission==='granted') showToast('✅ নোটিফিকেশন চালু হয়েছে!');
+    else showToast('❌ নোটিফিকেশন অনুমতি দেওয়া হয়নি');
+  }catch(e){ console.error('notif error',e); updateNotifBtn(); }
+  finally{ if(btn) btn.disabled=false; }
+}
 
 // ══ PENDING SECTION (lock screen) ══════════════════════════
 function renderPendingSection(){

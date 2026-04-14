@@ -36,22 +36,37 @@
     });
   }
 
-  async function saveSharedSubscription(subJson, role, idOverride) {
+  function getSupabaseClient() {
+    // Prefer RemoteSync's existing client to avoid creating duplicates
     var RS = w.RemoteSync;
-    if (RS && RS.isRemote && RS.isRemote()) {
-      var sb = RS.getClient && RS.getClient();
-      if (sb) {
-        var res = await sb.rpc('madrasa_rel_save_pwa_subscription', {
-          p_id: idOverride,
-          p_role: role,
-          p_subscription: subJson,
-        });
-        if (res.error) console.warn('MadrasaPwa shared sub save:', res.error);
-        else console.log('MadrasaPwa: shared device subscribed as', idOverride);
-        return !res.error;
-      }
+    if (RS && RS.getClient) {
+      var c = RS.getClient();
+      if (c) return c;
     }
-    return false;
+    // Fall back: build a minimal client directly from window globals
+    var url = w.SUPABASE_URL;
+    var key = w.SUPABASE_ANON_KEY;
+    var create = (w.supabase && w.supabase.createClient) || (w.supabaseJs && w.supabaseJs.createClient);
+    if (url && key && create) return create(url, key);
+    return null;
+  }
+
+  async function saveSharedSubscription(subJson, role, idOverride) {
+    var sb = getSupabaseClient();
+    if (!sb) return false;
+    try {
+      var res = await sb.rpc('madrasa_rel_save_pwa_subscription', {
+        p_id: idOverride,
+        p_role: role,
+        p_subscription: subJson,
+      });
+      if (res.error) { console.warn('MadrasaPwa shared sub save:', res.error); return false; }
+      console.log('MadrasaPwa: shared device subscribed as', idOverride);
+      return true;
+    } catch (e) {
+      console.warn('MadrasaPwa shared sub save exception:', e);
+      return false;
+    }
   }
 
   async function subscribeToPush(role, idOverride) {
