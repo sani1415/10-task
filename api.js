@@ -1044,6 +1044,11 @@ const API = (() => {
         if (!win || !win.MadrasaPwa) return Promise.resolve();
         return win.MadrasaPwa.enableAfterAuth(role, opts || {});
       },
+      enableSharedStudentDevice() {
+        const win = typeof window !== 'undefined' ? window : null;
+        if (!win || !win.MadrasaPwa) return Promise.resolve();
+        return win.MadrasaPwa.enableSharedStudentDevice();
+      },
     },
   };
 })();
