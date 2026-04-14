@@ -133,11 +133,30 @@
     }
   }
 
-  // Call this when student panel is first opened (before login)
-  // Subscribes this device as 'shared_student_device' so all student notifications arrive
-  async function enableSharedStudentDevice() {
-    await subscribeToPush('student', 'shared_student_device');
+  // Each physical device gets a unique stable ID stored in localStorage
+  // Format: shared_device_XXXXXXXX (8 hex chars)
+  function getOrCreateSharedDeviceId() {
+    var key = 'madrasa_shared_device_id';
+    var id = null;
+    try { id = localStorage.getItem(key); } catch(e) {}
+    if (!id) {
+      var arr = new Uint8Array(4);
+      crypto.getRandomValues(arr);
+      id = 'shared_device_' + Array.from(arr).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+      try { localStorage.setItem(key, id); } catch(e) {}
+    }
+    return id;
   }
 
-  w.MadrasaPwa = { register: register, enableAfterAuth: enableAfterAuth, enableSharedStudentDevice: enableSharedStudentDevice };
+  // Call this when student panel is first opened (before login)
+  // Each device subscribes with its own unique ID so multiple shared devices all get notifications
+  async function enableSharedStudentDevice() {
+    var deviceId = getOrCreateSharedDeviceId();
+    await subscribeToPush('student', deviceId);
+  }
+
+  // Expose device ID so Edge Function lookup works
+  function getSharedDeviceId() { return getOrCreateSharedDeviceId(); }
+
+  w.MadrasaPwa = { register: register, enableAfterAuth: enableAfterAuth, enableSharedStudentDevice: enableSharedStudentDevice, getSharedDeviceId: getSharedDeviceId };
 })(typeof window !== 'undefined' ? window : globalThis);

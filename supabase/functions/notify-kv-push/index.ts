@@ -88,14 +88,16 @@ async function getStudentSubByWaqf(sb: ReturnType<typeof createClient>, waqfId: 
   return kv?.value ? pickSubscription(kv.value) : null;
 }
 
-async function getSharedStudentDeviceSub(sb: ReturnType<typeof createClient>): Promise<SubJson | null> {
-  const { data: rel } = await sb
-    .from("pwa_subscriptions").select("subscription").eq("id", "shared_student_device").maybeSingle();
-  if (rel?.subscription) {
-    const s = pickSubscription({ subscription: rel.subscription });
-    if (s) return s;
+async function getAllSharedDeviceSubs(sb: ReturnType<typeof createClient>): Promise<SubJson[]> {
+  // All rows whose id starts with 'shared_device_' are shared physical devices
+  const { data: rows } = await sb
+    .from("pwa_subscriptions").select("subscription").like("id", "shared_device_%");
+  const subs: SubJson[] = [];
+  for (const row of rows || []) {
+    const s = pickSubscription({ subscription: row.subscription });
+    if (s) subs.push(s);
   }
-  return null;
+  return subs;
 }
 
 // ── Main handler ──────────────────────────────────────────────────────────────
@@ -184,19 +186,24 @@ Deno.serve(async (req: Request) => {
         const msgBody = studentName
           ? `${studentName}, শিক্ষকের নতুন বার্তা এসেছে।`
           : "শিক্ষকের নতুন বার্তা এসেছে।";
+        // Collect all endpoints to avoid duplicate pushes
+        const sentEndpoints = new Set<string>();
+
         if (waqfId) {
           // Notify the student's personal device (if subscribed individually)
           const personalSub = await getStudentSubByWaqf(sb, waqfId);
-          if (personalSub) await trySend(personalSub, makePayload(msgBody, "student", `msg-out-${waqfId}`));
-          // Also notify the shared student device (if different endpoint)
-          const sharedSub = await getSharedStudentDeviceSub(sb);
-          if (sharedSub && sharedSub.endpoint !== personalSub?.endpoint) {
-            await trySend(sharedSub, makePayload(msgBody, "student", `msg-out-${waqfId}`));
+          if (personalSub?.endpoint) {
+            await trySend(personalSub, makePayload(msgBody, "student", `msg-out-${waqfId}`));
+            sentEndpoints.add(personalSub.endpoint);
           }
-        } else {
-          // No waqf_id found, still notify shared device
-          const sharedSub = await getSharedStudentDeviceSub(sb);
-          if (sharedSub) await trySend(sharedSub, makePayload(msgBody, "student", `msg-out-unknown`));
+        }
+        // Notify ALL shared devices (skip duplicates)
+        const sharedSubs = await getAllSharedDeviceSubs(sb);
+        for (const sharedSub of sharedSubs) {
+          if (sharedSub.endpoint && !sentEndpoints.has(sharedSub.endpoint)) {
+            await trySend(sharedSub, makePayload(msgBody, "student", `msg-out-${waqfId || "unknown"}`));
+            sentEndpoints.add(sharedSub.endpoint);
+          }
         }
       }
     }
