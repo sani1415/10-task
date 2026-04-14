@@ -89,20 +89,22 @@
 .upload-progress{height:4px;background:var(--gray-200);border-radius:2px;margin:4px 0;overflow:hidden}
 .upload-progress-fill{height:100%;background:#1565C0;border-radius:2px;transition:width .3s}
 
+/* ── Sticky lock screen header ── */
+.lock-sticky-header{flex-shrink:0;width:100%;text-align:center;color:#fff;font-size:15px;font-weight:700;padding:10px 16px 8px;background:rgba(0,0,0,.2);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,.1)}
 /* ── Pending notifications (lock screen) ── */
-.pending-sec-label{color:rgba(255,255,255,.6);font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;text-align:center}
-.pending-item{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);border-radius:14px;padding:9px 12px;cursor:pointer;width:100%;text-align:left;margin-bottom:7px;transition:background .2s;font-family:var(--font)}
+.pending-sec-label{color:rgba(255,255,255,.6);font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px;text-align:center}
+.pending-item{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:6px 10px;cursor:pointer;width:100%;text-align:left;margin-bottom:5px;transition:background .2s;font-family:var(--font)}
 .pending-item:active{background:rgba(255,255,255,.25)}
-.pending-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0}
-.pending-name{flex:1;font-size:14px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pending-waqf{display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,.85);margin-top:3px;letter-spacing:.3px}
-.pending-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;flex-shrink:0}
+.pending-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.pending-name{flex:1;font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pending-waqf{display:inline;font-size:11px;font-weight:400;color:rgba(255,255,255,.65);margin-left:5px}
+.pending-badge{font-size:11px;font-weight:700;padding:1px 7px;border-radius:8px;flex-shrink:0}
 .pending-badge.msg{background:#42A5F5;color:#0D47A1}
 .pending-badge.task{background:#FFE082;color:#E65100}
 
 /* ── Lock screen layout ── */
 #lockScreen{flex-direction:column;justify-content:flex-start!important;padding:0}
-.lock-top{flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;padding:28px 16px 12px;gap:6px;min-height:0}
+.lock-top{flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;padding:10px 16px 8px;gap:4px;min-height:0;width:100%}
 .lock-bottom{flex-shrink:0;width:100%;background:rgba(0,0,0,.25);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid rgba(255,255,255,.15);padding:14px 16px 20px;display:flex;flex-direction:column;align-items:center}
 /* login box — both steps same width as pin-pad (234px + 2×gap) */
 .login-box{width:254px}
@@ -133,13 +135,11 @@
 
 <!-- ══ LOCK ══════════════════════════════════════════════ -->
 <div id="lockScreen">
-  <!-- TOP: scrollable area — logo + pending list -->
+  <!-- Sticky header — always visible -->
+  <div class="lock-sticky-header">📖 ছাত্র লগইন</div>
+  <!-- TOP: scrollable area — pending list -->
   <div class="lock-top">
-    <div class="lock-logo">📖</div>
-    <div class="lock-title">ছাত্র প্যানেল</div>
-    <div class="lock-sub" id="lockName">Waqful Madinah</div>
-    <div id="pendingSection" style="display:none;width:100%;max-width:340px;margin-top:10px">
-      <div class="pending-sec-label">⏳ অপেক্ষারত</div>
+    <div id="pendingSection" style="display:none;width:100%;max-width:340px">
       <div id="pendingList"></div>
     </div>
   </div>
@@ -463,7 +463,8 @@ function renderPendingSection(){
     return `<button class="pending-item" onclick="prefillId('${esc(waqf)}')">
       <div class="pending-avatar" style="background:${s.color||'#1565C0'}">${(s.name||'?').charAt(0)}</div>
       <div class="pending-name">${esc(s.name||'')}<span class="pending-waqf">${esc(API.Students.getShortId(s)||'')}</span></div>
-      ${msgCnt>0?`<span class="pending-badge msg">💬 ${msgCnt}</span>`:''}
+      ${msgCnt>0?`<span class="pending-badge msg">💬${msgCnt}</span>`:''}
+      ${s.taskCount>0?`<span class="pending-badge task">📋${s.taskCount}</span>`:''}
     </button>`;
   }).join('');
 }
@@ -511,7 +512,11 @@ function loginPinBack(){
 function prefillId(shortId){
   _skId=shortId; _skUpdateIdDisplay(); showLoginErr('');
   document.getElementById('loginId').value=shortId;
-  loginIdNext();
+  // stay on step 1 — user sees ID filled, presses পরবর্তী themselves
+  document.getElementById('loginStepPin').style.display='none';
+  document.getElementById('loginStepId').style.display='flex';
+  // scroll lock-bottom into view smoothly
+  document.querySelector('.lock-bottom').scrollIntoView({behavior:'smooth',block:'end'});
 }
 
 // ══ LOGIN (ID + PIN form) ═══════════════════════════════════
