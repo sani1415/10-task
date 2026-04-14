@@ -464,10 +464,16 @@ function updateNotifBtn(){
   if(!btn) return;
   if(!('Notification' in window)){ btn.style.display='none'; return; }
   const perm=Notification.permission;
-  if(perm==='granted') btn.textContent='🔔';
-  else if(perm==='denied') btn.textContent='🔕';
-  else btn.textContent='🔔';
-  btn.title=perm==='granted'?'নোটিফিকেশন চালু আছে':perm==='denied'?'নোটিফিকেশন বন্ধ আছে (browser সেটিং থেকে চালু করুন)':'নোটিফিকেশন চালু করুন';
+  if(perm==='granted'){
+    btn.textContent='🔔'; btn.style.opacity='.4';
+    btn.title='নোটিফিকেশন চালু আছে — চাপলে পুনরায় নিবন্ধন করবে';
+  } else if(perm==='denied'){
+    btn.textContent='🔕'; btn.style.opacity='1';
+    btn.title='নোটিফিকেশন বন্ধ আছে — browser সেটিং থেকে চালু করুন';
+  } else {
+    btn.textContent='🔔'; btn.style.opacity='1';
+    btn.title='নোটিফিকেশন চালু করুন';
+  }
 }
 async function enableSharedNotif(){
   const btn=document.getElementById('notifBtn');
