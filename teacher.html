@@ -138,7 +138,10 @@
   <button class="header-back" id="backBtn" onclick="closeChat()">‹</button>
   <div class="header-avatar" id="hAvatar" style="background:#128C7E" onclick="if(curChat&&curChat!=='_broadcast')openStudentProfile(curChat)">শি</div>
   <div class="header-info" style="cursor:default" id="hInfo" onclick="if(curChat&&curChat!=='_broadcast')openStudentProfile(curChat)"><div class="header-title" id="hTitle">Waqful Madinah</div><div class="header-sub" id="hSub">শিক্ষক প্যানেল</div></div>
-  <div class="header-actions"><button class="header-btn" id="searchToggleBtn" onclick="toggleSearch()">🔍</button></div>
+  <div class="header-actions">
+    <button class="header-btn" id="inChatSearchBtn" style="display:none" onclick="toggleInChatSearch()" title="এই চ্যাটে খুঁজুন">🔍</button>
+    <button class="header-btn" id="searchToggleBtn" onclick="toggleSearch()">🔍</button>
+  </div>
 </div>
 
 <!-- ══ TAB BAR ═══════════════════════════════════════════ -->
@@ -153,7 +156,10 @@
 
 <!-- ══ CHATS ══════════════════════════════════════════════ -->
 <div class="screen active" id="screen-chats">
-  <div class="search-bar" id="searchBar" style="display:none"><input placeholder="🔍 চ্যাট খুঁজুন..." oninput="renderChatList(this.value)"></div>
+  <div class="search-bar" id="searchBar" style="display:none">
+    <input type="search" id="globalMsgSearchIn" enterkeyhint="search" autocomplete="off" placeholder="🔍 নাম, আইডি বা মেসেজ খুঁজুন…" oninput="onGlobalMsgSearchInput(this.value)">
+  </div>
+  <div class="global-msg-search-results" id="globalMsgSearchResults" style="display:none"></div>
   <div class="list-scroll" id="chatList"></div>
 </div>
 
@@ -327,6 +333,14 @@
     <button class="cs-tab"        id="cst-exam" onclick="switchChatTab('exam',this)">📝 পরীক্ষা</button>
     <button class="cs-tab"        id="cst-goal" onclick="switchChatTab('goal',this)">🎯 লক্ষ্য</button>
     <button class="cs-tab"        id="cst-note" onclick="switchChatTab('note',this)">🗒️ নোট</button>
+  </div>
+  <!-- In-chat search bar -->
+  <div class="in-chat-search-bar" id="inChatSearchBar">
+    <input type="search" id="inChatSearchIn" placeholder="এই চ্যাটে খুঁজুন…" autocomplete="off" oninput="onInChatSearch(this.value)" onkeydown="if(event.key==='Enter')inChatNav(1)">
+    <span class="ics-counter" id="icsCounter"></span>
+    <button class="ics-nav" id="icsPrev" onclick="inChatNav(-1)" title="আগের">↑</button>
+    <button class="ics-nav" id="icsNext" onclick="inChatNav(1)"  title="পরের">↓</button>
+    <button class="ics-close" onclick="closeInChatSearch()">✕</button>
   </div>
   <!-- Chat messages panel -->
   <div class="chat-messages" id="chatMsgs"></div>
@@ -549,6 +563,127 @@ function renderAll(){
 }
 
 // ══ CHAT LIST ══════════════════════════════════════════════
+let _globalMsgSearchTimer=null;
+function hideGlobalMsgSearchResults(){
+  const box=document.getElementById('globalMsgSearchResults');
+  if(box){ box.style.display='none'; box.innerHTML=''; }
+}
+function onGlobalMsgSearchInput(v){
+  clearTimeout(_globalMsgSearchTimer);
+  const box=document.getElementById('globalMsgSearchResults');
+  if(!box) return;
+  const q=String(v||'').trim();
+  if(!q){ hideGlobalMsgSearchResults(); renderChatList(''); return; }
+  // Always filter chat list by name/waqf
+  renderChatList(q);
+  // Also search message content after short debounce
+  _globalMsgSearchTimer=setTimeout(()=>{
+    const rows=API.Messages.searchAllChats(q,{limit:50});
+    if(!rows.length){ hideGlobalMsgSearchResults(); return; }
+    box.innerHTML=`<div class="gms-section-hd">💬 মেসেজ ফলাফল</div>`+rows.map(r=>{
+      const waqf=r.waqfShort?`<span class="gms-waqf">${esc(r.waqfShort)}</span>`:'';
+      const kind=r.kind==='doc'?'📎':r.kind==='task'?'📋':'💬';
+      return `<button type="button" class="global-msg-search-item" data-tid="${esc(r.threadId)}" data-mid="${esc(r.messageId)}" onclick="openChatFromGlobalSearch(this.dataset.tid,this.dataset.mid)"><div class="gms-line1"><span class="gms-kind">${kind}</span><span class="gms-name">${esc(r.studentLabel)}</span>${waqf}<span class="gms-time">${esc(r.time)}</span></div><div class="gms-snippet">${esc(r.snippet)}</div></button>`;
+    }).join('');
+    box.style.display='block';
+  },300);
+}
+// ══ IN-CHAT SEARCH (teacher) ════════════════════════════════
+let _icsMatches=[], _icsIdx=-1, _icsQuery='';
+function toggleInChatSearch(){
+  const bar=document.getElementById('inChatSearchBar');
+  if(bar.classList.contains('open')){ closeInChatSearch(); }
+  else { bar.classList.add('open'); document.getElementById('inChatSearchIn').focus(); }
+}
+function closeInChatSearch(){
+  _icsQuery=''; _icsMatches=[]; _icsIdx=-1;
+  const bar=document.getElementById('inChatSearchBar');
+  bar.classList.remove('open');
+  const inp=document.getElementById('inChatSearchIn'); if(inp) inp.value='';
+  _icsUpdateCounter();
+  // re-render without highlights
+  if(curChat) renderMsgs(curChat);
+}
+function _icsUpdateCounter(){
+  const el=document.getElementById('icsCounter');
+  const prev=document.getElementById('icsPrev');
+  const next=document.getElementById('icsNext');
+  if(!el) return;
+  if(!_icsMatches.length){ el.textContent=_icsQuery?'০':''; }
+  else { el.textContent=`${_icsIdx+1}/${_icsMatches.length}`; }
+  if(prev) prev.disabled=_icsMatches.length<2;
+  if(next) next.disabled=_icsMatches.length<2;
+}
+function onInChatSearch(v){
+  _icsQuery=String(v||'').trim();
+  _icsMatches=[]; _icsIdx=-1;
+  if(curChat) renderMsgs(curChat); // re-render with highlights
+  if(!_icsQuery){ _icsUpdateCounter(); return; }
+  // collect match elements after render
+  requestAnimationFrame(()=>{
+    _icsMatches=[...document.querySelectorAll('#chatMsgs mark.msg-hl')];
+    if(_icsMatches.length){ _icsIdx=0; _icsScrollTo(0); }
+    _icsUpdateCounter();
+  });
+}
+function inChatNav(dir){
+  if(!_icsMatches.length) return;
+  _icsIdx=(_icsIdx+dir+_icsMatches.length)%_icsMatches.length;
+  _icsScrollTo(_icsIdx);
+  _icsUpdateCounter();
+}
+function _icsScrollTo(i){
+  const el=_icsMatches[i]; if(!el) return;
+  // highlight active match differently
+  _icsMatches.forEach((m,j)=>m.classList.toggle('msg-hl-active',j===i));
+  el.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function _icsHighlight(text, query){
+  if(!query) return esc(text);
+  const safe=esc(text);
+  const safeQ=query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  return safe.replace(new RegExp('('+safeQ+')','gi'),'<mark class="msg-hl">$1</mark>');
+}
+
+function openChatFromGlobalSearch(threadId,mid){
+  // grab keyword before clearing global search
+  const gInp=document.getElementById('globalMsgSearchIn');
+  const kw=gInp?gInp.value.trim():'';
+  hideGlobalMsgSearchResults();
+  if(gInp){ gInp.value=''; gInp.blur(); }
+  renderChatList('');
+  toggleSearch(false);
+  openChat(threadId);
+  // after chat renders, open in-chat search with keyword and jump to the clicked message
+  setTimeout(()=>{
+    if(kw){
+      _icsQuery=kw;
+      const bar=document.getElementById('inChatSearchBar');
+      if(bar) bar.classList.add('open');
+      const sInp=document.getElementById('inChatSearchIn');
+      if(sInp) sInp.value=kw;
+      if(curChat) renderMsgs(curChat);
+      // double rAF: let browser paint the new HTML before we query marks
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        _icsMatches=[...document.querySelectorAll('#chatMsgs mark.msg-hl')];
+        if(!_icsMatches.length){ _icsUpdateCounter(); return; }
+        // find match inside the clicked message; fallback → first
+        const targetWrap=document.querySelector(`#chatMsgs .msg-wrap[data-mid="${CSS.escape(mid)}"]`);
+        let idx=0;
+        if(targetWrap){
+          const inTarget=targetWrap.querySelector('mark.msg-hl');
+          if(inTarget){ const i=_icsMatches.indexOf(inTarget); if(i>=0) idx=i; }
+        }
+        _icsIdx=idx;
+        _icsScrollTo(_icsIdx);   // sets .msg-hl-active immediately
+        _icsUpdateCounter();
+      }));
+    } else {
+      scrollToMsg(mid);
+    }
+  },200);
+}
+
 function renderChatList(f=''){
   const msgTs=s=>{ const m=API.Messages.getThread(s.id); if(!m.length) return 0; const last=m[m.length-1]; return last._ts||parseInt(last.id.slice(1))||0; };
   const students=API.Students.getAll()
@@ -586,6 +721,7 @@ function openChat(id){
   document.getElementById('tabBar').style.display='none';
   document.getElementById('fab').style.display='none';
   document.getElementById('searchToggleBtn').style.display='none';
+  document.getElementById('inChatSearchBtn').style.display='flex';
   document.getElementById('bcNotice').classList.toggle('show',isBC);
   // Student tabs — only for 1:1 chats
   const tabs=document.getElementById('chatStudentTabs');
@@ -604,10 +740,12 @@ function openChat(id){
   setTimeout(()=>{ document.getElementById('chatMsgs').scrollTop=9e9; document.getElementById('msgIn').focus(); },50);
 }
 function closeChat(){
+  closeInChatSearch();
   curChat=null; curChatTab='msg'; document.getElementById('chatView').classList.remove('open');
   document.getElementById('tabBar').style.display='flex'; document.getElementById('fab').style.display='flex';
   document.getElementById('backBtn').style.display='none';
   document.getElementById('searchToggleBtn').style.display='flex';
+  document.getElementById('inChatSearchBtn').style.display='none';
   const t=API.DB.getTeacher();
   document.getElementById('hTitle').textContent=t.madrasa||'Waqful Madinah';
   document.getElementById('hSub').textContent='শিক্ষক প্যানেল';
@@ -746,7 +884,8 @@ function renderMsgs(id){
       }
     } else {
       const tickHtml=m.role==='out'?(m.read?'<span class="msg-tick" style="color:#25D366">✓✓</span>':'<span class="msg-tick" style="color:rgba(0,0,0,.3)">✓</span>'):'';
-      h+=`<div class="msg-wrap ${m.role}" data-mid="${m.id}">${swiIcon}<div class="msg-bubble ${m.role}">${replyRef}${esc(m.text)}<div class="msg-meta"><span class="msg-time">${m.time}</span>${tickHtml}</div></div></div>`;
+      const bodyHtml=typeof _icsHighlight==='function'?_icsHighlight(m.text,_icsQuery):esc(m.text);
+      h+=`<div class="msg-wrap ${m.role}" data-mid="${m.id}">${swiIcon}<div class="msg-bubble ${m.role}">${replyRef}${bodyHtml}<div class="msg-meta"><span class="msg-time">${m.time}</span>${tickHtml}</div></div></div>`;
     }
   });
   el.innerHTML=h; setTimeout(()=>el.scrollTop=9e9,50);
@@ -1406,6 +1545,8 @@ function doImport(input){ const r=new FileReader(); r.onload=e=>{ try{ API.DB.im
 // ══ NAV ════════════════════════════════════════════════════
 function goTab(tab){
   curTab=tab;
+  const sb=document.getElementById('searchBar');
+  if(sb&&sb.style.display!=='none'){ const inp=sb.querySelector('input'); if(inp) inp.value=''; sb.style.display='none'; hideGlobalMsgSearchResults(); renderChatList(''); }
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -1422,7 +1563,13 @@ function fabClick(){
   else if(curTab==='exams') goExamTab('create', document.querySelectorAll('.exam-tab-btn')[1]);
   else openModal('fabMenu');
 }
-function toggleSearch(){ const b=document.getElementById('searchBar'); b.style.display=b.style.display==='none'?'block':'none'; if(b.style.display==='block') b.querySelector('input').focus(); }
+function toggleSearch(forceClose){
+  const b=document.getElementById('searchBar');
+  const open = forceClose===false ? false : (b.style.display==='none');
+  b.style.display=open?'block':'none';
+  if(open){ b.querySelector('input').focus(); }
+  else { const inp=b.querySelector('input'); if(inp) inp.value=''; hideGlobalMsgSearchResults(); renderChatList(''); }
+}
 
 // ══ STUDENT PROFILE ════════════════════════════════════════
 function openStudentProfile(sid){

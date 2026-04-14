@@ -435,3 +435,30 @@ textarea.form-input{resize:vertical;min-height:70px}
 #pwaInstallBanner.show{display:flex}
 #pwaInstallBanner button{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;font-family:var(--font);font-size:12px;font-weight:700;padding:5px 12px;border-radius:16px;cursor:pointer;white-space:nowrap}
 #pwaInstallBanner .pwa-close{background:none;border:none;color:rgba(255,255,255,.7);font-size:18px;cursor:pointer;margin-left:auto;padding:0 2px;line-height:1}
+/* Teacher — গ্লোবাল মেসেজ সার্চ (চ্যাট ট্যাব) */
+.global-msg-search-wrap{margin-bottom:0}
+.global-msg-search-results{display:none;background:#fff;border:1px solid var(--gray-200);border-radius:10px;margin:0 12px 8px;max-height:min(52vh,420px);overflow-y:auto;box-shadow:var(--shadow-sm);z-index:2}
+.global-msg-search-empty{padding:14px 12px;font-size:13px;color:var(--gray-500);text-align:center}
+.global-msg-search-item{display:block;width:calc(100% - 0px);text-align:left;background:transparent;border:none;border-bottom:1px solid var(--gray-100);padding:10px 12px;font-family:var(--font);cursor:pointer;color:var(--gray-800)}
+.global-msg-search-item:last-child{border-bottom:none}
+.global-msg-search-item:active{background:var(--gray-50)}
+.gms-line1{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px;font-weight:600;margin-bottom:4px}
+.gms-kind{flex-shrink:0;opacity:.85}
+.gms-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gms-waqf{font-size:11px;color:var(--gray-500);font-weight:600}
+.gms-time{font-size:11px;color:var(--gray-400);margin-left:auto;flex-shrink:0}
+.gms-snippet{font-size:12px;color:var(--gray-600);line-height:1.45;word-break:break-word}
+.gms-section-hd{font-size:11px;font-weight:700;color:var(--gray-400);letter-spacing:.6px;padding:8px 12px 4px;text-transform:uppercase}
+/* ── In-chat search bar ── */
+.in-chat-search-bar{display:none;align-items:center;gap:6px;padding:6px 10px;background:#fff;border-bottom:1px solid var(--gray-200);flex-shrink:0;z-index:4}
+.in-chat-search-bar.open{display:flex}
+.in-chat-search-bar input{flex:1;border:1.5px solid var(--gray-200);border-radius:20px;padding:7px 12px;font-family:var(--font);font-size:13px;outline:none;background:var(--gray-50);color:var(--gray-700)}
+.in-chat-search-bar input:focus{border-color:var(--primary,#128C7E)}
+.ics-counter{font-size:12px;font-weight:600;color:var(--gray-500);white-space:nowrap;min-width:36px;text-align:center}
+.ics-nav{width:32px;height:32px;border:none;border-radius:50%;background:var(--gray-100);color:var(--gray-600);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1}
+.ics-nav:active{background:var(--gray-200)}
+.ics-nav:disabled{opacity:.3;cursor:default}
+.ics-close{width:28px;height:28px;border:none;border-radius:50%;background:transparent;color:var(--gray-400);font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+/* keyword highlight inside message bubbles */
+mark.msg-hl{background:#FFD600;color:#000;border-radius:2px;padding:0 1px}
+mark.msg-hl.msg-hl-active{background:#FF6D00;color:#fff;outline:2px solid #FF6D00;border-radius:2px}

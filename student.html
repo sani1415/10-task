@@ -100,17 +100,25 @@
 .pending-badge.msg{background:#42A5F5;color:#0D47A1}
 .pending-badge.task{background:#FFE082;color:#E65100}
 
-/* ── Login form (lock screen) ── */
-.login-box{background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:20px;padding:20px 20px 16px;width:100%;max-width:300px}
-.login-field{margin-bottom:12px}
-.login-lbl{display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.6px;text-transform:uppercase;margin-bottom:6px}
-.login-input{width:100%;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);border-radius:10px;color:#fff;font-family:var(--font);font-size:22px;font-weight:600;padding:10px 14px;outline:none;letter-spacing:4px;text-align:center;-webkit-appearance:none;appearance:none}
-.login-input::placeholder{color:rgba(255,255,255,.35);letter-spacing:normal;font-size:16px}
-.login-input:focus{border-color:rgba(255,255,255,.7);background:rgba(255,255,255,.22)}
-.login-input-waqf{letter-spacing:.5px;font-size:17px}
-.login-err{color:#FF8A80;font-size:13px;min-height:18px;margin:-4px 0 8px;text-align:center}
-.login-btn{width:100%;background:#fff;color:#1565C0;border:none;border-radius:12px;padding:13px;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s;margin-top:4px}
+/* ── Lock screen layout ── */
+#lockScreen{flex-direction:column;justify-content:flex-start!important;padding:0}
+.lock-top{flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;padding:28px 16px 12px;gap:6px;min-height:0}
+.lock-bottom{flex-shrink:0;width:100%;background:rgba(0,0,0,.25);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid rgba(255,255,255,.15);padding:14px 16px 20px;display:flex;flex-direction:column;align-items:center}
+/* login box — both steps same width as pin-pad (234px + 2×gap) */
+.login-box{width:254px}
+.login-steps{width:100%}
+#loginStepId,#loginStepPin{width:100%;display:flex;flex-direction:column;align-items:center}
+/* shared display box — same width as pin-pad */
+.login-keypad-display{width:234px;box-sizing:border-box;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.3);border-radius:14px;color:#fff;font-family:var(--font);font-size:26px;font-weight:700;padding:10px 14px;text-align:center;letter-spacing:6px;height:62px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+/* pin dots — same width, centered */
+.stu-pin-dots{display:flex;gap:14px;justify-content:center;margin-bottom:10px;height:62px;align-items:center}
+.login-lbl-c{font-size:11px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.6px;text-transform:uppercase;text-align:center;margin-bottom:4px}
+.login-lbl-name{font-size:13px;font-weight:600;color:rgba(255,255,255,.9);text-align:center;min-height:18px;margin-bottom:6px}
+/* action button — same width as pin-pad */
+.login-btn{width:234px;background:#fff;color:#1565C0;border:none;border-radius:14px;padding:0;height:50px;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s;margin-top:10px;display:flex;align-items:center;justify-content:center}
 .login-btn:active{opacity:.85}
+.login-btn-ghost{background:rgba(255,255,255,.15);color:rgba(255,255,255,.85)}
+.login-err{color:#FF8A80;font-size:13px;min-height:18px;margin-top:6px;text-align:center;width:234px}
 </style>
 </head>
 <body>
@@ -125,38 +133,85 @@
 
 <!-- ══ LOCK ══════════════════════════════════════════════ -->
 <div id="lockScreen">
-  <div class="lock-logo">📖</div>
-  <div class="lock-title">ছাত্র প্যানেল</div>
-  <div class="lock-sub" id="lockName">Waqful Madinah</div>
-
-  <!-- Section 1: Students with pending messages or tasks -->
-  <div id="pendingSection" style="display:none;width:100%;max-width:340px;padding:0 16px">
-    <div class="pending-sec-label">⏳ অপেক্ষারত</div>
-    <div id="pendingList"></div>
+  <!-- TOP: scrollable area — logo + pending list -->
+  <div class="lock-top">
+    <div class="lock-logo">📖</div>
+    <div class="lock-title">ছাত্র প্যানেল</div>
+    <div class="lock-sub" id="lockName">Waqful Madinah</div>
+    <div id="pendingSection" style="display:none;width:100%;max-width:340px;margin-top:10px">
+      <div class="pending-sec-label">⏳ অপেক্ষারত</div>
+      <div id="pendingList"></div>
+    </div>
   </div>
 
-  <!-- Section 2: Login form (ID + PIN) -->
-  <div class="login-box">
-    <div class="login-field">
-      <label class="login-lbl">ওয়াকফ আইডি</label>
-      <input id="loginId" class="login-input login-input-waqf" type="text" inputmode="text" maxlength="16" spellcheck="false"
-             placeholder="001" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('loginPin').focus()">
+  <!-- BOTTOM: fixed login keypad -->
+  <div class="lock-bottom">
+    <div class="login-box">
+      <div class="login-steps">
+
+        <!-- ── Step 1: Waqf ID ── -->
+        <div id="loginStepId" style="display:flex;flex-direction:column;align-items:center">
+          <div class="login-lbl-c">ওয়াকফ আইডি লিখুন</div>
+          <div class="login-keypad-display" id="loginIdDisplay">—</div>
+          <div class="pin-pad">
+            <button class="pin-key" onclick="skp('id','1')">1</button>
+            <button class="pin-key" onclick="skp('id','2')">2<span class="sub">ABC</span></button>
+            <button class="pin-key" onclick="skp('id','3')">3<span class="sub">DEF</span></button>
+            <button class="pin-key" onclick="skp('id','4')">4<span class="sub">GHI</span></button>
+            <button class="pin-key" onclick="skp('id','5')">5<span class="sub">JKL</span></button>
+            <button class="pin-key" onclick="skp('id','6')">6<span class="sub">MNO</span></button>
+            <button class="pin-key" onclick="skp('id','7')">7<span class="sub">PQRS</span></button>
+            <button class="pin-key" onclick="skp('id','8')">8<span class="sub">TUV</span></button>
+            <button class="pin-key" onclick="skp('id','9')">9<span class="sub">WXYZ</span></button>
+            <button class="pin-key" style="opacity:.3;pointer-events:none"></button>
+            <button class="pin-key" onclick="skp('id','0')">0</button>
+            <button class="pin-key" onclick="skd('id')">⌫</button>
+          </div>
+          <button class="login-btn" onclick="loginIdNext()">পরবর্তী →</button>
+        </div>
+
+        <!-- ── Step 2: PIN ── -->
+        <div id="loginStepPin" style="display:none">
+          <div class="login-lbl-c">পিন কোড দিন</div>
+          <div class="stu-pin-dots">
+            <div class="pin-dot" id="spd0"></div>
+            <div class="pin-dot" id="spd1"></div>
+            <div class="pin-dot" id="spd2"></div>
+            <div class="pin-dot" id="spd3"></div>
+          </div>
+          <div class="pin-pad">
+            <button class="pin-key" onclick="skp('pin','1')">1</button>
+            <button class="pin-key" onclick="skp('pin','2')">2<span class="sub">ABC</span></button>
+            <button class="pin-key" onclick="skp('pin','3')">3<span class="sub">DEF</span></button>
+            <button class="pin-key" onclick="skp('pin','4')">4<span class="sub">GHI</span></button>
+            <button class="pin-key" onclick="skp('pin','5')">5<span class="sub">JKL</span></button>
+            <button class="pin-key" onclick="skp('pin','6')">6<span class="sub">MNO</span></button>
+            <button class="pin-key" onclick="skp('pin','7')">7<span class="sub">PQRS</span></button>
+            <button class="pin-key" onclick="skp('pin','8')">8<span class="sub">TUV</span></button>
+            <button class="pin-key" onclick="skp('pin','9')">9<span class="sub">WXYZ</span></button>
+            <button class="pin-key" style="opacity:.3;pointer-events:none"></button>
+            <button class="pin-key" onclick="skp('pin','0')">0</button>
+            <button class="pin-key" onclick="skd('pin')">⌫</button>
+          </div>
+          <button class="login-btn login-btn-ghost" onclick="loginPinBack()">← আইডি পরিবর্তন</button>
+        </div>
+
+      </div>
+      <div id="loginErr" class="login-err"></div>
+      <div id="loginPinForName" class="login-lbl-name" style="display:none"></div>
     </div>
-    <div class="login-field">
-      <label class="login-lbl">পিন কোড</label>
-      <input id="loginPin" class="login-input" type="password" inputmode="numeric" maxlength="4"
-             placeholder="••••" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()">
-    </div>
-    <div id="loginErr" class="login-err"></div>
-    <button class="login-btn" onclick="doLogin()">প্রবেশ করুন →</button>
   </div>
+  <input id="loginId" type="hidden"><input id="loginPin" type="hidden">
 </div>
 
 <!-- ══ HEADER ════════════════════════════════════════════ -->
 <div class="header">
-  <div class="header-avatar" id="hAvatar" style="background:rgba(255,255,255,.25)">?</div>
+  <div class="header-avatar" id="hAvatar" style="background:rgba(255,255,255,.25);cursor:pointer" onclick="openStudentSelfProfile()">?</div>
   <div class="header-info"><div class="header-title" id="hTitle">লোড হচ্ছে...</div><div class="header-sub" id="hSub">ছাত্র</div></div>
-  <button class="logout-btn" onclick="logout()">লগআউট</button>
+  <div style="display:flex;align-items:center;gap:4px">
+    <button class="header-btn" id="stuInChatSearchBtn" style="display:none" onclick="toggleStuInChatSearch()" title="চ্যাটে খুঁজুন">🔍</button>
+    <button class="logout-btn" onclick="logout()">লগআউট</button>
+  </div>
 </div>
 
 <!-- ══ TAB BAR ═══════════════════════════════════════════ -->
@@ -189,6 +244,14 @@
 
 <!-- ══ CHAT ══════════════════════════════════════════════ -->
 <div class="screen active" id="screen-chat">
+  <!-- In-chat search bar -->
+  <div class="in-chat-search-bar" id="stuInChatSearchBar">
+    <input type="search" id="stuInChatSearchIn" placeholder="চ্যাটে খুঁজুন…" autocomplete="off" oninput="onStuInChatSearch(this.value)" onkeydown="if(event.key==='Enter')stuInChatNav(1)">
+    <span class="ics-counter" id="stuIcsCounter"></span>
+    <button class="ics-nav" id="stuIcsPrev" onclick="stuInChatNav(-1)" title="আগের">↑</button>
+    <button class="ics-nav" id="stuIcsNext" onclick="stuInChatNav(1)"  title="পরের">↓</button>
+    <button class="ics-close" onclick="closeStuInChatSearch()">✕</button>
+  </div>
   <div class="chat-messages" id="chatMsgs"></div>
   <!-- File preview before sending -->
   <div class="chat-file-preview" id="chatFilePreview" style="display:none">
@@ -318,6 +381,28 @@
   <button class="btn-secondary" onclick="closeModal('addGoalModal')">বাতিল</button>
 </div></div>
 
+<!-- Student self-profile modal -->
+<div class="modal-overlay" id="studentProfileModal"><div class="modal-sheet">
+  <div class="modal-handle"></div>
+  <div class="modal-title">👤 আমার প্রোফাইল</div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:16px">
+    <div id="spAvatar" style="width:72px;height:72px;border-radius:50%;font-size:32px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;position:relative;cursor:pointer" onclick="document.getElementById('spPhotoInput').click()">
+      <input type="file" id="spPhotoInput" accept="image/*" style="display:none" onchange="onStudentPhotoChange(this)">
+      <span id="spAvatarLetter"></span>
+      <span style="position:absolute;bottom:0;right:0;background:rgba(0,0,0,.45);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;pointer-events:none">✏️</span>
+    </div>
+    <div id="spName" style="font-size:16px;font-weight:700;color:var(--gray-700)"></div>
+    <div id="spWaqf" style="font-size:12px;color:var(--gray-400)"></div>
+  </div>
+  <div class="sec-hd">পিন পরিবর্তন</div>
+  <div class="form-group">
+    <label class="form-label">নতুন পিন (৪ সংখ্যা)</label>
+    <input class="form-input" id="spNewPin" type="number" inputmode="numeric" maxlength="4" placeholder="যেমন: 5678">
+  </div>
+  <button class="btn-primary" onclick="saveStudentPin()">🔑 পিন পরিবর্তন করুন</button>
+  <button class="btn-secondary" onclick="closeModal('studentProfileModal')">বন্ধ করুন</button>
+</div></div>
+
 <div class="modal-overlay" id="chatDocPreviewModal"><div class="modal-sheet" style="max-width:min(100%,380px)">
   <div class="modal-handle"></div>
   <div class="modal-title" id="chatDocPreviewTitle">ফাইল</div>
@@ -383,17 +468,56 @@ function renderPendingSection(){
   }).join('');
 }
 
+// ══ ON-SCREEN KEYPAD LOGIN ══════════════════════════════════
+let _skId='', _skPin='';
+function _skUpdateIdDisplay(){
+  document.getElementById('loginIdDisplay').textContent=_skId||'—';
+}
+function _skUpdatePinDots(){
+  [0,1,2,3].forEach(i=>document.getElementById('spd'+i).classList.toggle('filled',i<_skPin.length));
+}
+function skp(field, digit){
+  if(field==='id'){
+    if(_skId.length>=8) return;
+    _skId+=digit; _skUpdateIdDisplay();
+  } else {
+    if(_skPin.length>=4) return;
+    _skPin+=digit; _skUpdatePinDots();
+    if(_skPin.length===4) setTimeout(doLogin,120);
+  }
+}
+function skd(field){
+  if(field==='id'){ _skId=_skId.slice(0,-1); _skUpdateIdDisplay(); }
+  else { _skPin=_skPin.slice(0,-1); _skUpdatePinDots(); }
+}
+function loginIdNext(){
+  if(!_skId){ showLoginErr('আইডি লিখুন'); return; }
+  showLoginErr('');
+  _skPin=''; _skUpdatePinDots();
+  document.getElementById('loginId').value=_skId;
+  const s=API.Students.getByWaqfShortId(_skId);
+  const nameEl=document.getElementById('loginPinForName');
+  if(nameEl){ nameEl.textContent=s?s.name:''; nameEl.style.display=s?'block':'none'; }
+  document.getElementById('loginStepId').style.display='none';
+  document.getElementById('loginStepPin').style.display='flex';
+}
+function loginPinBack(){
+  _skPin=''; _skUpdatePinDots(); showLoginErr('');
+  const nameEl=document.getElementById('loginPinForName');
+  if(nameEl) nameEl.style.display='none';
+  document.getElementById('loginStepPin').style.display='none';
+  document.getElementById('loginStepId').style.display='flex';
+}
 function prefillId(shortId){
+  _skId=shortId; _skUpdateIdDisplay(); showLoginErr('');
   document.getElementById('loginId').value=shortId;
-  document.getElementById('loginErr').textContent='';
-  document.getElementById('loginPin').value='';
-  document.getElementById('loginPin').focus();
+  loginIdNext();
 }
 
 // ══ LOGIN (ID + PIN form) ═══════════════════════════════════
 async function doLogin(){
-  const rawId=document.getElementById('loginId').value.trim();
-  const pin=document.getElementById('loginPin').value.trim();
+  const rawId=(_skId||document.getElementById('loginId').value||'').trim();
+  const pin=(_skPin||document.getElementById('loginPin').value||'').trim();
   if(!rawId){ showLoginErr('ওয়াকফ আইডি দিন'); return; }
   if(!pin){ showLoginErr('পিন কোড দিন'); return; }
   if(window.RemoteSync && RemoteSync.isRemote() && RemoteSync.usesSecureKv()){
@@ -405,13 +529,13 @@ async function doLogin(){
       onLogin();
     } catch(e){
       showLoginErr('❌ পিন বা আইডি ভুল');
-      document.getElementById('loginPin').value='';
+      _skPin=''; _skUpdatePinDots();
     }
     return;
   }
   const student=API.Students.getByWaqfShortId(rawId);
   if(!student){ showLoginErr('❌ ওয়াকফ আইডি পাওয়া যায়নি'); return; }
-  if(pin!==student.pin){ showLoginErr('❌ পিন ভুল হয়েছে'); document.getElementById('loginPin').value=''; return; }
+  if(pin!==student.pin){ showLoginErr('❌ পিন ভুল হয়েছে'); _skPin=''; _skUpdatePinDots(); return; }
   me=student;
   document.getElementById('lockScreen').style.display='none';
   onLogin();
@@ -427,16 +551,22 @@ function onLogin(){
   document.getElementById('hAvatar').textContent=me.name.charAt(0); document.getElementById('hAvatar').style.background=me.color||'#1565C0';
   document.getElementById('hTitle').textContent=me.name;
   { const p=[]; if(me.waqfId) p.push(API.Students.getShortId(me)); if(me.cls) p.push(me.cls); document.getElementById('hSub').textContent=p.length?p.join(' · '):'ছাত্র'; }
+  const sb=document.getElementById('stuInChatSearchBtn'); if(sb) sb.style.display='flex';
   renderAll();
   goTab('chat');
   void API.Pwa.enableNotificationsAfterAuth('student', { waqfId: me && me.waqfId });
 }
 function logout(){
   me=null;
+  closeStuInChatSearch();
+  const sb=document.getElementById('stuInChatSearchBtn'); if(sb) sb.style.display='none';
+  _skId=''; _skPin=''; _skUpdateIdDisplay(); _skUpdatePinDots();
+  showLoginErr('');
+  document.getElementById('loginStepPin').style.display='none';
+  document.getElementById('loginStepId').style.display='flex';
+  const _lnEl=document.getElementById('loginPinForName');
+  if(_lnEl) _lnEl.style.display='none';
   document.getElementById('lockScreen').style.display='flex';
-  document.getElementById('loginId').value='';
-  document.getElementById('loginPin').value='';
-  document.getElementById('loginErr').textContent='';
   Promise.resolve(API.refreshStudentLockHints()).then(()=>renderPendingSection());
   goTab('chat');
 }
@@ -527,10 +657,11 @@ function renderChat(){
         h+=`<div class="msg-wrap in" data-mid="${m.id}">${swiIcon}<div class="msg-doc-bubble">${replyRef}<div class="msg-doc-icon">${ic}</div><div class="msg-doc-info"><div class="msg-doc-name">${esc(m.fileName)}</div><div class="msg-doc-size">${m.fileSize?formatBytes(m.fileSize):''}</div>${viewBtn}</div></div><div style="font-size:11px;color:var(--gray-400);margin-top:2px;padding-left:4px">${m.time}</div></div>`;
       }
     } else {
+      const _bodyHtml=_stuIcsHighlight(m.text,_stuIcsQuery);
       if(m.role==='in'){
-        h+=`<div class="msg-wrap out" data-mid="${m.id}">${swiIcon}<div class="msg-bubble out">${replyRef}${esc(m.text)}<div class="msg-meta"><span class="msg-time">${m.time}</span>${tickHtml(m)}</div></div></div>`;
+        h+=`<div class="msg-wrap out" data-mid="${m.id}">${swiIcon}<div class="msg-bubble out">${replyRef}${_bodyHtml}<div class="msg-meta"><span class="msg-time">${m.time}</span>${tickHtml(m)}</div></div></div>`;
       } else {
-        h+=`<div class="msg-wrap in" data-mid="${m.id}">${swiIcon}<div class="msg-bubble in">${replyRef}${esc(m.text)}<div class="msg-meta"><span class="msg-time">${m.time}</span></div></div></div>`;
+        h+=`<div class="msg-wrap in" data-mid="${m.id}">${swiIcon}<div class="msg-bubble in">${replyRef}${_bodyHtml}<div class="msg-meta"><span class="msg-time">${m.time}</span></div></div></div>`;
       }
     }
   });
@@ -920,6 +1051,110 @@ function addGoalModal(){ const t=document.getElementById('gm_title').value.trim(
 function toggleGoal(id){ const g=API.Goals.toggle(me.id,id); renderGoals(); renderHome(); if(g?.done) showToast('مَا شَاءَ اللّٰه! লক্ষ্য সম্পন্ন ✅'); }
 function delGoal(id){ API.Goals.delete(me.id,id); renderGoals(); renderHome(); }
 
+// ══ IN-CHAT SEARCH (student) ════════════════════════════════
+let _stuIcsMatches=[], _stuIcsIdx=-1, _stuIcsQuery='';
+function toggleStuInChatSearch(){
+  const bar=document.getElementById('stuInChatSearchBar');
+  if(bar.classList.contains('open')){ closeStuInChatSearch(); }
+  else { bar.classList.add('open'); document.getElementById('stuInChatSearchIn').focus(); }
+}
+function closeStuInChatSearch(){
+  _stuIcsQuery=''; _stuIcsMatches=[]; _stuIcsIdx=-1;
+  const bar=document.getElementById('stuInChatSearchBar');
+  if(bar) bar.classList.remove('open');
+  const inp=document.getElementById('stuInChatSearchIn'); if(inp) inp.value='';
+  _stuIcsUpdateCounter();
+  if(me) renderChat();
+}
+function _stuIcsUpdateCounter(){
+  const el=document.getElementById('stuIcsCounter');
+  const prev=document.getElementById('stuIcsPrev');
+  const next=document.getElementById('stuIcsNext');
+  if(!el) return;
+  if(!_stuIcsMatches.length){ el.textContent=_stuIcsQuery?'০':''; }
+  else { el.textContent=`${_stuIcsIdx+1}/${_stuIcsMatches.length}`; }
+  if(prev) prev.disabled=_stuIcsMatches.length<2;
+  if(next) next.disabled=_stuIcsMatches.length<2;
+}
+function onStuInChatSearch(v){
+  _stuIcsQuery=String(v||'').trim();
+  _stuIcsMatches=[]; _stuIcsIdx=-1;
+  renderChat();
+  if(!_stuIcsQuery){ _stuIcsUpdateCounter(); return; }
+  requestAnimationFrame(()=>{
+    _stuIcsMatches=[...document.querySelectorAll('#chatMsgs mark.msg-hl')];
+    if(_stuIcsMatches.length){ _stuIcsIdx=0; _stuIcsScrollTo(0); }
+    _stuIcsUpdateCounter();
+  });
+}
+function stuInChatNav(dir){
+  if(!_stuIcsMatches.length) return;
+  _stuIcsIdx=(_stuIcsIdx+dir+_stuIcsMatches.length)%_stuIcsMatches.length;
+  _stuIcsScrollTo(_stuIcsIdx);
+  _stuIcsUpdateCounter();
+}
+function _stuIcsScrollTo(i){
+  const el=_stuIcsMatches[i]; if(!el) return;
+  _stuIcsMatches.forEach((m,j)=>m.classList.toggle('msg-hl-active',j===i));
+  el.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function _stuIcsHighlight(text,query){
+  if(!query) return esc(text);
+  const safe=esc(text);
+  const safeQ=query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  return safe.replace(new RegExp('('+safeQ+')','gi'),'<mark class="msg-hl">$1</mark>');
+}
+
+// ══ STUDENT SELF-PROFILE ════════════════════════════════════
+function openStudentSelfProfile(){
+  if(!me) return;
+  const avatarEl=document.getElementById('spAvatar');
+  avatarEl.style.background=me.color||'#1565C0';
+  const letterEl=document.getElementById('spAvatarLetter');
+  if(me.photoDataUrl){
+    avatarEl.style.backgroundImage=`url(${JSON.stringify(me.photoDataUrl)})`;
+    avatarEl.style.backgroundSize='cover';
+    avatarEl.style.backgroundPosition='center';
+    if(letterEl) letterEl.textContent='';
+  } else {
+    avatarEl.style.backgroundImage='none';
+    if(letterEl) letterEl.textContent=me.name.charAt(0);
+  }
+  document.getElementById('spName').textContent=me.name;
+  document.getElementById('spWaqf').textContent=me.waqfId?'ওয়াকফ · '+API.Students.displayWaqfId(me.waqfId):'';
+  document.getElementById('spNewPin').value='';
+  openModal('studentProfileModal');
+}
+function onStudentPhotoChange(inp){
+  const file=inp.files&&inp.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const dataUrl=e.target.result;
+    API.Students.update(me.id,{photoDataUrl:dataUrl});
+    me=API.Students.getById(me.id);
+    const avatarEl=document.getElementById('spAvatar');
+    avatarEl.style.backgroundImage=`url(${JSON.stringify(dataUrl)})`;
+    avatarEl.style.backgroundSize='cover';
+    avatarEl.style.backgroundPosition='center';
+    const ltr=document.getElementById('spAvatarLetter'); if(ltr) ltr.textContent='';
+    document.getElementById('hAvatar').style.backgroundImage=`url(${JSON.stringify(dataUrl)})`;
+    document.getElementById('hAvatar').style.backgroundSize='cover';
+    document.getElementById('hAvatar').style.backgroundPosition='center';
+    document.getElementById('hAvatar').textContent='';
+    showToast('✅ ছবি আপডেট হয়েছে');
+  };
+  reader.readAsDataURL(file);
+  inp.value='';
+}
+function saveStudentPin(){
+  const pinVal=(document.getElementById('spNewPin').value||'').trim();
+  if(!/^\d{4}$/.test(pinVal)){ showToast('❌ ৪ সংখ্যার পিন দিন'); return; }
+  API.Students.updatePin(me.id, pinVal);
+  me=API.Students.getById(me.id);
+  closeModal('studentProfileModal');
+  showToast('✅ পিন পরিবর্তন হয়েছে');
+}
+
 // ══ BADGES ═════════════════════════════════════════════════
 function updateBadges(){
   if(!me) return;
@@ -934,6 +1169,9 @@ function goTab(tab){
   document.getElementById('tab-'+tab).classList.add('active');
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+tab).classList.add('active');
+  const sb=document.getElementById('stuInChatSearchBtn');
+  if(sb) sb.style.display=tab==='chat'&&me?'flex':'none';
+  if(tab!=='chat') closeStuInChatSearch();
   if(tab==='chat' && me){ API.Messages.markRead(me.id,'out'); renderChat(); updateBadges(); setTimeout(()=>document.getElementById('chatMsgs').scrollTop=9e9,50); }
   if(tab==='exams') renderExamList();
   if(tab==='docs'){ renderSentDocs(); renderReceivedDocs(); }

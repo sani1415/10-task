@@ -1,7 +1,28 @@
-# Generated SQL (Firestore import scratch)
-tmp-firestore-*.sql
+# ── Dependencies ────────────────────────────────────────────
+node_modules/
 
-# Local Supabase credentials (never commit)
+# ── Build-generated config (Vercel injects these at build time) ──
 supabase-config.js
+pwa-config.js
+
+# ── Supabase secrets ─────────────────────────────────────────
 supabase/.secrets.local.env
 supabase/.secrets.vapid.env
+supabase/.temp/
+
+# ── Firestore migration / one-time import files ──────────────
+firestore-export.json
+tmp-firestore-*.sql
+tmp-*.sql
+tmp-*.json
+
+
+
+# ── AI session / editor internals ────────────────────────────
+.claude/
+
+# ── OS / editor noise ────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log

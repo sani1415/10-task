@@ -630,6 +630,62 @@ const API = (() => {
     // Teacher opened a student's chat → mark student messages as read (→ double tick on student)
     markReadByTeacher(sid) { this.markRead(sid,'in'); },
     unreadCount(threadId,role='in') { return (DB.get().chats[threadId]||[]).filter(m=>m.role===role&&!m.read).length; },
+    /** শিক্ষক UI: সব ছাত্র + গ্রুপ ব্রডকাস্ট থ্রেডে মেসেজ টেক্সট খোঁজা (লোকাল মেমোরি থেকে)। */
+    searchAllChats(rawQuery, opts = {}) {
+      const limit = Math.min(Math.max(Number(opts.limit) || 60, 1), 200);
+      const needle = String(rawQuery || '').trim().toLowerCase();
+      if (!needle) return [];
+      const db = DB.get();
+      const textOf = (m) => {
+        if (!m) return '';
+        if (m.type === 'task' && m.task) return [m.task.title, m.task.desc, m.text].filter(Boolean).join('\n');
+        if (m.type === 'doc') return [m.fileName, m.text].filter(Boolean).join('\n');
+        return String(m.text || '');
+      };
+      const tsOf = (m) => {
+        if (m._ts) return m._ts;
+        const x = /^m(\d{13})/.exec(m.id || '');
+        return x ? parseInt(x[1], 10) : 0;
+      };
+      const snippet = (full) => {
+        const fullS = String(full || '').replace(/\s+/g, ' ').trim();
+        const low = fullS.toLowerCase();
+        const i = low.indexOf(needle);
+        const maxLen = 120;
+        if (i < 0) return (fullS.slice(0, maxLen) + (fullS.length > maxLen ? '…' : ''));
+        const start = Math.max(0, i - 28);
+        const chunk = fullS.slice(start, start + maxLen);
+        return (start > 0 ? '…' : '') + chunk + (start + maxLen < fullS.length ? '…' : '');
+      };
+      const bcSigs = new Set();
+      (db.chats._bc || []).forEach((m) => {
+        if (m && (m.type === 'text' || !m.type)) bcSigs.add(`${String(m.text || '')}\0${String(m.time || '')}`);
+      });
+      const out = [];
+      const push = (threadId, m, studentLabel, waqfShort) => {
+        const full = textOf(m);
+        if (!full.toLowerCase().includes(needle)) return;
+        const sig = `${String(m.text || '')}\0${String(m.time || '')}`;
+        if (m.role === 'out' && (m.type === 'text' || !m.type) && threadId !== '_broadcast' && bcSigs.has(sig)) return;
+        out.push({
+          threadId,
+          messageId: m.id,
+          studentLabel,
+          waqfShort: waqfShort || '',
+          time: m.time || '',
+          snippet: snippet(full),
+          kind: m.type === 'doc' ? 'doc' : m.type === 'task' ? 'task' : 'text',
+          _ts: tsOf(m),
+        });
+      };
+      (db.chats._bc || []).forEach((m) => push('_broadcast', m, '📢 সবাইকে বার্তা', ''));
+      Students.getAll().forEach((s) => {
+        const w = s.waqfId ? Students.displayWaqfId(s.waqfId) : '';
+        (db.chats[s.id] || []).forEach((m) => push(s.id, m, s.name || '', w));
+      });
+      out.sort((a, b) => (b._ts || 0) - (a._ts || 0));
+      return out.slice(0, limit).map(({ _ts, ...rest }) => rest);
+    },
   };
 
   // ── TASKS ─────────────────────────────────────────────────
@@ -993,7 +1049,7 @@ const API = (() => {
 })();
 
 // ── Global helpers ────────────────────────────────────────
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g,'<br>'); }
 function autoResize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
 function showToast(msg,duration=2800){ const t=document.getElementById('toast'); if(!t) return; t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),duration); }
 function openModal(id){ document.getElementById(id)?.classList.add('open'); }
