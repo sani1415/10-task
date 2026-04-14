@@ -448,7 +448,8 @@ function init(){
     document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); }));
     renderPendingSection();
     // Subscribe this device for all student notifications (shared device mode)
-    void API.Pwa.enableSharedStudentDevice();
+    // Delay slightly so RemoteSync bootstrap has time to complete
+    setTimeout(() => void API.Pwa.enableSharedStudentDevice(), 2000);
   }).catch(e=>{ console.error(e); document.getElementById('lockName').textContent='সার্ভার সংযোগ ব্যর্থ'; });
 }
 window.addEventListener('madrasa-remote-sync',()=>{ try{ const u=document.getElementById('lockScreen').style.display==='none'; if(u&&me) renderAll(); else renderPendingSection(); }catch(e){ console.error(e); } });

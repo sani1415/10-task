@@ -1,7 +1,5 @@
-/* Waqful Madinah — PWA: SW registration, Web Push subscribe, foreground sync hints */
+/* Waqful Madinah — PWA: SW registration, Web Push subscribe */
 (function (w) {
-  var lastForegroundNotify = 0;
-  var MIN_GAP_MS = 5000;
 
   function urlB64ToUint8Array(base64String) {
     var padLen = (4 - (base64String.length % 4)) % 4;
@@ -38,6 +36,24 @@
     });
   }
 
+  async function saveSharedSubscription(subJson, role, idOverride) {
+    var RS = w.RemoteSync;
+    if (RS && RS.isRemote && RS.isRemote()) {
+      var sb = RS.getClient && RS.getClient();
+      if (sb) {
+        var res = await sb.rpc('madrasa_rel_save_pwa_subscription', {
+          p_id: idOverride,
+          p_role: role,
+          p_subscription: subJson,
+        });
+        if (res.error) console.warn('MadrasaPwa shared sub save:', res.error);
+        else console.log('MadrasaPwa: shared device subscribed as', idOverride);
+        return !res.error;
+      }
+    }
+    return false;
+  }
+
   async function subscribeToPush(role, idOverride) {
     if (!('Notification' in w)) return;
     await register();
@@ -55,21 +71,21 @@
         applicationServerKey: urlB64ToUint8Array(vapid.trim()),
       });
       var subJson = sub.toJSON();
-      // Save with explicit id override if provided (e.g. 'shared_student_device')
       if (idOverride) {
-        var RS = w.RemoteSync;
-        if (RS && RS.isRemote && RS.isRemote()) {
-          var sb = RS.getClient && RS.getClient();
-          if (sb) {
-            sb.rpc('madrasa_rel_save_pwa_subscription', {
-              p_id: idOverride,
-              p_role: role,
-              p_subscription: subJson,
-            }).then(function(res) {
-              if (res.error) console.warn('MadrasaPwa shared sub save:', res.error);
-              else console.log('MadrasaPwa: shared device subscribed as', idOverride);
-            });
+        var saved = await saveSharedSubscription(subJson, role, idOverride);
+        if (!saved) {
+          // RemoteSync not ready yet — retry on first sync event OR after 8s
+          var _retried = false;
+          async function _retrySave() {
+            if (_retried) return;
+            _retried = true;
+            w.removeEventListener('madrasa-remote-sync', _retrySave);
+            await saveSharedSubscription(subJson, role, idOverride);
           }
+          w.addEventListener('madrasa-remote-sync', _retrySave);
+          setTimeout(async function() {
+            if (!_retried) await _retrySave();
+          }, 8000);
         }
       } else {
         await saveSubscriptionToRemote(role, null, subJson);
@@ -107,41 +123,6 @@
   async function enableSharedStudentDevice() {
     await subscribeToPush('student', 'shared_student_device');
   }
-
-  function onRemoteSync() {
-    if (!('Notification' in w) || Notification.permission !== 'granted') return;
-    if (w.document.visibilityState === 'visible') return;
-    var now = Date.now();
-    if (now - lastForegroundNotify < MIN_GAP_MS) return;
-    lastForegroundNotify = now;
-    try {
-      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.ready.then(function (reg) {
-          return reg.showNotification('নতুন আপডেট', {
-            body: 'রিমোট ডেটা আপডেট হয়েছে। অ্যাপ খুলুন।',
-            icon: new URL('icons/icon-192.png', w.location.href).href,
-            badge: new URL('icons/icon-192.png', w.location.href).href,
-            tag: 'madrasa-sync',
-            renotify: true,
-            silent: false,
-            vibrate: [200, 100, 200],
-          });
-        }).then(function () {
-          if ('setAppBadge' in navigator) navigator.setAppBadge(1);
-        }).catch(function () {});
-      } else {
-        new Notification('নতুন আপডেট', {
-          body: 'রিমোট ডেটা আপডেট হয়েছে। অ্যাপ খুলুন।',
-          icon: new URL('icons/icon-192.png', w.location.href).href,
-          tag: 'madrasa-sync',
-          silent: false,
-        });
-        if ('setAppBadge' in navigator) navigator.setAppBadge(1);
-      }
-    } catch (e) {}
-  }
-
-  if (w.addEventListener) w.addEventListener('madrasa-remote-sync', onRemoteSync);
 
   w.MadrasaPwa = { register: register, enableAfterAuth: enableAfterAuth, enableSharedStudentDevice: enableSharedStudentDevice };
 })(typeof window !== 'undefined' ? window : globalThis);
