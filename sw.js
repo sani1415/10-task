@@ -1,5 +1,5 @@
 /* Waqful Madinah — full-app shell cache + Web Push display */
-var CACHE = 'waqful-full-v7';
+var CACHE = 'waqful-full-v8';
 
 var CDN_ASSETS = [
   'https://unpkg.com/@supabase/supabase-js@2.49.8/dist/umd/supabase.js',
@@ -21,6 +21,7 @@ var LOCAL_SHELL = [
   'teacher.html',
   'student.html',
   'style.css',
+  'tablet-desktop.css',
   'api.js',
   'remote-sync-write.js',
   'remote-sync.js',

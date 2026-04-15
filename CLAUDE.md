@@ -19,6 +19,12 @@
 - `teacher.html` / `student.html` → max 600 lines, move excess JS to `api.js`
 - Any new `.js` file → max 400 lines
 
+## Service Worker Cache Rule
+- **`sw.js` এর `CACHE` version (`waqful-full-vN`) প্রতিবার যেকোনো file edit করলে N বাড়াতে হবে।**
+- Current version: **v8** (last bumped: tablet-desktop.css added to shell + full-width fix)
+- যেকোনো `.html`, `.css`, `.js` file বদলালে → `sw.js` খুলে `waqful-full-vN` → `vN+1` করো।
+- নতুন file তৈরি হলে `LOCAL_SHELL` array-তেও যোগ করো।
+
 ## Git Rules
 - **Do not run `git commit` or `git push` unless the user explicitly asks.** The maintainer commits locally.
 - After editing, give a **summary of changes first** (what/why, files touched). The user will stage and commit.
