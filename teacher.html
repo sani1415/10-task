@@ -754,7 +754,7 @@ function closeChat(){
   document.getElementById('screen-'+curTab).classList.add('active');
   renderChatList(); updateBadge();
 }
-function fileIcon(type){ return type?.startsWith('image/')?'🖼️':type==='application/pdf'?'📕':type?.includes('word')||type?.includes('doc')?'📝':type?.includes('sheet')||type?.includes('excel')?'📊':'📎'; }
+function fileIcon(type){ const t=type||''; return (t==='image'||t.startsWith('image/'))?'🖼️':(t==='pdf'||t==='application/pdf')?'📕':t.includes('word')||t.includes('doc')?'📝':t.includes('sheet')||t.includes('excel')?'📊':'📎'; }
 
 // ══ IN-CHAT STUDENT TABS ═══════════════════════════════
 function switchChatTab(tab,btn){
@@ -900,9 +900,12 @@ async function openDocPreview(docId, markAsRead){
     document.getElementById('docPreviewMeta').textContent=`${formatBytes(meta.fileSize)}${st?.waqfId?' · '+API.Students.displayWaqfId(st.waqfId):''}${meta.studentName?' · '+meta.studentName:''} · ${formatDate(meta.uploadedAt)}`;
   }
   const content=document.getElementById('docPreviewContent');
-  if(meta.fileType?.startsWith('image/') && data){
+  const _ft=meta.fileType||'';
+  const _isImg=_ft==='image'||_ft.startsWith('image/');
+  const _isPdf=_ft==='pdf'||_ft==='application/pdf';
+  if(_isImg && data){
     content.innerHTML=`<img src=${JSON.stringify(data)} style="max-width:100%;max-height:300px;border-radius:8px;object-fit:contain;display:block;margin:0 auto" alt="">`;
-  } else if(meta.fileType==='application/pdf' && data){
+  } else if(_isPdf && data){
     content.innerHTML=`<iframe src=${JSON.stringify(data)} style="width:100%;height:340px;border:none;border-radius:8px;background:var(--gray-100)" title="${esc(meta.fileName)}"></iframe>`;
   } else {
     const icon=fileIcon(meta.fileType);

@@ -134,7 +134,8 @@
       id: d.id, studentId: d.student_id, studentName: d.student_name || '',
       fileName: d.file_name, fileType: d.file_type || '', fileSize: d.file_size || 0,
       category: d.category || 'general', note: d.note || '',
-      storage_path: d.storage_path, fileUrl: d.file_url, read: d.is_read || false }));
+      storage_path: d.storage_path, fileUrl: d.file_url, read: d.is_read || false,
+      uploadedAt: d.uploaded_at || '' }));
     const academic = {}, tnotes = {};
     (bundle.academic_history || []).forEach(ah => {
       (academic[ah.student_id] = academic[ah.student_id] || []).push(
@@ -195,7 +196,8 @@
       id: d.id, studentId: d.student_id, studentName: d.student_name || '',
       fileName: d.file_name, fileType: d.file_type || '', fileSize: d.file_size || 0,
       category: d.category || 'general', note: d.note || '',
-      storage_path: d.storage_path, fileUrl: d.file_url, read: d.is_read || false }));
+      storage_path: d.storage_path, fileUrl: d.file_url, read: d.is_read || false,
+      uploadedAt: d.uploaded_at || '' }));
     const academic = {};
     (bundle.academic_history || []).forEach(ah => {
       (academic[ah.student_id] = academic[ah.student_id] || []).push(
