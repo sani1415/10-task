@@ -1,5 +1,5 @@
 /* Waqful Madinah — full-app shell cache + Web Push display */
-var CACHE = 'waqful-full-v8';
+var CACHE = 'waqful-full-v9';
 
 var CDN_ASSETS = [
   'https://unpkg.com/@supabase/supabase-js@2.49.8/dist/umd/supabase.js',
@@ -253,11 +253,16 @@ self.addEventListener('notificationclick', function (e) {
   );
 });
 
-// ── Message from page: clear all badge counts when app is opened ──────────────
+// ── Message from page ─────────────────────────────────────────────────────────
 self.addEventListener('message', function (e) {
-  if (e.data && e.data.type === 'CLEAR_BADGE') {
+  if (!e.data) return;
+  if (e.data.type === 'CLEAR_BADGE') {
     _idbClear().then(function () {
       if ('clearAppBadge' in navigator) navigator.clearAppBadge();
     });
+  }
+  // Page থেকে force-activate অনুরোধ এলে নতুন SW সক্রিয় করো
+  if (e.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
   }
 });

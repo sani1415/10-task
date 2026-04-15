@@ -14,7 +14,53 @@
 
   function register() {
     if (!('serviceWorker' in navigator)) return Promise.resolve(null);
-    return navigator.serviceWorker.register('sw.js').catch(function () {
+    return navigator.serviceWorker.register('sw.js').then(function (reg) {
+      if (!reg) return null;
+
+      // নতুন SW waiting থাকলে সাথে সাথে activate করো
+      function activateWaiting(r) {
+        if (r.waiting) {
+          r.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+      }
+
+      // SW update পেলে toast দেখাও এবং reload করো
+      function onUpdateFound(r) {
+        var newWorker = r.installing;
+        if (!newWorker) return;
+        newWorker.addEventListener('statechange', function () {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            activateWaiting(r);
+          }
+        });
+      }
+
+      reg.addEventListener('updatefound', function () { onUpdateFound(reg); });
+
+      // Controller বদলালে (নতুন SW activate হলে) page reload করো
+      var reloading = false;
+      navigator.serviceWorker.addEventListener('controllerchange', function () {
+        if (reloading) return;
+        reloading = true;
+        // ছোট toast দেখিয়ে reload
+        var toast = document.getElementById('toast') || document.getElementById('snackbar');
+        if (toast) {
+          toast.textContent = '🔄 নতুন আপডেট আসছে...';
+          toast.style.display = 'block';
+          toast.className = (toast.className || '') + ' show';
+        }
+        setTimeout(function () { w.location.reload(); }, 1200);
+      });
+
+      // App foreground-এ এলে SW update check করো
+      document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible') {
+          reg.update().catch(function () {});
+        }
+      });
+
+      return reg;
+    }).catch(function () {
       return null;
     });
   }
