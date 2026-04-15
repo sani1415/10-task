@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#1565C0">
+<meta name="theme-color" content="#2E7D32">
 <meta name="description" content="ছাত্র প্যানেল — Waqful Madinah">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -17,26 +17,26 @@
 <link rel="stylesheet" href="tablet-desktop.css">
 <style>
 /* ── Student theme ── */
-#lockScreen{background:linear-gradient(160deg,#0D47A1 0%,#1565C0 60%,#1976D2 100%)}
-.header{background:#1565C0}.tab-bar{background:#1565C0;border-bottom:2px solid #42A5F5}
-.tab-btn.active{border-bottom-color:#42A5F5}.tab-badge{background:#42A5F5;color:#0D47A1}
-.filter-chip.active{background:#1565C0}.progress-fill{background:#42A5F5}
-.send-btn{background:#1565C0}.goal-add-btn{background:#1565C0}.goal-check{border-color:#1565C0}
-.goal-check.done{background:#1565C0;border-color:#1565C0}.btn-primary{background:#1565C0}
-.form-input:focus{border-color:#1565C0}.sec-link{color:#1565C0}
-.goal-progress-wrap{background:#E3F2FD}.goal-progress-label{color:#1565C0}.goal-progress-fill{background:#1565C0}
-.stat-card{border-bottom:3px solid #42A5F5}.stat-num{color:#1565C0}
+#lockScreen{background:linear-gradient(160deg,#1B5E20 0%,#2E7D32 60%,#388E3C 100%)}
+.header{background:#2E7D32}.tab-bar{background:#2E7D32;border-bottom:2px solid #66BB6A}
+.tab-btn.active{border-bottom-color:#66BB6A}.tab-badge{background:#66BB6A;color:#1B5E20}
+.filter-chip.active{background:#2E7D32}.progress-fill{background:#66BB6A}
+.send-btn{background:#2E7D32}.goal-add-btn{background:#2E7D32}.goal-check{border-color:#2E7D32}
+.goal-check.done{background:#2E7D32;border-color:#2E7D32}.btn-primary{background:#2E7D32}
+.form-input:focus{border-color:#2E7D32}.sec-link{color:#2E7D32}
+.goal-progress-wrap{background:#E8F5E9}.goal-progress-label{color:#2E7D32}.goal-progress-fill{background:#2E7D32}
+.stat-card{border-bottom:3px solid #66BB6A}.stat-num{color:#2E7D32}
 .stat-card.green .stat-num{color:var(--green)}.stat-card.orange .stat-num{color:var(--orange)}.stat-card.red .stat-num{color:var(--red)}
 .stat-card.green{border-bottom-color:#4CAF50}.stat-card.orange{border-bottom-color:var(--orange)}.stat-card.red{border-bottom-color:#F44336}
-.at-done-btn{background:#1565C0}.at-done-btn.done{background:#4CAF50}.at-done-btn.late{background:#F44336}
-.msg-bubble.out{background:#BBDEFB;border-bottom-right-radius:4px}.msg-tick{color:#1565C0}.msg-sender{color:#1565C0}
-.task-bubble-hd{background:#0D47A1}
-.reply-preview-bar{background:#EFF4FB;border-top-color:#42A5F5}
-.reply-preview-content{border-left-color:#1565C0}.reply-preview-sender{color:#1565C0}
-.chat-file-title-in:focus{border-color:#1565C0}
-.doc-tab-btn.active{color:#1565C0;border-bottom-color:#1565C0}
-.welcome-card{background:linear-gradient(135deg,#1565C0,#00BCD4)}
-.chat-messages{background-color:#E8EDF5;background-image:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%231565C0' fill-opacity='0.04'%3E%3Cpath d='M20 20.5V18H0v5h5v5H0v5h20v-5h15v-5H20v-.5z'/%3E%3C/g%3E%3C/svg%3E")}
+.at-done-btn{background:#2E7D32}.at-done-btn.done{background:#4CAF50}.at-done-btn.late{background:#F44336}
+.msg-bubble.out{background:#C8E6C9;border-bottom-right-radius:4px}.msg-tick{color:#2E7D32}.msg-sender{color:#2E7D32}
+.task-bubble-hd{background:#1B5E20}
+.reply-preview-bar{background:#F1F8F1;border-top-color:#66BB6A}
+.reply-preview-content{border-left-color:#2E7D32}.reply-preview-sender{color:#2E7D32}
+.chat-file-title-in:focus{border-color:#2E7D32}
+.doc-tab-btn.active{color:#2E7D32;border-bottom-color:#2E7D32}
+.welcome-card{background:linear-gradient(135deg,#2E7D32,#00897B)}
+.chat-messages{background-color:#EDF4ED;background-image:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%232E7D32' fill-opacity='0.04'%3E%3Cpath d='M20 20.5V18H0v5h5v5H0v5h20v-5h15v-5H20v-.5z'/%3E%3C/g%3E%3C/svg%3E")}
 
 /* ── Task type badge ── */
 .type-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:6px}
@@ -46,19 +46,19 @@
 /* ── Exams ── */
 .exam-card{background:#fff;margin:10px 12px;border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden}
 .exam-card-hd{padding:12px 14px;display:flex;gap:12px;align-items:flex-start}
-.exam-card-icon{width:44px;height:44px;border-radius:12px;background:#E3F2FD;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.exam-card-icon{width:44px;height:44px;border-radius:12px;background:#E8F5E9;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
 .exam-card-info{flex:1;min-width:0}
 .exam-card-title{font-size:15px;font-weight:700;color:var(--gray-700)}
 .exam-card-meta{font-size:12px;color:var(--gray-400);margin-top:3px}
 .exam-card-ft{padding:8px 14px;background:var(--gray-50);border-top:1px solid var(--gray-100);display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap}
-.exam-start-btn{background:#1565C0;color:#fff;border:none;border-radius:20px;padding:7px 20px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer}
+.exam-start-btn{background:#2E7D32;color:#fff;border:none;border-radius:20px;padding:7px 20px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer}
 .exam-done-chip{background:#E8F5E9;color:#2E7D32;padding:5px 12px;border-radius:12px;font-size:12px;font-weight:600}
 .exam-fail-chip{background:#FFEBEE;color:#C62828;padding:5px 12px;border-radius:12px;font-size:12px;font-weight:600}
 
 /* ── Quiz taking view ── */
 .quiz-view{display:none;flex-direction:column;flex:1;overflow:hidden}
 .quiz-view.open{display:flex}
-.quiz-header{background:#1565C0;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px}
+.quiz-header{background:#2E7D32;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px}
 .quiz-timer{background:rgba(255,255,255,.2);border-radius:12px;padding:4px 12px;font-size:13px;font-weight:700;margin-left:auto}
 .quiz-timer.warning{background:#F44336;animation:pulse .8s infinite alternate}
 @keyframes pulse{from{opacity:1}to{opacity:.6}}
@@ -68,15 +68,15 @@
 .quiz-q-text{font-size:15px;font-weight:600;color:var(--gray-700);margin-bottom:12px;line-height:1.5}
 .quiz-option{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:all .2s}
 .quiz-option:active{background:var(--gray-100)}
-.quiz-option.selected{border-color:#1565C0;background:#E3F2FD}
-.quiz-option input[type=radio]{accent-color:#1565C0}
+.quiz-option.selected{border-color:#2E7D32;background:#E8F5E9}
+.quiz-option input[type=radio]{accent-color:#2E7D32}
 .quiz-answer-input{width:100%;border:1.5px solid var(--gray-300);border-radius:var(--radius);padding:10px 12px;font-family:var(--font);font-size:14px;outline:none}
-.quiz-answer-input:focus{border-color:#1565C0}
+.quiz-answer-input:focus{border-color:#2E7D32}
 .quiz-footer{padding:12px 16px;border-top:1px solid var(--gray-200);background:#fff}
 
 /* ── Documents ── */
 .doc-upload-area{border:2px dashed var(--gray-300);border-radius:var(--radius);padding:24px;text-align:center;margin:12px;cursor:pointer;transition:border-color .2s}
-.doc-upload-area:hover{border-color:#1565C0}
+.doc-upload-area:hover{border-color:#2E7D32}
 .doc-upload-icon{font-size:40px;margin-bottom:8px}
 .doc-upload-label{font-size:14px;font-weight:600;color:var(--gray-600);margin-bottom:4px}
 .doc-upload-hint{font-size:12px;color:var(--gray-400)}
@@ -87,7 +87,7 @@
 .doc-sent-meta{font-size:11px;color:var(--gray-400);margin-top:2px}
 .doc-cat-badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:8px;background:var(--gray-200);color:var(--gray-600);margin-right:4px}
 .upload-progress{height:4px;background:var(--gray-200);border-radius:2px;margin:4px 0;overflow:hidden}
-.upload-progress-fill{height:100%;background:#1565C0;border-radius:2px;transition:width .3s}
+.upload-progress-fill{height:100%;background:#2E7D32;border-radius:2px;transition:width .3s}
 
 /* ── Sticky lock screen header ── */
 .lock-sticky-header{flex-shrink:0;width:100%;text-align:center;color:#fff;font-size:15px;font-weight:700;padding:10px 16px 8px;background:rgba(0,0,0,.2);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,.1)}
@@ -99,7 +99,7 @@
 .pending-name{flex:1;font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pending-waqf{display:inline;font-size:11px;font-weight:400;color:rgba(255,255,255,.65);margin-left:5px}
 .pending-badge{font-size:11px;font-weight:700;padding:1px 7px;border-radius:8px;flex-shrink:0}
-.pending-badge.msg{background:#42A5F5;color:#0D47A1}
+.pending-badge.msg{background:#66BB6A;color:#1B5E20}
 .pending-badge.task{background:#FFE082;color:#E65100}
 
 /* ── Lock screen layout ── */
@@ -117,7 +117,7 @@
 .login-lbl-c{font-size:11px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.6px;text-transform:uppercase;text-align:center;margin-bottom:4px}
 .login-lbl-name{font-size:13px;font-weight:600;color:rgba(255,255,255,.9);text-align:center;min-height:18px;margin-bottom:6px}
 /* action button — same width as pin-pad */
-.login-btn{width:234px;background:#fff;color:#1565C0;border:none;border-radius:14px;padding:0;height:50px;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s;margin-top:10px;display:flex;align-items:center;justify-content:center}
+.login-btn{width:234px;background:#fff;color:#2E7D32;border:none;border-radius:14px;padding:0;height:50px;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s;margin-top:10px;display:flex;align-items:center;justify-content:center}
 .login-btn:active{opacity:.85}
 .login-btn-ghost{background:rgba(255,255,255,.15);color:rgba(255,255,255,.85)}
 .login-err{color:#FF8A80;font-size:13px;min-height:18px;margin-top:6px;text-align:center;width:234px}
@@ -497,7 +497,7 @@ function renderPendingSection(){
     const msgCnt=s.unreadCount!=null?s.unreadCount:API.Messages.unreadCount(s.id,'out');
     const waqf=API.Students.getShortId(s)||'---';
     return `<button class="pending-item" onclick="prefillId('${esc(waqf)}')">
-      <div class="pending-avatar" style="background:${s.color||'#1565C0'}">${(s.name||'?').charAt(0)}</div>
+      <div class="pending-avatar" style="background:${s.color||'#2E7D32'}">${(s.name||'?').charAt(0)}</div>
       <div class="pending-name">${esc(s.name||'')}<span class="pending-waqf">${esc(API.Students.getShortId(s)||'')}</span></div>
       ${msgCnt>0?`<span class="pending-badge msg">💬${msgCnt}</span>`:''}
       ${s.taskCount>0?`<span class="pending-badge task">📋${s.taskCount}</span>`:''}
@@ -589,7 +589,7 @@ function showLoginErr(msg){
 }
 function onLogin(){
   localStorage.setItem('madrasa_lastPanel','student');
-  document.getElementById('hAvatar').textContent=me.name.charAt(0); document.getElementById('hAvatar').style.background=me.color||'#1565C0';
+  document.getElementById('hAvatar').textContent=me.name.charAt(0); document.getElementById('hAvatar').style.background=me.color||'#2E7D32';
   document.getElementById('hTitle').textContent=me.name;
   { const p=[]; if(me.waqfId) p.push(API.Students.getShortId(me)); if(me.cls) p.push(me.cls); document.getElementById('hSub').textContent=p.length?p.join(' · '):'ছাত্র'; }
   const sb=document.getElementById('stuInChatSearchBtn'); if(sb) sb.style.display='flex';
@@ -1070,7 +1070,7 @@ function renderReceivedDocs(){
       <div class="doc-sent-name">${esc(d.fileName)}</div>
       <div class="doc-sent-meta">${formatBytes(d.fileSize)} · ${formatDate(d.uploadedAt)}</div>
     </div>
-    <button class="doc-btn view" onclick="previewStudentChatDoc('${d.id}')" style="width:32px;height:32px;border:none;border-radius:8px;background:#E3F2FD;color:#1565C0;cursor:pointer;font-size:15px">👁</button>
+    <button class="doc-btn view" onclick="previewStudentChatDoc('${d.id}')" style="width:32px;height:32px;border:none;border-radius:8px;background:#E8F5E9;color:#2E7D32;cursor:pointer;font-size:15px">👁</button>
   </div>`).join('');
 }
 
@@ -1153,7 +1153,7 @@ function _stuIcsHighlight(text,query){
 function openStudentSelfProfile(){
   if(!me) return;
   const avatarEl=document.getElementById('spAvatar');
-  avatarEl.style.background=me.color||'#1565C0';
+  avatarEl.style.background=me.color||'#2E7D32';
   const letterEl=document.getElementById('spAvatarLetter');
   if(me.photoDataUrl){
     avatarEl.style.backgroundImage=`url(${JSON.stringify(me.photoDataUrl)})`;
