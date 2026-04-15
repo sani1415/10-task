@@ -1,16 +1,17 @@
 {
   "id": "./index.html",
-  "name": "Waqful Madinah — ওয়াক্‌ফুল মদিনাহ",
-  "short_name": "Waqful",
+  "name": "وقف المدينة",
+  "short_name": "وقف المدينة",
   "categories": ["education", "productivity"],
-  "description": "মাদরাসা ম্যানেজার — শিক্ষক ও ছাত্র প্যানেল",
+  "description": "مدرسة — لوحة المعلم والطالب",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#0a0a0a",
-  "theme_color": "#075E54",
-  "lang": "bn",
+  "background_color": "#0D3320",
+  "theme_color": "#0D3320",
+  "lang": "ar",
+  "dir": "rtl",
   "icons": [
     {
       "src": "icons/icon-192.png",
