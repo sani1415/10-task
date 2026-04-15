@@ -451,6 +451,8 @@ function init(){
     document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); }));
     renderPendingSection();
     updateNotifBtn();
+    // Remote bootstrap শেষে lock hints refresh করো
+    Promise.resolve(API.refreshStudentLockHints()).then(()=>renderPendingSection()).catch(()=>{});
     // Subscribe this device for all student notifications (shared device mode)
     // Delay slightly so RemoteSync bootstrap has time to complete
     setTimeout(() => void API.Pwa.enableSharedStudentDevice().then(updateNotifBtn), 2000);

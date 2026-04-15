@@ -320,7 +320,8 @@
   }
 
   async function refreshStudentLockHints() {
-    if (!usesSecureKv() || role() !== 'student') return;
+    // lock screen-এ কেউ login না করলেও hints দরকার — role check বাদ দিই
+    if (!isRemote()) return;
     const sb = getClient(); if (!sb) return;
     const { data, error } = await sb.rpc('madrasa_rel_student_lock_hints');
     mem.lockHints = error ? [] : (Array.isArray(data) ? data : []);
