@@ -12,47 +12,76 @@
     return out;
   }
 
+  // আপডেট banner দেখানো
+  function _showUpdateBanner(onReload) {
+    var existing = document.getElementById('_swUpdateBanner');
+    if (existing) return;
+    var bar = document.createElement('div');
+    bar.id = '_swUpdateBanner';
+    bar.style.cssText = [
+      'position:fixed', 'bottom:0', 'left:0', 'right:0', 'z-index:99999',
+      'background:#1B5E20', 'color:#fff', 'padding:14px 16px',
+      'display:flex', 'align-items:center', 'justify-content:space-between',
+      'gap:12px', 'font-family:inherit', 'font-size:14px',
+      'box-shadow:0 -2px 12px rgba(0,0,0,.25)', 'animation:_swSlideUp .3s ease',
+    ].join(';');
+    bar.innerHTML = '<span>🔄 নতুন আপডেট পাওয়া গেছে</span>'
+      + '<button id="_swReloadBtn" style="background:#fff;color:#1B5E20;border:none;'
+      + 'border-radius:20px;padding:7px 18px;font-weight:700;font-size:13px;cursor:pointer;'
+      + 'font-family:inherit;flex-shrink:0">আপডেট করুন</button>';
+    if (!document.getElementById('_swUpdateAnim')) {
+      var st = document.createElement('style');
+      st.id = '_swUpdateAnim';
+      st.textContent = '@keyframes _swSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}';
+      document.head.appendChild(st);
+    }
+    document.body.appendChild(bar);
+    document.getElementById('_swReloadBtn').addEventListener('click', function () {
+      bar.remove();
+      onReload();
+    });
+  }
+
   function register() {
     if (!('serviceWorker' in navigator)) return Promise.resolve(null);
     return navigator.serviceWorker.register('sw.js').then(function (reg) {
       if (!reg) return null;
 
-      // নতুন SW waiting থাকলে সাথে সাথে activate করো
-      function activateWaiting(r) {
-        if (r.waiting) {
-          r.waiting.postMessage({ type: 'SKIP_WAITING' });
-        }
+      // waiting SW-কে activate করো এবং banner দেখাও
+      function handleWaiting() {
+        if (!reg.waiting) return;
+        _showUpdateBanner(function () {
+          reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        });
       }
 
-      // SW update পেলে toast দেখাও এবং reload করো
-      function onUpdateFound(r) {
-        var newWorker = r.installing;
+      // Install শেষ হলে check করো
+      function onUpdateFound() {
+        var newWorker = reg.installing;
         if (!newWorker) return;
         newWorker.addEventListener('statechange', function () {
           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            activateWaiting(r);
+            handleWaiting();
           }
         });
       }
 
-      reg.addEventListener('updatefound', function () { onUpdateFound(reg); });
+      // Page load-এ already waiting SW আছে কিনা
+      if (reg.waiting && navigator.serviceWorker.controller) {
+        handleWaiting();
+      }
 
-      // Controller বদলালে (নতুন SW activate হলে) page reload করো
+      reg.addEventListener('updatefound', onUpdateFound);
+
+      // SW activate হলে reload
       var reloading = false;
       navigator.serviceWorker.addEventListener('controllerchange', function () {
         if (reloading) return;
         reloading = true;
-        // ছোট toast দেখিয়ে reload
-        var toast = document.getElementById('toast') || document.getElementById('snackbar');
-        if (toast) {
-          toast.textContent = '🔄 নতুন আপডেট আসছে...';
-          toast.style.display = 'block';
-          toast.className = (toast.className || '') + ' show';
-        }
-        setTimeout(function () { w.location.reload(); }, 1200);
+        w.location.reload();
       });
 
-      // App foreground-এ এলে SW update check করো
+      // App foreground-এ এলে update check
       document.addEventListener('visibilitychange', function () {
         if (document.visibilityState === 'visible') {
           reg.update().catch(function () {});
