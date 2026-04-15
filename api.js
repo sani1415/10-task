@@ -157,11 +157,15 @@ const API = (() => {
       const docs = _useRemote ? RS.mem.docs : JSON.parse(localStorage.getItem(DOCS_KEY)||'[]');
       const academic = _useRemote ? RS.mem.academic : JSON.parse(localStorage.getItem('madrasa_academic')||'{}');
       const tnotes = _useRemote ? RS.mem.tnotes : JSON.parse(localStorage.getItem('madrasa_tnotes')||'{}');
-      return JSON.stringify({ db:this.get(), goals, exams, docs, academic, tnotes }, null, 2);
+      // chats: remote-এ RS.mem.core.chats, local-এ db.chats
+      const chats = _useRemote ? (RS.mem.core?.chats || {}) : (this.get().chats || {});
+      return JSON.stringify({ db:this.get(), goals, exams, docs, academic, tnotes, chats, _backupAt: new Date().toISOString() }, null, 2);
     },
     importJSON(json){
       const p=JSON.parse(json); if(!p.db?.students) throw new Error('invalid');
       if (p.db.students.length) delete p.db.allowEmptyStudents;
+      // chats backup থাকলে db-তে merge করো
+      if (p.chats && typeof p.chats === 'object') p.db.chats = p.chats;
       writeDB(p.db);
       if (_useRemote) {
         RS.mem.core = p.db;

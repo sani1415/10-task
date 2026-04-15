@@ -21,9 +21,15 @@
 
 ## Service Worker Cache Rule
 - **`sw.js` এর `CACHE` version (`waqful-full-vN`) প্রতিবার যেকোনো file edit করলে N বাড়াতে হবে।**
-- Current version: **v14** (last bumped: fix lock screen hints after reload — role check removed from refreshStudentLockHints)
+- Current version: **v15** (last bumped: backup now includes chats+docs metadata; CLAUDE.md safety rules added)
 - যেকোনো `.html`, `.css`, `.js` file বদলালে → `sw.js` খুলে `waqful-full-vN` → `vN+1` করো।
 - নতুন file তৈরি হলে `LOCAL_SHELL` array-তেও যোগ করো।
+
+## Data Safety Rules (CRITICAL)
+- **DELETE, DROP, TRUNCATE, UPDATE (mass) — যেকোনো destructive SQL চালানোর আগে অবশ্যই user-কে exact SQL দেখিয়ে explicit approval নিতে হবে। কখনো নিজে থেকে চালানো যাবে না।**
+- SQL-এ `WHERE` clause ছাড়া কোনো `DELETE` বা `UPDATE` লেখা যাবে না।
+- `thread_id`, `student_id` format mismatch check করতে হবে DELETE-এর আগে।
+- Backup export-এ এখন `chats` (messages) + `docs` metadata উভয়ই আছে — restore করলে দুটোই ফেরত আসবে।
 
 ## Git Rules
 - **Do not run `git commit` or `git push` unless the user explicitly asks.** The maintainer commits locally.
