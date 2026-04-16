@@ -148,7 +148,7 @@
 <div class="tab-bar" id="tabBar">
   <button class="tab-btn active" onclick="goTab('chats')"    id="tab-chats">💬 চ্যাট</button>
   <button class="tab-btn"        onclick="goTab('students')" id="tab-students">👥 ছাত্র</button>
-  <button class="tab-btn"        onclick="goTab('tasks')"    id="tab-tasks">📋 টাস্ক<span class="tab-badge" id="tBadge"></span></button>
+  <button class="tab-btn"        onclick="goTab('tasks')"    id="tab-tasks">📋 আমল<span class="tab-badge" id="tBadge"></span></button>
   <button class="tab-btn"        onclick="goTab('exams')"    id="tab-exams">📝 পরীক্ষা</button>
   <button class="tab-btn"        onclick="goTab('docs')"     id="tab-docs">📎 ডকুমেন্ট<span class="tab-badge" id="docBadge"></span></button>
   <button class="tab-btn"        onclick="goTab('settings')" id="tab-settings">⚙️</button>
@@ -244,7 +244,7 @@
         <button class="filter-chip active" onclick="fDoc('all',this)">সব</button>
         <button class="filter-chip"        onclick="fDoc('general',this)">সাধারণ</button>
         <button class="filter-chip"        onclick="fDoc('question',this)">প্রশ্ন</button>
-        <button class="filter-chip"        onclick="fDoc('report',this)">রিপোর্ট</button>
+        <button class="filter-chip"        onclick="fDoc('report',this)">বিবরণ</button>
       </div>
       <div id="docsGrouped"></div>
     </div>
@@ -317,7 +317,7 @@
   <!-- In-chat student tabs (hidden for broadcast) -->
   <div class="chat-student-tabs" id="chatStudentTabs" style="display:none">
     <button class="cs-tab active" id="cst-msg"  onclick="switchChatTab('msg',this)">💬 বার্তা</button>
-    <button class="cs-tab"        id="cst-task" onclick="switchChatTab('task',this)">📋 টাস্ক</button>
+    <button class="cs-tab"        id="cst-task" onclick="switchChatTab('task',this)">📋 আমল</button>
     <button class="cs-tab"        id="cst-doc"  onclick="switchChatTab('doc',this)">📁 ডকুমেন্ট</button>
     <button class="cs-tab"        id="cst-exam" onclick="switchChatTab('exam',this)">📝 পরীক্ষা</button>
     <button class="cs-tab"        id="cst-goal" onclick="switchChatTab('goal',this)">🎯 লক্ষ্য</button>
@@ -372,7 +372,7 @@
 <div class="modal-overlay" id="fabMenu"><div class="modal-sheet">
   <div class="modal-handle"></div><div class="modal-title">কী করতে চান?</div>
   <button class="btn-primary" style="margin-bottom:8px" onclick="closeModal('fabMenu');openModal('addStudentModal')">👤 নতুন ছাত্র যোগ</button>
-  <button class="btn-primary" style="background:var(--orange);margin-bottom:8px" onclick="closeModal('fabMenu');openAddTask()">📋 টাস্ক দিন</button>
+  <button class="btn-primary" style="background:var(--orange);margin-bottom:8px" onclick="closeModal('fabMenu');openAddTask()">📋 আমল দিন</button>
   <button class="btn-primary" style="background:var(--purple);margin-bottom:8px" onclick="closeModal('fabMenu');openModal('bcModal')">📢 সবাইকে বার্তা</button>
   <button class="btn-secondary" onclick="closeModal('fabMenu')">বাতিল</button>
 </div></div>
@@ -404,7 +404,7 @@
 </div></div>
 
 <div class="modal-overlay" id="addTaskModal"><div class="modal-sheet">
-  <div class="modal-handle"></div><div class="modal-title">নতুন টাস্ক দিন</div>
+  <div class="modal-handle"></div><div class="modal-title">নতুন আমল দিন</div>
   <div class="form-group"><label class="form-label">শিরোনাম *</label><input class="form-input" id="t_title" placeholder="সূরা মুলক মুখস্থ"></div>
   <div class="form-group"><label class="form-label">ধরন</label>
     <div class="task-type-row">
@@ -412,13 +412,13 @@
       <button type="button" class="type-btn onetime"      id="typeOnetime" onclick="setTaskType('onetime')">📌 এককালীন<br><small style="font-weight:400;font-size:11px">ডেডলাইন সহ</small></button>
     </div>
   </div>
-  <div class="form-group"><label class="form-label">বিস্তারিত</label><textarea class="form-input" id="t_desc" rows="3" placeholder="টাস্কের বিবরণ..."></textarea></div>
+  <div class="form-group"><label class="form-label">বিস্তারিত</label><textarea class="form-input" id="t_desc" rows="3" placeholder="আমলের বিবরণ..."></textarea></div>
   <div class="form-group" id="t_dl_group"><label class="form-label">শেষ তারিখ</label><input class="form-input" type="date" id="t_dl"></div>
   <div class="form-group"><label class="form-label">ছাত্র নির্বাচন</label>
     <div class="select-all-bar"><label style="font-size:13px;font-weight:600;color:var(--gray-600)">সবাইকে নির্বাচন</label><input type="checkbox" id="selAll" onchange="toggleAll(this)" style="accent-color:#128C7E;width:16px;height:16px"></div>
     <div id="taskStudents"></div>
   </div>
-  <button class="btn-primary" onclick="addTask()">📋 টাস্ক দিন</button>
+  <button class="btn-primary" onclick="addTask()">📋 আমল দিন</button>
   <button class="btn-secondary" onclick="closeModal('addTaskModal')">বাতিল</button>
 </div></div>
 
@@ -768,8 +768,8 @@ function renderChatTasks(){
   const tasks=API.Tasks.getAll().filter(t=>t.assignees&&curChat in t.assignees);
   const bm={done:'badge-done',pending:'badge-pending',late:'badge-late'};
   const lm={done:'✅ সম্পন্ন',pending:'⏳ বকেয়া',late:'❌ দেরি'};
-  const addBtn=`<button onclick="openAddTask('${curChat}')" style="width:100%;background:#E8F5E9;border:1.5px dashed #25D366;color:#2E7D32;border-radius:10px;padding:10px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:4px">＋ নতুন টাস্ক দিন</button>`;
-  if(!tasks.length){ el.innerHTML=addBtn+'<div class="csp-empty">📋 কোনো টাস্ক নেই।</div>'; return; }
+  const addBtn=`<button onclick="openAddTask('${curChat}')" style="width:100%;background:#E8F5E9;border:1.5px dashed #25D366;color:#2E7D32;border-radius:10px;padding:10px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:4px">＋ নতুন আমল দিন</button>`;
+  if(!tasks.length){ el.innerHTML=addBtn+'<div class="csp-empty">📋 কোনো আমল নেই।</div>'; return; }
   el.innerHTML=addBtn+tasks.map(t=>{
     const isDaily=t.type==='daily';
     const st=isDaily?(API.Tasks.isDailyDoneToday(t,curChat)?'done':'pending'):(t.assignees[curChat]||'pending');
@@ -861,7 +861,7 @@ function renderMsgs(id){
     const swiIcon=`<div class="swipe-reply-icon">↩</div>`;
     if(m.type==='task'){
       const tLabel=m.task?.taskType==='daily'?'🔁 দৈনিক':'📌 এককালীন';
-      h+=`<div class="msg-wrap out" data-mid="${m.id}">${swiIcon}<div class="task-bubble"><div class="task-bubble-hd">📋 টাস্ক · ${tLabel}</div><div class="task-bubble-bd">${replyRef}<div class="task-bubble-title">${esc(m.task.title)}</div><div class="task-bubble-desc">${esc(m.task.desc)}</div>${m.task.deadline?`<div class="task-bubble-dl">📅 ${m.task.deadline}</div>`:''}</div></div><div style="font-size:11px;color:var(--gray-400);text-align:right;margin-top:2px">${m.time}</div></div>`;
+      h+=`<div class="msg-wrap out" data-mid="${m.id}">${swiIcon}<div class="task-bubble"><div class="task-bubble-hd">📋 আমল · ${tLabel}</div><div class="task-bubble-bd">${replyRef}<div class="task-bubble-title">${esc(m.task.title)}</div><div class="task-bubble-desc">${esc(m.task.desc)}</div>${m.task.deadline?`<div class="task-bubble-dl">📅 ${m.task.deadline}</div>`:''}</div></div><div style="font-size:11px;color:var(--gray-400);text-align:right;margin-top:2px">${m.time}</div></div>`;
     } else if(m.type==='doc'){
       const ic=fileIcon(m.fileType);
       const markRead=m.role==='in';
@@ -1079,7 +1079,7 @@ function renderTaskList(f){
   if(f) tFilter=f;
   const tasks=API.Tasks.getAll();
   const el=document.getElementById('taskList');
-  if(!tasks.length){ el.innerHTML='<div class="empty-state"><div class="icon">📋</div><p>কোনো টাস্ক নেই।</p></div>'; return; }
+  if(!tasks.length){ el.innerHTML='<div class="empty-state"><div class="icon">📋</div><p>কোনো আমল নেই।</p></div>'; return; }
   const bm={done:'badge-done',pending:'badge-pending',late:'badge-late',partial:'badge-pending'};
   const lm={done:'✅ সম্পন্ন',pending:'⏳ বকেয়া',late:'❌ দেরি',partial:'🔄 আংশিক'};
   const ic={done:'✅',pending:'⏳',late:'❌'};
@@ -1121,13 +1121,13 @@ function renderTaskList(f){
   if(tFilter==='all'||tFilter==='daily'){
     if(dailyTasks.length){
       const doneToday=dailyTasks.filter(t=>{ const ids=Object.keys(t.assignees||{}); const d=ids.filter(id=>API.Tasks.isDailyDoneToday(t,id)).length; return d===ids.length&&ids.length>0; }).length;
-      h+=`<div class="task-daily-sep">🔁 দৈনিক টাস্ক <span class="done-count-badge">${doneToday}/${dailyTasks.length} আজ সম্পন্ন</span></div>`;
+      h+=`<div class="task-daily-sep">🔁 দৈনিক আমল <span class="done-count-badge">${doneToday}/${dailyTasks.length} আজ সম্পন্ন</span></div>`;
       dailyTasks.forEach(t=>{ h+=renderTaskCard(t); });
     }
   }
   if(tFilter==='all'||tFilter==='onetime'){
     if(onetimeTasks.length){
-      h+=`<div class="task-daily-sep">📌 এককালীন টাস্ক</div>`;
+      h+=`<div class="task-daily-sep">📌 এককালীন আমল</div>`;
       onetimeTasks.forEach(t=>{ h+=renderTaskCard(t); });
     }
   }
@@ -1139,7 +1139,7 @@ function renderTaskList(f){
 }
 function fTask(f,btn){ document.querySelectorAll('#screen-tasks .filter-chip').forEach(c=>c.classList.remove('active')); btn.classList.add('active'); renderTaskList(f); }
 function toggleA(tid,sid){ API.Tasks.toggleStatus(tid,sid); renderTaskList(); updateBadge(); }
-function deleteTask(tid){ if(!confirm('এই টাস্কটি মুছবেন?')) return; API.Tasks.delete(tid); renderTaskList(); updateBadge(); showToast('🗑 টাস্ক মুছে ফেলা হয়েছে'); }
+function deleteTask(tid){ if(!confirm('এই আমলটি মুছবেন?')) return; API.Tasks.delete(tid); renderTaskList(); updateBadge(); showToast('🗑 আমল মুছে ফেলা হয়েছে'); }
 function updateBadge(){ const n=API.Tasks.pendingCount(); const b=document.getElementById('tBadge'); b.textContent=n; b.classList.toggle('show',n>0); }
 
 function setTaskType(type){
@@ -1162,7 +1162,7 @@ function addTask(){
   const checked=[...document.querySelectorAll('#taskStudents input:checked')]; if(!checked.length){ showToast('কমপক্ষে একজন নির্বাচন করুন!'); return; }
   API.Tasks.add({ title, desc:document.getElementById('t_desc').value.trim(), deadline:document.getElementById('t_dl').value, type:newTaskType, assigneeIds:checked.map(c=>c.value) });
   closeModal('addTaskModal'); ['t_title','t_desc'].forEach(id=>document.getElementById(id).value=''); document.getElementById('t_dl').value=API.nextDate(3);
-  renderAll(); showToast('📋 টাস্ক দেওয়া হয়েছে');
+  renderAll(); showToast('📋 আমল দেওয়া হয়েছে');
 }
 
 // ══ EXAMS ══════════════════════════════════════════════════
@@ -1401,7 +1401,7 @@ function renderDocsGrouped(){
 }
 function renderDocItem(d){
   const icon=d.fileType?.startsWith('image/')?'🖼️':d.fileType==='application/pdf'?'📕':'📄';
-  const catLabel={general:'সাধারণ',question:'প্রশ্ন',report:'রিপোর্ট'}[d.category]||d.category||'সাধারণ';
+  const catLabel={general:'সাধারণ',question:'প্রশ্ন',report:'বিবরণ'}[d.category]||d.category||'সাধারণ';
   return `<div class="doc-item" id="ditem_${d.id}">
     <div class="doc-icon">${icon}</div>
     <div class="doc-info">
@@ -1651,7 +1651,7 @@ function renderProfileBody(s){
     </div>
     <div class="profile-section profile-v2-foot-danger">
       <div class="profile-sec-hd">ঝুঁকিপূর্ণ কাজ</div>
-      <p style="font-size:13px;color:var(--gray-600);padding:0 14px 8px;line-height:1.55;margin:0">ছাত্রের নাম, ওয়াকফ ও পিন <strong>থাকবে</strong>। চ্যাট, টাস্ক, পরীক্ষার জমা, ডকুমেন্ট, লক্ষ্য, একাডেমিক রেকর্ড ও শিক্ষকের নোট মুছে যাবে।</p>
+      <p style="font-size:13px;color:var(--gray-600);padding:0 14px 8px;line-height:1.55;margin:0">ছাত্রের নাম, ওয়াকফ ও পিন <strong>থাকবে</strong>। চ্যাট, আমল, পরীক্ষার জমা, ডকুমেন্ট, লক্ষ্য, একাডেমিক রেকর্ড ও শিক্ষকের নোট মুছে যাবে।</p>
       <div style="padding:0 14px 12px">
         <button type="button" onclick="confirmClearStudentData()" style="width:100%;background:#fff;border:1.5px solid #E57373;color:#B71C1C;border-radius:10px;padding:10px 14px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer">🧹 শুধু সংশ্লিষ্ট তথ্য মুছুন</button>
       </div>
@@ -1685,7 +1685,7 @@ function renderNotesList(notes){
 }
 function confirmClearStudentData(){
   if(!curProfileSid) return;
-  if(!confirm('এই ছাত্রের চ্যাট, টাস্ক, পরীক্ষার জমা, ডকুমেন্ট, লক্ষ্য, একাডেমিক রেকর্ড ও শিক্ষকের নোট সব মুছে যাবে। ছাত্রের নাম, ওয়াকফ ও পিন অপরিবর্তিত থাকবে। চালিয়ে যাবেন?')) return;
+  if(!confirm('এই ছাত্রের চ্যাট, আমল, পরীক্ষার জমা, ডকুমেন্ট, লক্ষ্য, একাডেমিক রেকর্ড ও শিক্ষকের নোট সব মুছে যাবে। ছাত্রের নাম, ওয়াকফ ও পিন অপরিবর্তিত থাকবে। চালিয়ে যাবেন?')) return;
   try{
     API.Students.clearAllRelatedData(curProfileSid);
     closeStudentProfile();

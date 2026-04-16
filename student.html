@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#2E7D32">
-<meta name="description" content="ছাত্র প্যানেল — Waqful Madinah">
+<meta name="description" content="وقف المدينة">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="ছাত্র">
+<meta name="apple-mobile-web-app-title" content="واقف">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<title>ছাত্র প্যানেল · Waqful Madinah</title>
+<title>وقف المدينة</title>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="tablet-desktop.css">
@@ -137,7 +137,7 @@
 <div id="lockScreen">
   <!-- Sticky header — always visible -->
   <div class="lock-sticky-header">
-    <span>📖 ছাত্র লগইন</span>
+    <span>প্রবেশ</span>
     <button id="notifBtn" onclick="enableSharedNotif()" title="নোটিফিকেশন চালু করুন" style="background:none;border:none;cursor:pointer;font-size:18px;padding:0 0 0 8px;vertical-align:middle;opacity:.8">🔔</button>
   </div>
   <!-- TOP: scrollable area — pending list -->
@@ -154,7 +154,7 @@
 
         <!-- ── Step 1: Waqf ID ── -->
         <div id="loginStepId" style="display:flex;flex-direction:column;align-items:center">
-          <div class="login-lbl-c">ওয়াকফ আইডি লিখুন</div>
+          <div class="login-lbl-c">ওয়াক্বফ নং লিখুন</div>
           <div class="login-keypad-display" id="loginIdDisplay">—</div>
           <div class="pin-pad">
             <button class="pin-key" onclick="skp('id','1')">1</button>
@@ -196,7 +196,7 @@
             <button class="pin-key" onclick="skp('pin','0')">0</button>
             <button class="pin-key" onclick="skd('pin')">⌫</button>
           </div>
-          <button class="login-btn login-btn-ghost" onclick="loginPinBack()">← আইডি পরিবর্তন</button>
+          <button class="login-btn login-btn-ghost" onclick="loginPinBack()">← নং পরিবর্তন</button>
         </div>
 
       </div>
@@ -210,18 +210,18 @@
 <!-- ══ HEADER ════════════════════════════════════════════ -->
 <div class="header">
   <div class="header-avatar" id="hAvatar" style="background:rgba(255,255,255,.25);cursor:pointer" onclick="openStudentSelfProfile()">?</div>
-  <div class="header-info"><div class="header-title" id="hTitle">লোড হচ্ছে...</div><div class="header-sub" id="hSub">ছাত্র</div></div>
+  <div class="header-info"><div class="header-title" id="hTitle">আসছে...</div><div class="header-sub" id="hSub">ওয়াকিফ</div></div>
   <div style="display:flex;align-items:center;gap:4px">
-    <button class="header-btn" id="stuInChatSearchBtn" style="display:none" onclick="toggleStuInChatSearch()" title="চ্যাটে খুঁজুন">🔍</button>
+    <button class="header-btn" id="stuInChatSearchBtn" style="display:none" onclick="toggleStuInChatSearch()" title="রিসালা খুঁজুন">🔍</button>
     <button class="logout-btn" onclick="logout()">লগআউট</button>
   </div>
 </div>
 
 <!-- ══ TAB BAR ═══════════════════════════════════════════ -->
 <div class="tab-bar">
-  <button class="tab-btn active" onclick="goTab('chat')"  id="tab-chat">💬 চ্যাট<span class="tab-badge" id="urBadge"></span></button>
+  <button class="tab-btn active" onclick="goTab('chat')"  id="tab-chat">💬 রিসালা<span class="tab-badge" id="urBadge"></span></button>
   <button class="tab-btn"        onclick="goTab('home')"  id="tab-home">🏠 হোম</button>
-  <button class="tab-btn"        onclick="goTab('tasks')" id="tab-tasks">📋 টাস্ক<span class="tab-badge" id="tBadge"></span></button>
+  <button class="tab-btn"        onclick="goTab('tasks')" id="tab-tasks">📋 আমল<span class="tab-badge" id="tBadge"></span></button>
   <button class="tab-btn"        onclick="goTab('exams')" id="tab-exams">📝 পরীক্ষা<span class="tab-badge" id="examBadge"></span></button>
   <button class="tab-btn"        onclick="goTab('goals')" id="tab-goals">🎯 লক্ষ্য</button>
   <button class="tab-btn"        onclick="goTab('docs')"  id="tab-docs">📎 ফাইল</button>
@@ -232,10 +232,10 @@
   <div class="list-scroll">
     <div class="stats-row">
       <div class="stat-card green"><div class="stat-num" id="sDone">0</div><div class="stat-label">✅ সম্পন্ন</div></div>
-      <div class="stat-card orange"><div class="stat-num" id="sPend">0</div><div class="stat-label">⏳ বকেয়া</div></div>
-      <div class="stat-card red"><div class="stat-num" id="sLate">0</div><div class="stat-label">❌ দেরি</div></div>
+      <div class="stat-card orange"><div class="stat-num" id="sPend">0</div><div class="stat-label">⏳ অপেক্ষমান</div></div>
+      <div class="stat-card red"><div class="stat-num" id="sLate">0</div><div class="stat-label">❌ বিলম্বিত</div></div>
     </div>
-    <div class="sec-hd">সাম্প্রতিক টাস্ক <span class="sec-link" onclick="goTab('tasks')">সব দেখুন →</span></div>
+    <div class="sec-hd">সাম্প্রতিক আমল <span class="sec-link" onclick="goTab('tasks')">সব দেখুন →</span></div>
     <div id="homeTaskPrev"></div>
     <div class="sec-hd">পরীক্ষা <span class="sec-link" onclick="goTab('exams')">সব দেখুন →</span></div>
     <div id="homeExamPrev"></div>
@@ -249,7 +249,7 @@
 <div class="screen active" id="screen-chat">
   <!-- In-chat search bar -->
   <div class="in-chat-search-bar" id="stuInChatSearchBar">
-    <input type="search" id="stuInChatSearchIn" placeholder="চ্যাটে খুঁজুন…" autocomplete="off" oninput="onStuInChatSearch(this.value)" onkeydown="if(event.key==='Enter')stuInChatNav(1)">
+    <input type="search" id="stuInChatSearchIn" placeholder="রিসালা খুঁজুন…" autocomplete="off" oninput="onStuInChatSearch(this.value)" onkeydown="if(event.key==='Enter')stuInChatNav(1)">
     <span class="ics-counter" id="stuIcsCounter"></span>
     <button class="ics-nav" id="stuIcsPrev" onclick="stuInChatNav(-1)" title="আগের">↑</button>
     <button class="ics-nav" id="stuIcsNext" onclick="stuInChatNav(1)"  title="পরের">↓</button>
@@ -278,7 +278,7 @@
   <input type="file" id="chatFileInput" style="display:none" multiple accept="image/*,.pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx" onchange="onChatFileChosen(this)">
   <div class="chat-input-bar">
     <button class="attach-btn" onclick="document.getElementById('chatFileInput').click()" title="ফাইল পাঠান">📎</button>
-    <div class="chat-input-wrap"><textarea id="msgIn" placeholder="উস্তাদকে বার্তা লিখুন..." rows="1" oninput="autoResize(this)"></textarea></div>
+    <div class="chat-input-wrap"><textarea id="msgIn" placeholder="রিসালা লিখুন..." rows="1" oninput="autoResize(this)"></textarea></div>
     <button class="send-btn" onclick="sendMsg()">➤</button>
   </div>
 </div>
@@ -315,8 +315,8 @@
 <!-- ══ DOCUMENTS ══════════════════════════════════════════ -->
 <div class="screen" id="screen-docs">
   <div class="doc-tabs">
-    <button class="doc-tab-btn active" id="sdtab-sent"     onclick="goStudentDocTab('sent',this)">📤 পাঠানো</button>
-    <button class="doc-tab-btn"        id="sdtab-received" onclick="goStudentDocTab('received',this)">📥 পাওয়া</button>
+    <button class="doc-tab-btn active" id="sdtab-sent"     onclick="goStudentDocTab('sent',this)">📤 প্রেরিত</button>
+    <button class="doc-tab-btn"        id="sdtab-received" onclick="goStudentDocTab('received',this)">📥 প্রাপ্ত</button>
   </div>
   <div class="list-scroll">
     <!-- Sent pane: upload + sent list -->
@@ -332,10 +332,10 @@
           <select class="form-input" id="uploadCat">
             <option value="general">সাধারণ</option>
             <option value="question">প্রশ্ন</option>
-            <option value="report">রিপোর্ট</option>
+            <option value="report">বিবরণ</option>
           </select>
         </div>
-        <div class="form-group"><label class="form-label">নোট (ঐচ্ছিক)</label><input class="form-input" id="uploadNote" placeholder="উস্তাদের জন্য নোট..."></div>
+        <div class="form-group"><label class="form-label">তথ্য (ঐচ্ছিক)</label><input class="form-input" id="uploadNote" placeholder="উস্তাদের জন্য তথ্য..."></div>
         <div id="uploadProgressWrap" style="display:none"><div class="upload-progress"><div class="upload-progress-fill" id="uploadProgressFill" style="width:0%"></div></div></div>
         <button class="btn-primary" onclick="confirmUpload()">📤 উস্তাদের কাছে পাঠান</button>
         <button class="btn-secondary" onclick="cancelUpload()">বাতিল</button>
@@ -387,7 +387,7 @@
 <!-- Student self-profile modal -->
 <div class="modal-overlay" id="studentProfileModal"><div class="modal-sheet">
   <div class="modal-handle"></div>
-  <div class="modal-title">👤 আমার প্রোফাইল</div>
+  <div class="modal-title">👤 আমার বিবরণ</div>
   <div style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:16px">
     <div id="spAvatar" style="width:72px;height:72px;border-radius:50%;font-size:32px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;position:relative;cursor:pointer" onclick="document.getElementById('spPhotoInput').click()">
       <input type="file" id="spPhotoInput" accept="image/*" style="display:none" onchange="onStudentPhotoChange(this)">
@@ -593,7 +593,7 @@ function onLogin(){
   localStorage.setItem('madrasa_lastPanel','student');
   document.getElementById('hAvatar').textContent=me.name.charAt(0); document.getElementById('hAvatar').style.background=me.color||'#2E7D32';
   document.getElementById('hTitle').textContent=me.name;
-  { const p=[]; if(me.waqfId) p.push(API.Students.getShortId(me)); if(me.cls) p.push(me.cls); document.getElementById('hSub').textContent=p.length?p.join(' · '):'ছাত্র'; }
+  { const p=[]; if(me.waqfId) p.push(API.Students.getShortId(me)); if(me.cls) p.push(me.cls); document.getElementById('hSub').textContent=p.length?p.join(' · '):'ওয়াকিফ'; }
   const sb=document.getElementById('stuInChatSearchBtn'); if(sb) sb.style.display='flex';
   renderAll();
   goTab('chat');
@@ -629,7 +629,7 @@ function renderHome(){
   document.getElementById('sLate').textContent=late;
 
   const recent=tasks.filter(t=>t.type==='daily'?!API.Tasks.isDailyDoneToday(t,me.id):t.assignees[me.id]!=='done').slice(0,2);
-  document.getElementById('homeTaskPrev').innerHTML=recent.length?recent.map(t=>atCardHtml(t,true)).join(''):'<div style="padding:12px 16px;font-size:13px;color:var(--gray-400)">✅ সব টাস্ক সম্পন্ন!</div>';
+  document.getElementById('homeTaskPrev').innerHTML=recent.length?recent.map(t=>atCardHtml(t,true)).join(''):'<div style="padding:12px 16px;font-size:13px;color:var(--gray-400)">✅ সব আমল সম্পন্ন!</div>';
 
   const pendingExams=API.Exams.getQuizzesForStudent(me.id).filter(q=>!API.Exams.getSubmission(q.id,me.id)).slice(0,2);
   document.getElementById('homeExamPrev').innerHTML=pendingExams.length
@@ -693,7 +693,7 @@ function renderChat(){
     const swiIcon=`<div class="swipe-reply-icon">↩</div>`;
     if(m.type==='task'){
       const tLabel=m.task?.taskType==='daily'?'🔁 দৈনিক':'📌 এককালীন';
-      h+=`<div class="msg-wrap in" data-mid="${m.id}">${swiIcon}<div class="task-bubble"><div class="task-bubble-hd">📋 উস্তাদ টাস্ক দিয়েছেন · ${tLabel}</div><div class="task-bubble-bd">${replyRef}<div class="task-bubble-title">${esc(m.task.title)}</div><div class="task-bubble-desc">${esc(m.task.desc)}</div>${m.task.deadline?`<div class="task-bubble-dl">📅 শেষ তারিখ: ${m.task.deadline}</div>`:''}</div></div><div style="font-size:11px;color:var(--gray-400);text-align:left;margin-top:2px;padding-left:4px">${m.time}</div></div>`;
+      h+=`<div class="msg-wrap in" data-mid="${m.id}">${swiIcon}<div class="task-bubble"><div class="task-bubble-hd">📋 উস্তাদ আমল দিয়েছেন · ${tLabel}</div><div class="task-bubble-bd">${replyRef}<div class="task-bubble-title">${esc(m.task.title)}</div><div class="task-bubble-desc">${esc(m.task.desc)}</div>${m.task.deadline?`<div class="task-bubble-dl">📅 শেষ তারিখ: ${m.task.deadline}</div>`:''}</div></div><div style="font-size:11px;color:var(--gray-400);text-align:left;margin-top:2px;padding-left:4px">${m.time}</div></div>`;
     } else if(m.type==='doc'){
       const ic=fileIcon(m.fileType);
       const viewBtn=m.docId?`<button type="button" class="chat-doc-view-btn" onclick="previewStudentChatDoc('${m.docId}')">👁 দেখুন</button>`:'';
@@ -858,19 +858,19 @@ function renderTaskList(f){
   let h='';
   if((tFilter==='all'||tFilter==='daily')&&daily.length){
     const doneToday=daily.filter(t=>API.Tasks.isDailyDoneToday(t,me.id)).length;
-    h+=`<div class="daily-reset-notice">🔄 দৈনিক টাস্ক — আজ ${doneToday}/${daily.length} সম্পন্ন। প্রতিদিন নতুন হয়।</div>`;
+    h+=`<div class="daily-reset-notice">🔄 দৈনিক আমল — আজ ${doneToday}/${daily.length} সম্পন্ন। প্রতিদিন নতুন হয়।</div>`;
     daily.forEach(t=>{ h+=atCardHtml(t,false); });
   }
   if((tFilter==='all'||tFilter==='onetime'||tFilter==='done')&&onetime.length){
     const filtered=tFilter==='done'?onetime.filter(t=>t.assignees[me.id]==='done'):onetime;
     filtered.forEach(t=>{ h+=atCardHtml(t,false); });
   }
-  if(!h) h=`<div class="empty-state"><div class="icon">${tFilter==='all'?'📋':'🔍'}</div><p>${tFilter==='all'?'উস্তাদ এখনো কোনো টাস্ক দেননি।':'এই ফিল্টারে কিছু নেই।'}</p></div>`;
+  if(!h) h=`<div class="empty-state"><div class="icon">${tFilter==='all'?'📋':'🔍'}</div><p>${tFilter==='all'?'উস্তাদ এখনো কোনো আমল দেননি।':'এই ফিল্টারে কিছু নেই।'}</p></div>`;
   el.innerHTML=h+'<div style="height:20px"></div>';
 }
 function fTask(f,btn){ document.querySelectorAll('#screen-tasks .filter-chip').forEach(c=>c.classList.remove('active')); btn.classList.add('active'); renderTaskList(f); }
-function markDailyDone(tid){ API.Tasks.markDailyDone(tid,me.id); renderAll(); showToast('مَا شَاءَ اللّٰه! আজকের টাস্ক সম্পন্ন ✅'); }
-function markDone(tid){ API.Tasks.markDone(tid,me.id); renderAll(); showToast('مَا شَاءَ اللّٰه! টাস্ক সম্পন্ন ✅'); }
+function markDailyDone(tid){ API.Tasks.markDailyDone(tid,me.id); renderAll(); showToast('مَا شَاءَ اللّٰه! আজকের আমল সম্পন্ন ✅'); }
+function markDone(tid){ API.Tasks.markDone(tid,me.id); renderAll(); showToast('مَا شَاءَ اللّٰه! আমল সম্পন্ন ✅'); }
 
 // ══ EXAMS ══════════════════════════════════════════════════
 function renderExamList(){
@@ -893,7 +893,7 @@ function renderExamList(){
         ${isDone
           ? (sub.needsManualGrade
             ? `<span class="exam-done-chip">✅ জমা দেওয়া হয়েছে · ফলাফল অপেক্ষায়</span>`
-            : `<span class="${sub.passed?'exam-done-chip':'exam-fail-chip'}">${sub.passed?'✅':'❌'} ${sub.score}/${sub.total} নম্বর · ${sub.passed?'পাস':'ফেল'}</span>`)
+            : `<span class="${sub.passed?'exam-done-chip':'exam-fail-chip'}">${sub.passed?'✅':'❌'} ${sub.score}/${sub.total} নম্বর · ${sub.passed?'উত্তীর্ণ':'অনুত্তীর্ণ'}</span>`)
           : `<button class="exam-start-btn" onclick="startQuiz('${q.id}')">📝 পরীক্ষা দিন</button>`
         }
       </div>
@@ -975,7 +975,7 @@ function submitQuiz(){
   if(sub.needsManualGrade){
     showToast('✅ পরীক্ষা জমা হয়েছে! উস্তাদ নম্বর দেবেন।',4000);
   } else {
-    showToast(`${sub.passed?'✅ পাস':'❌ ফেল'} · ${sub.score}/${sub.total} নম্বর`,4000);
+    showToast(`${sub.passed?'✅ উত্তীর্ণ':'❌ অনুত্তীর্ণ'} · ${sub.score}/${sub.total} নম্বর`,4000);
   }
   renderExamList(); renderHome(); updateBadges();
 }
@@ -1039,7 +1039,7 @@ function renderSentDocs(){
   const docs=API.Docs.getForStudent(me.id);
   const el=document.getElementById('sentDocsList');
   if(!docs.length){ el.innerHTML='<div style="padding:16px;text-align:center;font-size:13px;color:var(--gray-400)">এখনো কোনো ফাইল পাঠাননি।</div>'; return; }
-  const catLabel={general:'সাধারণ',question:'প্রশ্ন',report:'রিপোর্ট'};
+  const catLabel={general:'সাধারণ',question:'প্রশ্ন',report:'বিবরণ'};
   el.innerHTML=docs.map(d=>{
     const _dt=d.fileType||''; const icon=(_dt==='image'||_dt.startsWith('image/'))?'🖼️':(_dt==='pdf'||_dt==='application/pdf')?'📕':'📄';
     return `<div class="doc-sent-item">
