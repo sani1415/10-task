@@ -283,17 +283,6 @@
       <input type="file" id="impFile" accept=".json" style="display:none" onchange="doImport(this)">
       <button class="restore-btn" onclick="document.getElementById('impFile').click()">📂 পুনরুদ্ধার</button>
     </div>
-    <div class="sec-hd">ডেটা রিসেট</div>
-    <div class="backup-card">
-      <h3 style="font-size:14px;font-weight:600;color:var(--gray-700);margin-bottom:6px">🧹 সব ছাত্রের ডেটা মুছুন</h3>
-      <p style="font-size:13px;color:var(--gray-600);line-height:1.6;margin-bottom:12px">সব ছাত্রের চ্যাট, টাস্ক, পরীক্ষার জমা, ডকুমেন্ট, লক্ষ্য, একাডেমিক রেকর্ড ও শিক্ষকের নোট মুছে যাবে। ছাত্রের নাম, ওয়াকফ ও পিন <strong>অপরিবর্তিত থাকবে</strong>। আগে ব্যাকআপ নিন।</p>
-      <button type="button" class="backup-btn" style="background:#E65100;color:#fff;border:none" onclick="confirmClearAllStudentsData()">🧹 সব ছাত্রের ডেটা রিসেট</button>
-    </div>
-    <div class="backup-card" style="margin-top:0">
-      <h3 style="font-size:14px;font-weight:600;color:var(--gray-700);margin-bottom:6px">🔄 ছাত্র তালিকা রিসেট</h3>
-      <p style="font-size:13px;color:var(--gray-600);line-height:1.6;margin-bottom:12px">সব ছাত্র মুছে ফেলে নতুন CSV আপলোড করতে। টাস্ক, পরীক্ষা, ডকুমেন্ট, লক্ষ্য ও শিক্ষকের নোটও খালি হবে। গ্রুপ ব্রডকাস্ট বার্তার ইতিহাস থাকবে। আগে ব্যাকআপ নিন।</p>
-      <button type="button" class="backup-btn" style="background:#C62828;color:#fff;border:none" onclick="confirmResetRoster()">🔄 ছাত্র তালিকা রিসেট</button>
-    </div>
     <div class="sec-hd">সম্পর্কে</div>
     <div class="backup-card"><p style="font-size:13px;color:var(--gray-500);line-height:1.7"><strong>Waqful Madinah ম্যানেজার</strong><br>v3.0 · teacher.html + student.html + api.js + style.css</p></div>
     <div class="backup-card" style="text-align:center">
@@ -1525,22 +1514,6 @@ function renderStorageTree(){
 // ══ SETTINGS ═══════════════════════════════════════════════
 function sendBC(){ const text=document.getElementById('bcText').value.trim(); if(!text){ showToast('বার্তা লিখুন!'); return; } API.Messages.broadcast(text); closeModal('bcModal'); document.getElementById('bcText').value=''; renderChatList(); showToast('📢 সবাইকে পাঠানো হয়েছে'); }
 function saveInfo(){ API.DB.saveTeacher({name:document.getElementById('tName').value.trim()||'শিক্ষক',madrasa:document.getElementById('tMadrasa').value.trim()||'Waqful Madinah'}); document.getElementById('hTitle').textContent=API.DB.getTeacher().madrasa; showToast('✅ সংরক্ষিত'); }
-function confirmClearAllStudentsData(){
-  if(!confirm('সব ছাত্রের চ্যাট, টাস্ক, পরীক্ষা, লক্ষ্য ও নোট মুছে ফেলবেন?\nছাত্র তালিকা অক্ষুণ্ণ থাকবে।')) return;
-  Promise.resolve(API.Students.clearAllStudentsData()).then(()=>{
-    renderAll();
-    showToast('✅ সব ছাত্রের ডেটা রিসেট হয়েছে');
-  }).catch(e=>{ console.error(e); showToast('❌ রিসেট ব্যর্থ'); });
-}
-function confirmResetRoster(){
-  if(!confirm('সব ছাত্র ও সম্পর্কিত ডেটা মুছে ফেলবেন? আগে ব্যাকআপ নেওয়া আছে তো?')) return;
-  if(curChat) closeChat();
-  Promise.resolve(API.DB.resetForNewRoster()).then(()=>{
-    renderAll();
-    if(typeof closeStudentProfile==='function') closeStudentProfile();
-    showToast('✅ তালিকা খালি — এখন 📂 ইমপোর্ট দিয়ে CSV যোগ করুন');
-  }).catch(e=>{ console.error(e); showToast('❌ রিসেট ব্যর্থ'); });
-}
 function changeTPin(){ const p=String(document.getElementById('newTPin').value).trim(); if(!/^\d{4}$/.test(p)){ showToast('৪ সংখ্যার পিন দিন!'); return; } API.Auth.setTeacherPin(p); document.getElementById('newTPin').value=''; showToast('✅ পিন পরিবর্তন হয়েছে'); }
 function doExport(){ const b=new Blob([API.DB.exportJSON()],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`madrasa_${API.today()}.json`; a.click(); showToast('✅ ব্যাকআপ হচ্ছে'); }
 function doImport(input){ const r=new FileReader(); r.onload=e=>{ try{ API.DB.importJSON(e.target.result).then(()=>{ renderAll(); showToast('✅ পুনরুদ্ধার সম্পন্ন!'); }).catch(()=>showToast('❌ পুনরুদ্ধার ব্যর্থ!')); }catch{ showToast('❌ ফাইল সঠিক নয়!'); } }; r.readAsText(input.files[0]); input.value=''; }
