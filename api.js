@@ -630,6 +630,13 @@ const API = (() => {
     markRead(threadId,role='in') {
       const db=DB.get(); (db.chats[threadId]||[]).forEach(m=>{ if(m.role===role) m.read=true; }); DB.save(db);
       if (_useRemote && RS.markMessagesReadRemote) RS.markMessagesReadRemote(threadId, role === 'in' ? 'teacher' : 'student');
+      // Dismiss matching OS push notification
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        const tag = role === 'in'
+          ? 'msg-in-' + threadId
+          : 'msg-out-' + (Students.getById(threadId)?.waqfId || threadId);
+        navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_NOTIFICATION', tag });
+      }
     },
     // Teacher opened a student's chat → mark student messages as read (→ double tick on student)
     markReadByTeacher(sid) { this.markRead(sid,'in'); },

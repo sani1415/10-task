@@ -1,5 +1,5 @@
 /* Waqful Madinah — full-app shell cache + Web Push display */
-var CACHE = 'waqful-full-v18';
+var CACHE = 'waqful-full-v19';
 
 var CDN_ASSETS = [
   'https://unpkg.com/@supabase/supabase-js@2.49.8/dist/umd/supabase.js',
@@ -264,5 +264,17 @@ self.addEventListener('message', function (e) {
   // Page থেকে force-activate অনুরোধ এলে নতুন SW সক্রিয় করো
   if (e.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
+  }
+  // মেসেজ পড়া হলে OS notification বন্ধ করো
+  if (e.data && e.data.type === 'CLEAR_NOTIFICATION' && e.data.tag) {
+    self.registration.getNotifications({ tag: e.data.tag }).then(function(list) {
+      list.forEach(function(n) { n.close(); });
+    });
+    _idbSet(e.data.tag, 0).then(function() {
+      return _idbTotal();
+    }).then(function(total) {
+      if (total > 0) navigator.setAppBadge && navigator.setAppBadge(total);
+      else navigator.clearAppBadge && navigator.clearAppBadge();
+    });
   }
 });
