@@ -1098,6 +1098,9 @@ const API = (() => {
   };
 })();
 
+// `api-amal.js` এবং অন্য স্ক্রিপ্ট `window.API` দিয়ে এক্সেস করে; `const API` আলাদাভাবে `window`-এ যায় না।
+if (typeof window !== 'undefined') window.API = API;
+
 // ── Global helpers ────────────────────────────────────────
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g,'<br>'); }
 function autoResize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }

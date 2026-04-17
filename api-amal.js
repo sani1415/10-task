@@ -67,14 +67,17 @@
   };
 
   // ── Private accessors (lazy — called after api.js loads) ─────
+  function _api() { return (typeof API !== 'undefined' ? API : null) || w.API || null; }
   function _allTasks() {
-    if (w.API?.Tasks) return w.API.Tasks.getAll();
+    const A = _api();
+    if (A?.Tasks) return A.Tasks.getAll();
     try { return JSON.parse(localStorage.getItem('madrasa_db')||'{}').tasks||[]; } catch { return []; }
   }
   function _tasksFor(sid)      { return _allTasks().filter(t=>t.assignees&&t.assignees[sid]); }
   function _dailyTasksFor(sid) { return _tasksFor(sid).filter(t=>t.type==='daily'); }
   function _allStudents() {
-    if (w.API?.Students) return w.API.Students.getAll();
+    const A = _api();
+    if (A?.Students) return A.Students.getAll();
     try { return JSON.parse(localStorage.getItem('madrasa_db')||'{}').students||[]; } catch { return []; }
   }
 

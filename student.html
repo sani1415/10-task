@@ -139,6 +139,7 @@
   <!-- Sticky header — always visible -->
   <div class="lock-sticky-header">
     <span>প্রবেশ</span>
+    <div id="lockName" style="font-size:12px;font-weight:500;opacity:.88;margin-top:2px">Waqful Madinah</div>
     <button id="notifBtn" onclick="enableSharedNotif()" title="নোটিফিকেশন চালু করুন" style="background:none;border:none;cursor:pointer;font-size:18px;padding:0 0 0 8px;vertical-align:middle;opacity:.8">🔔</button>
   </div>
   <!-- TOP: scrollable area — pending list -->
@@ -460,7 +461,8 @@ function init(){
   Promise.resolve(API.DB.init()).then(()=>{
     void API.Pwa.registerServiceWorker();
     API.Tasks.resetDailyForToday();
-    document.getElementById('lockName').textContent=API.DB.getTeacher().madrasa||'Waqful Madinah';
+    const lockNameEl=document.getElementById('lockName');
+    if(lockNameEl) lockNameEl.textContent=API.DB.getTeacher().madrasa||'Waqful Madinah';
     document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); }));
     renderPendingSection();
     updateNotifBtn();
@@ -469,7 +471,7 @@ function init(){
     // Subscribe this device for all student notifications (shared device mode)
     // Delay slightly so RemoteSync bootstrap has time to complete
     setTimeout(() => void API.Pwa.enableSharedStudentDevice().then(updateNotifBtn), 2000);
-  }).catch(e=>{ console.error(e); document.getElementById('lockName').textContent='সার্ভার সংযোগ ব্যর্থ'; });
+  }).catch(e=>{ console.error(e); const ln=document.getElementById('lockName'); if(ln) ln.textContent='সার্ভার সংযোগ ব্যর্থ'; });
 }
 window.addEventListener('madrasa-remote-sync',()=>{ try{ const u=document.getElementById('lockScreen').style.display==='none'; if(u&&me) renderAll(); else renderPendingSection(); }catch(e){ console.error(e); } });
 
