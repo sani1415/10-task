@@ -208,6 +208,13 @@
   </div>
   <input id="loginId" type="hidden"><input id="loginPin" type="hidden">
 </div>
+<script>
+var _skId='',_skPin='';
+function _skUpdateIdDisplay(){var d=document.getElementById('loginIdDisplay');if(d)d.textContent=_skId||'—';}
+function _skUpdatePinDots(){[0,1,2,3].forEach(function(i){var d=document.getElementById('spd'+i);if(d)d.classList.toggle('filled',i<_skPin.length);});}
+function skp(field,digit){if(field==='id'){if(_skId.length>=3)return;_skId+=digit;_skUpdateIdDisplay();}else{if(_skPin.length>=4)return;_skPin+=digit;_skUpdatePinDots();if(_skPin.length===4)setTimeout(function(){if(typeof doLogin==='function')doLogin();},120);}}
+function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay();}else{_skPin=_skPin.slice(0,-1);_skUpdatePinDots();}}
+</script>
 
 <!-- ══ HEADER ════════════════════════════════════════════ -->
 <div class="header">
@@ -523,27 +530,9 @@ function renderPendingSection(){
 }
 
 // ══ ON-SCREEN KEYPAD LOGIN ══════════════════════════════════
-let _skId='', _skPin='';
-function _skUpdateIdDisplay(){
-  document.getElementById('loginIdDisplay').textContent=_skId||'—';
-}
-function _skUpdatePinDots(){
-  [0,1,2,3].forEach(i=>document.getElementById('spd'+i).classList.toggle('filled',i<_skPin.length));
-}
-function skp(field, digit){
-  if(field==='id'){
-    if(_skId.length>=3) return;
-    _skId+=digit; _skUpdateIdDisplay();
-  } else {
-    if(_skPin.length>=4) return;
-    _skPin+=digit; _skUpdatePinDots();
-    if(_skPin.length===4) setTimeout(doLogin,120);
-  }
-}
-function skd(field){
-  if(field==='id'){ _skId=_skId.slice(0,-1); _skUpdateIdDisplay(); }
-  else { _skPin=_skPin.slice(0,-1); _skUpdatePinDots(); }
-}
+// _skId, _skPin, skp(), skd() and their helpers are defined early (before external
+// scripts) in the inline <script> right after the lock screen div, so keypad
+// buttons work even while CDN scripts are still downloading.
 function loginIdNext(){
   if(!_skId){ showLoginErr('আইডি লিখুন'); return; }
   showLoginErr('');
