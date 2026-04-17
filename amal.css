@@ -1,0 +1,92 @@
+/* Waqful Madinah — amal.css: আমল ট্র্যাকিং UI styles */
+
+/* ── Sub-tabs ────────────────────────────────────────────── */
+.amal-sub-tabs{display:flex;background:#fff;border-bottom:2px solid var(--gray-200);flex-shrink:0}
+.amal-sub-tab{flex:1;background:none;border:none;padding:11px 4px 9px;font-family:var(--font);font-size:13px;font-weight:600;color:var(--gray-500);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:color .2s,border-color .2s}
+.amal-sub-tab.active{color:var(--primary,#075E54);border-bottom-color:var(--primary,#075E54)}
+.amal-panel{display:flex;flex-direction:column;flex:1;overflow:hidden}
+.amal-panel>.list-scroll{flex:1;overflow-y:auto;padding-bottom:80px}
+
+/* ── Summary cards (teacher overview) ───────────────────── */
+.summary-cards{display:flex;gap:10px;padding:14px 14px 8px}
+.summary-card{flex:1;border-radius:12px;padding:12px 8px;text-align:center}
+.summary-card.blue{background:#E3F2FD}.summary-card.green{background:#E8F5E9}.summary-card.orange{background:#FFF3E0}.summary-card.red{background:#FFEBEE}
+.sc-val{font-size:22px;font-weight:800;color:var(--gray-800);line-height:1.1}
+.sc-lbl{font-size:11px;color:var(--gray-500);margin-top:2px;font-weight:600}
+
+/* ── Date navigation ─────────────────────────────────────── */
+.date-nav{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid var(--gray-200)}
+.date-nav-btn{background:none;border:1px solid var(--gray-300);border-radius:8px;padding:5px 10px;font-family:var(--font);font-size:12px;font-weight:600;color:var(--gray-600);cursor:pointer}
+.date-nav-btn:disabled{opacity:.4;cursor:default}
+.date-nav-title{font-size:13px;font-weight:700;color:var(--gray-800)}
+
+/* ── Amal card (teacher overview) ───────────────────────── */
+.amal-card{background:#fff;border:1px solid var(--gray-200);border-radius:12px;padding:12px 14px;margin:10px 12px 0}
+.amal-card-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px}
+.amal-card-title{font-size:14px;font-weight:700;color:var(--gray-800);flex:1}
+.amal-prog-wrap{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.amal-prog-bar{flex:1;height:6px;background:var(--gray-200);border-radius:3px;overflow:hidden}
+.amal-prog-fill{height:100%;background:#25D366;border-radius:3px;transition:width .4s}
+.amal-prog-txt{font-size:12px;font-weight:700;color:var(--gray-600);white-space:nowrap}
+.amal-avatar-strip{display:flex;flex-wrap:wrap;gap:4px}
+.amal-avatar{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;font-size:11px;font-weight:700;color:#fff;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.amal-avatar.done{opacity:1}.amal-avatar.pending{opacity:.4}
+
+/* ── Leaderboard ─────────────────────────────────────────── */
+.leaderboard-item{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#fff;border-bottom:1px solid var(--gray-100);cursor:pointer;transition:background .15s}
+.leaderboard-item:active{background:var(--gray-100)}
+.lb-rank{width:28px;text-align:center;font-size:18px;font-weight:800;color:var(--gray-700);flex-shrink:0}
+.lb-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
+.lb-info{flex:1;min-width:0}
+.lb-name{font-size:14px;font-weight:700;color:var(--gray-800);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-meta{font-size:11px;color:var(--gray-500)}
+.lb-right{text-align:right;flex-shrink:0}
+.lb-pct{font-size:16px;font-weight:800;color:var(--gray-800)}
+.lb-streak{font-size:12px;color:#FF6D00;font-weight:700}
+.stu-detail{background:var(--gray-50);padding:8px 14px 12px;border-bottom:1px solid var(--gray-200)}
+
+/* ── Weekly grid (teacher leaderboard detail) ────────────── */
+.wk-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:4px}
+.wk-cell{display:flex;flex-direction:column;align-items:center;gap:3px}
+.wk-day{font-size:10px;color:var(--gray-500);font-weight:600}
+.wk-dot{width:16px;height:16px;border-radius:50%;background:var(--gray-200)}
+.wk-cell.done .wk-dot{background:#25D366}
+.wk-cell.partial .wk-dot{background:#64B5F6}
+.wk-cell.miss .wk-dot{background:#EF9A9A}
+.wk-cell.today .wk-dot{background:var(--orange,#E65100);outline:2px solid var(--orange,#E65100);outline-offset:2px}
+
+/* ── Student streak bar ──────────────────────────────────── */
+.s-streak-bar{display:flex;align-items:center;gap:14px;padding:14px 16px;background:linear-gradient(135deg,#1B5E20,#2E7D32);color:#fff;margin-bottom:0}
+.s-streak-circle{width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
+.s-streak-num{font-size:22px;font-weight:800;line-height:1}
+.s-streak-lbl{font-size:10px;font-weight:600;opacity:.85}
+.s-streak-info{flex:1}
+.s-streak-title{font-size:14px;font-weight:700;margin-bottom:2px}
+.s-streak-count{font-size:18px;font-weight:800}
+.s-streak-best{font-size:11px;opacity:.8;margin-top:2px}
+
+/* ── Progress rings ──────────────────────────────────────── */
+.pr-strip{display:flex;justify-content:space-around;align-items:flex-start;padding:12px 8px;background:#fff;border-bottom:1px solid var(--gray-200)}
+.pr-ring-wrap{display:flex;flex-direction:column;align-items:center;gap:4px}
+.pr-ring{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.pr-ring-inner{width:46px;height:46px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center}
+.pr-pct{font-size:13px;font-weight:800;color:var(--gray-800)}
+.pr-label{font-size:12px;font-weight:700;color:var(--gray-700)}
+.pr-sub{font-size:10px;color:var(--gray-500)}
+
+/* ── Calendar ────────────────────────────────────────────── */
+.cal-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--gray-200);background:#fff}
+.cal-month-title{font-size:15px;font-weight:800;color:var(--gray-800)}
+.s-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:10px 8px}
+.s-cal-day-hd{text-align:center;font-size:10px;font-weight:700;color:var(--gray-500);padding:4px 0}
+.s-cal-cell{aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;background:var(--gray-100)}
+.s-cal-cell.done{background:#C8E6C9}
+.s-cal-cell.partial{background:#BBDEFB}
+.s-cal-cell.miss{background:#FFCDD2}
+.s-cal-cell.empty{background:transparent}
+.s-cal-cell.cal-today{outline:2px solid var(--orange,#E65100);outline-offset:-2px}
+.s-cal-date{font-size:12px;font-weight:600;color:var(--gray-700)}
+.s-cal-cell.done .s-cal-date{color:#1B5E20;font-weight:800}
+.s-cal-cell.miss .s-cal-date{color:#B71C1C}
+.cal-legend{display:flex;flex-wrap:wrap;gap:12px;padding:10px 14px;font-size:12px;color:var(--gray-600);border-top:1px solid var(--gray-200)}
+.leg-item{display:flex;align-items:center;gap:4px}

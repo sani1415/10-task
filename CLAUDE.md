@@ -21,7 +21,7 @@
 
 ## Service Worker Cache Rule
 - **`sw.js` এর `CACHE` version (`waqful-full-vN`) প্রতিবার যেকোনো file edit করলে N বাড়াতে হবে।**
-- Current version: **v15** (last bumped: backup now includes chats+docs metadata; CLAUDE.md safety rules added)
+- Current version: **v21** (last bumped: amal tracking feature — api-amal.js, amal.css, task_completions table)
 - যেকোনো `.html`, `.css`, `.js` file বদলালে → `sw.js` খুলে `waqful-full-vN` → `vN+1` করো।
 - নতুন file তৈরি হলে `LOCAL_SHELL` array-তেও যোগ করো।
 
@@ -54,15 +54,19 @@
   10. `009_data_migration.sql` — one-time copy of `app_kv` data into relational tables
   11. `010_clear_student_data_rpc.sql` — RPC দিয়ে ছাত্রের সংশ্লিষ্ট ডেটা মুছে ফেলা
   12. `011_drop_students_pin_unique.sql` — `students.pin` গ্লোবাল ইউনিক ইনডেক্স সরানো (লগইন `(waqf_id, pin)`)
+  13. `012_task_completions.sql` — আমল ইতিহাস টেবিল (`task_completions`)
+  14. `013_task_completions_rpc.sql` — completion RPC ফাংশন (upsert, delete, student_completions, daily_completions)
+  15. `014_bootstrap_add_completions.sql` — teacher/student bootstrap-এ গত ৩৫ দিনের completions যোগ
 - **ছাত্র ওয়াকফ আইডি:** ডাটাবেস ও সিঙ্কে `waqf_001` রাখা হয়; UI-তে `API.Students.displayWaqfId` / `getShortId` দিয়ে `001` দেখানো।
 - **`students.pin`:** আর গ্লোবালি ইউনিক নয় — একই পিন একাধিক ছাত্রে থাকতে পারে; রিমোট লগইন `madrasa_rel_student_bootstrap(p_waqf, p_pin)` জোড়ায়।
-- **Relational tables:** `madrasa_config`, `students`, `messages`, `tasks`, `task_assignments`, `goals`, `quizzes`, `quiz_questions`, `quiz_assignees`, `quiz_submissions`, `documents`, `academic_history`, `teacher_notes`, `pwa_subscriptions`. All have RLS enabled; zero direct REST access — everything goes through `madrasa_rel_*` RPCs.
+- **Relational tables:** `madrasa_config`, `students`, `messages`, `tasks`, `task_assignments`, `task_completions`, `goals`, `quizzes`, `quiz_questions`, `quiz_assignees`, `quiz_submissions`, `documents`, `academic_history`, `teacher_notes`, `pwa_subscriptions`. All have RLS enabled; zero direct REST access — everything goes through `madrasa_rel_*` RPCs.
 - **RPC functions (`madrasa_rel_*`, all `GRANT EXECUTE TO anon`):**
   - `madrasa_rel_public_branding()` — no PIN
   - `madrasa_rel_student_lock_hints()` — no PIN
   - `madrasa_rel_teacher_bootstrap(pin)` — returns all data assembled
   - `madrasa_rel_student_bootstrap(waqf, pin)` — returns student's own data only
-  - Write: `upsert_student`, `delete_student`, `insert_message`, `mark_messages_read`, `upsert_task`, `update_task_status`, `upsert_goal`, `upsert_quiz`, `submit_quiz`, `insert_document`, `update_teacher_pin`, `save_pwa_subscription`
+  - Write: `upsert_student`, `delete_student`, `insert_message`, `mark_messages_read`, `upsert_task`, `update_task_status`, `upsert_completion`, `delete_completion`, `upsert_goal`, `upsert_quiz`, `submit_quiz`, `insert_document`, `update_teacher_pin`, `save_pwa_subscription`
+  - Read: `student_completions(pin, role, student_id, from, to)`, `daily_completions(teacher_pin, date)`
 - **`remote-sync.js` + `remote-sync-write.js`:** Together replace the old single-file sync. `remote-sync.js` (≤400 lines) handles bootstrap, assembly, schedule/flush, realtime; `remote-sync-write.js` (≤400 lines) handles all relational write operations. `window.RemoteSync` public API is **unchanged** — same method names, same `mem` object shape (`core`, `goals`, `exams`, `docs`, `academic`, `tnotes`, `teacherPin`, `lockHints`, `loaded`). Bootstrap assembles relational rows back into the old blob format so `api.js` reads identically. `schedule(key, getter)` routes to `madrasa_rel_*` RPCs instead of `app_kv` upserts. `markMessagesReadRemote(threadId, role)` is a new method called from `Messages.markRead()` in `api.js`. Load order: `remote-sync-write.js` before `remote-sync.js`.
 - **In-app instant sync:** `remote-sync.js` subscribes to Supabase Realtime **`postgres_changes`** on `messages`, `students`, `tasks`, `task_assignments` tables (channel `madrasa_rel_changes`). On change, calls `pullRemoteSnapshot` and dispatches `madrasa-remote-sync`. Realtime must be enabled on those tables (added to `supabase_realtime` publication). This is not OS push — it requires the page open and online.
 - **Vercel:** Set env `SUPABASE_URL` and `SUPABASE_ANON_KEY`. Optional: **`PWA_VAPID_PUBLIC_KEY`** (Web Push subscription). Build runs `npm run build` → writes `supabase-config.js` and **`pwa-config.js`** (VAPID public only). If env is missing and the target file already exists locally, each script leaves it unchanged.

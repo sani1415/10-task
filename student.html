@@ -15,6 +15,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="tablet-desktop.css">
+<link rel="stylesheet" href="amal.css">
 <style>
 /* ── Student theme ── */
 #lockScreen{background:linear-gradient(160deg,#1B5E20 0%,#2E7D32 60%,#388E3C 100%)}
@@ -285,13 +286,24 @@
 
 <!-- ══ TASKS ══════════════════════════════════════════════ -->
 <div class="screen" id="screen-tasks">
-  <div class="filter-bar">
-    <button class="filter-chip active" onclick="fTask('all',this)">সব</button>
-    <button class="filter-chip"        onclick="fTask('daily',this)">🔁 দৈনিক</button>
-    <button class="filter-chip"        onclick="fTask('onetime',this)">📌 এককালীন</button>
-    <button class="filter-chip"        onclick="fTask('done',this)">✅ সম্পন্ন</button>
+  <div class="amal-sub-tabs">
+    <button class="amal-sub-tab active" onclick="goAmalTab('today',this)">📋 আজ</button>
+    <button class="amal-sub-tab"        onclick="goAmalTab('history',this)">📅 ইতিহাস</button>
   </div>
-  <div class="list-scroll" id="taskList"></div>
+  <div id="amal-panel-today" class="amal-panel">
+    <div id="amalStreakBar"></div>
+    <div id="amalProgressRings"></div>
+    <div class="filter-bar">
+      <button class="filter-chip active" onclick="fTask('all',this)">সব</button>
+      <button class="filter-chip"        onclick="fTask('daily',this)">🔁 দৈনিক</button>
+      <button class="filter-chip"        onclick="fTask('onetime',this)">📌 এককালীন</button>
+      <button class="filter-chip"        onclick="fTask('done',this)">✅ সম্পন্ন</button>
+    </div>
+    <div class="list-scroll" id="taskList"></div>
+  </div>
+  <div id="amal-panel-history" class="amal-panel" style="display:none">
+    <div class="list-scroll" id="amalCalendarContent"></div>
+  </div>
 </div>
 
 <!-- ══ EXAMS ══════════════════════════════════════════════ -->
@@ -423,6 +435,7 @@
 <script src="remote-sync.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <script src="pdf-merge.js"></script>
+<script src="api-amal.js"></script>
 <script src="api.js"></script>
 <script src="pwa-notify.js"></script>
 <script>
@@ -613,7 +626,7 @@ function logout(){
   Promise.resolve(API.refreshStudentLockHints()).then(()=>renderPendingSection());
   goTab('chat');
 }
-function renderAll(){ renderHome(); renderChat(); renderTaskList(); renderExamList(); renderSentDocs(); renderReceivedDocs(); renderGoals(); updateBadges(); }
+function renderAll(){ renderHome(); renderChat(); renderTaskList(); renderAmalStreakBar(); renderAmalProgressRings(); renderExamList(); renderSentDocs(); renderReceivedDocs(); renderGoals(); updateBadges(); }
 
 // ══ HOME ═══════════════════════════════════════════════════
 function renderHome(){
@@ -868,9 +881,78 @@ function renderTaskList(f){
   if(!h) h=`<div class="empty-state"><div class="icon">${tFilter==='all'?'📋':'🔍'}</div><p>${tFilter==='all'?'উস্তাদ এখনো কোনো আমল দেননি।':'এই ফিল্টারে কিছু নেই।'}</p></div>`;
   el.innerHTML=h+'<div style="height:20px"></div>';
 }
-function fTask(f,btn){ document.querySelectorAll('#screen-tasks .filter-chip').forEach(c=>c.classList.remove('active')); btn.classList.add('active'); renderTaskList(f); }
+function fTask(f,btn){ document.querySelectorAll('#amal-panel-today .filter-chip').forEach(c=>c.classList.remove('active')); btn.classList.add('active'); renderTaskList(f); }
 function markDailyDone(tid){ API.Tasks.markDailyDone(tid,me.id); renderAll(); showToast('مَا شَاءَ اللّٰه! আজকের আমল সম্পন্ন ✅'); }
 function markDone(tid){ API.Tasks.markDone(tid,me.id); renderAll(); showToast('مَا شَاءَ اللّٰه! আমল সম্পন্ন ✅'); }
+
+// ── আমল sub-tabs (ছাত্র) ─────────────────────────────────────
+let _amalTab='today';
+function goAmalTab(tab,btn){
+  _amalTab=tab;
+  document.querySelectorAll('.amal-sub-tab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  document.querySelectorAll('#screen-tasks .amal-panel').forEach(p=>p.style.display='none');
+  document.getElementById('amal-panel-'+tab).style.display='';
+  if(tab==='today'){ renderAmalStreakBar(); renderAmalProgressRings(); renderTaskList(); }
+  else if(tab==='history') renderAmalCalendar();
+}
+function renderAmalStreakBar(){
+  const el=document.getElementById('amalStreakBar'); if(!el||!me) return;
+  const streak=API.Tasks.getStreak(me.id);
+  const tasks=API.Tasks.getForStudent(me.id).filter(t=>t.type==='daily');
+  const todayDone=tasks.filter(t=>API.Tasks.isCompleted(t.id,me.id)).length;
+  if(!tasks.length){el.innerHTML='';return;}
+  el.innerHTML=`<div class="s-streak-bar">
+    <div class="s-streak-circle"><div class="s-streak-num">${streak.current}</div><div class="s-streak-lbl">ধারাবাহিক</div></div>
+    <div class="s-streak-info">
+      <div class="s-streak-title">আজকের আমল</div>
+      <div class="s-streak-count">${todayDone} / ${tasks.length} সম্পন্ন</div>
+      ${streak.longest>1?`<div class="s-streak-best">সর্বোচ্চ: ${streak.longest} দিন</div>`:''}
+    </div>
+  </div>`;
+}
+function renderAmalProgressRings(){
+  const el=document.getElementById('amalProgressRings'); if(!el||!me) return;
+  const prog=API.Tasks.getProgressSummary(me.id);
+  if(!prog.today.total){el.innerHTML='';return;}
+  const ring=(lbl,v,color)=>`<div class="pr-ring-wrap">
+    <div class="pr-ring" style="background:conic-gradient(${color} ${Math.round(v.percent*3.6)}deg,var(--gray-200) 0deg)">
+      <div class="pr-ring-inner"><span class="pr-pct">${v.percent}%</span></div></div>
+    <div class="pr-label">${lbl}</div><div class="pr-sub">${v.done}/${v.total}</div></div>`;
+  el.innerHTML=`<div class="pr-strip">${ring('আজ',prog.today,'#2E7D32')}${ring('সপ্তাহ',prog.week,'#1565C0')}${ring('মাস',prog.month,'#6A1B9A')}</div>`;
+}
+function renderAmalCalendar(){
+  const el=document.getElementById('amalCalendarContent'); if(!el||!me) return;
+  if(!window._calYear){const d=new Date();window._calYear=d.getFullYear();window._calMonth=d.getMonth()+1;}
+  const y=window._calYear,m=window._calMonth;
+  const data=API.Tasks.getCalendarData(me.id,y,m);
+  const dInM=new Date(y,m,0).getDate(),firstDay=new Date(y,m-1,1).getDay(),today=API.today();
+  const pad=n=>String(n).padStart(2,'0');
+  const mNames=['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+  const doneN=Object.values(data).filter(v=>v==='done').length;
+  const partN=Object.values(data).filter(v=>v==='partial').length;
+  const missN=Object.values(data).filter(v=>v==='miss').length;
+  let h=`<div class="cal-header">
+    <button class="date-nav-btn" onclick="_calNav(-1)">◀</button>
+    <span class="cal-month-title">${mNames[m-1]} ${y}</span>
+    <button class="date-nav-btn" onclick="_calNav(1)">▶</button>
+  </div>
+  <div class="s-cal-grid">
+    <div class="s-cal-day-hd">রবি</div><div class="s-cal-day-hd">সোম</div><div class="s-cal-day-hd">মঙ্গল</div>
+    <div class="s-cal-day-hd">বুধ</div><div class="s-cal-day-hd">বৃহঃ</div><div class="s-cal-day-hd">শুক্র</div><div class="s-cal-day-hd">শনি</div>`;
+  for(let i=0;i<firstDay;i++) h+=`<div class="s-cal-cell empty"></div>`;
+  for(let d=1;d<=dInM;d++){
+    const date=`${y}-${pad(m)}-${pad(d)}`,st=data[date]||'',isT=date===today;
+    h+=`<div class="s-cal-cell ${st}${isT?' cal-today':''}"><span class="s-cal-date">${d}</span></div>`;
+  }
+  h+=`</div><div class="cal-legend">
+    <span class="leg-item done">✅ সম্পন্ন (${doneN})</span>
+    <span class="leg-item partial">🔵 আংশিক (${partN})</span>
+    <span class="leg-item miss">❌ বাদ (${missN})</span>
+  </div>`;
+  el.innerHTML=h;
+}
+function _calNav(dir){let m=window._calMonth+dir,y=window._calYear;if(m>12){m=1;y++;}if(m<1){m=12;y--;}window._calMonth=m;window._calYear=y;renderAmalCalendar();}
 
 // ══ EXAMS ══════════════════════════════════════════════════
 function renderExamList(){

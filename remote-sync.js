@@ -17,6 +17,7 @@
     core: null, goals: null, exams: null,
     docs: [], academic: {}, tnotes: {},
     teacherPin: null, lockHints: [], loaded: false,
+    completions: [],
   };
 
   function role() { const r = w.__MADRASA_ROLE__; return r === 'teacher' || r === 'student' ? r : ''; }
@@ -150,6 +151,18 @@
     mem.goals = goals; mem.exams = { quizzes, submissions };
     mem.docs = docs; mem.academic = academic; mem.tnotes = tnotes;
     mem.teacherPin = cfg.teacher_pin ? String(cfg.teacher_pin) : null;
+    mem.completions = Array.isArray(bundle.completions)
+      ? bundle.completions.map(tc => ({
+        id: tc.id,
+        task_id: tc.task_id,
+        student_id: tc.student_id,
+        date: (tc.comp_date || tc.date || ''),
+        status: tc.status || 'done',
+        completed_at: tc.completed_at || null,
+        note: tc.note || '',
+        created_at: tc.created_at || null,
+      }))
+      : [];
   }
 
   // ── Assemble relational student bundle → mem ─────────────────
@@ -208,6 +221,18 @@
     mem.goals = goals; mem.exams = { quizzes, submissions };
     mem.docs = docs; mem.academic = academic; mem.tnotes = {};
     mem.teacherPin = null;
+    mem.completions = Array.isArray(bundle.completions)
+      ? bundle.completions.map(tc => ({
+        id: tc.id,
+        task_id: tc.task_id,
+        student_id: tc.student_id,
+        date: (tc.comp_date || tc.date || ''),
+        status: tc.status || 'done',
+        completed_at: tc.completed_at || null,
+        note: tc.note || '',
+        created_at: tc.created_at || null,
+      }))
+      : [];
   }
 
   // ── Schedule / flush ─────────────────────────────────────────
@@ -354,6 +379,7 @@
       .on('postgres_changes', { event: '*', schema: 'public', table: 'students' }, pull)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, pull)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'task_assignments' }, pull)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'task_completions' }, pull)
       .subscribe();
   }
 
@@ -381,6 +407,20 @@
     return { fileUrl: res, storagePath: null };
   }
 
+  function upsertCompletionRemote(row) {
+    if (!usesSecureKv()) return;
+    const sb = getClient(); if (!sb) return;
+    const r = role(), pin = r === 'teacher' ? _teacherPin : _studentPin;
+    _write.upsertCompletionRemote(sb, row, pin, r);
+  }
+
+  function deleteCompletionRemote(tid, sid, date) {
+    if (!usesSecureKv()) return;
+    const sb = getClient(); if (!sb) return;
+    const r = role(), pin = r === 'teacher' ? _teacherPin : _studentPin;
+    _write.deleteCompletionRemote(sb, tid, sid, date, pin, r);
+  }
+
   async function clearStudentDataRemote(sid) {
     if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
     const sb = getClient(); if (!sb) return;
@@ -406,6 +446,7 @@
     refreshStudentLockHints,
     schedule, flushKey, flushAllFromMem,
     markMessagesReadRemote, clearStudentDataRemote, deleteStudentRemote,
+    upsertCompletionRemote, deleteCompletionRemote,
     uploadFile, getSignedUrlForPath, consumeUploadResult,
     BUCKET, startRealtimeSync, pullRemoteSnapshot,
   };

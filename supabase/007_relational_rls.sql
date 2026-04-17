@@ -8,6 +8,7 @@ ALTER TABLE public.students           ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.messages           ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tasks              ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.task_assignments   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.task_completions   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.goals              ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.quizzes            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.quiz_questions     ENABLE ROW LEVEL SECURITY;
@@ -25,6 +26,7 @@ DECLARE
 BEGIN
   FOREACH t IN ARRAY ARRAY[
     'madrasa_config','students','messages','tasks','task_assignments',
+    'task_completions',
     'goals','quizzes','quiz_questions','quiz_assignees','quiz_submissions',
     'documents','academic_history','teacher_notes','pwa_subscriptions'
   ] LOOP

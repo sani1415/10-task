@@ -113,7 +113,30 @@
       }
     }
 
-    return { saveCore, saveGoals, saveExams, saveDocs, saveKVImpl };
+    async function upsertCompletionRemote(sb, row, pin, roleStr) {
+      if (!pin) return;
+      try {
+        await sb.rpc('madrasa_rel_upsert_completion', {
+          p_pin: pin, p_role: roleStr || 'teacher',
+          p_id: row.id, p_task_id: row.task_id, p_student_id: row.student_id,
+          p_date: row.date, p_status: row.status,
+          p_completed_at: row.completed_at || null, p_note: row.note || '',
+        });
+      } catch (e) { console.warn('upsertCompletionRemote:', e); }
+    }
+
+    async function deleteCompletionRemote(sb, tid, sid, date, pin, roleStr) {
+      if (!pin) return;
+      try {
+        await sb.rpc('madrasa_rel_delete_completion', {
+          p_pin: pin, p_role: roleStr || 'teacher',
+          p_task_id: tid, p_student_id: sid, p_date: date,
+        });
+      } catch (e) { console.warn('deleteCompletionRemote:', e); }
+    }
+
+    return { saveCore, saveGoals, saveExams, saveDocs, saveKVImpl,
+      upsertCompletionRemote, deleteCompletionRemote };
   }
 
   w._RSWrite = { init };

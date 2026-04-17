@@ -71,6 +71,22 @@ CREATE TABLE IF NOT EXISTS public.task_assignments (
 );
 CREATE INDEX IF NOT EXISTS task_assignments_student_idx ON public.task_assignments(student_id);
 
+-- ── task_completions (daily amal completion log) ───────────
+-- Used for daily "done today" streaks + teacher summaries.
+CREATE TABLE IF NOT EXISTS public.task_completions (
+  id           text PRIMARY KEY,
+  task_id      text NOT NULL REFERENCES public.tasks(id) ON DELETE CASCADE,
+  student_id   text NOT NULL REFERENCES public.students(id) ON DELETE CASCADE,
+  comp_date    date NOT NULL,
+  status       text NOT NULL DEFAULT 'done' CHECK (status IN ('done', 'pending')),
+  completed_at timestamptz NOT NULL DEFAULT now(),
+  note         text NOT NULL DEFAULT '',
+  created_at   timestamptz NOT NULL DEFAULT now(),
+  UNIQUE(task_id, student_id, comp_date)
+);
+CREATE INDEX IF NOT EXISTS task_completions_student_date_idx ON public.task_completions(student_id, comp_date);
+CREATE INDEX IF NOT EXISTS task_completions_task_date_idx ON public.task_completions(task_id, comp_date);
+
 -- ── goals ─────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.goals (
   id          text PRIMARY KEY,

@@ -11,6 +11,7 @@ BEGIN
   DELETE FROM public.messages         WHERE thread_id  = p_student_id;
   DELETE FROM public.goals            WHERE student_id = p_student_id;
   DELETE FROM public.task_assignments WHERE student_id = p_student_id;
+  DELETE FROM public.task_completions WHERE student_id = p_student_id;
   DELETE FROM public.quiz_submissions WHERE student_id = p_student_id;
   DELETE FROM public.quiz_assignees   WHERE student_id = p_student_id;
   DELETE FROM public.documents        WHERE student_id = p_student_id;

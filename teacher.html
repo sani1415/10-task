@@ -15,6 +15,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="tablet-desktop.css">
+<link rel="stylesheet" href="amal.css">
 <style>
 /* ── Teacher theme ── */
 #lockScreen{background:linear-gradient(160deg,#075E54 0%,#128C7E 70%)}
@@ -176,14 +177,27 @@
 
 <!-- ══ TASKS ══════════════════════════════════════════════ -->
 <div class="screen" id="screen-tasks">
-  <div class="filter-bar">
-    <button class="filter-chip active" onclick="fTask('all',this)">সব</button>
-    <button class="filter-chip"        onclick="fTask('daily',this)">🔁 দৈনিক</button>
-    <button class="filter-chip"        onclick="fTask('onetime',this)">📌 এককালীন</button>
-    <button class="filter-chip"        onclick="fTask('done',this)">✅ সম্পন্ন</button>
-    <button class="filter-chip"        onclick="fTask('late',this)">❌ দেরি</button>
+  <div class="amal-sub-tabs">
+    <button class="amal-sub-tab active" onclick="goAmalTab('list',this)">📋 তালিকা</button>
+    <button class="amal-sub-tab"        onclick="goAmalTab('overview',this)">📊 সারসংক্ষেপ</button>
+    <button class="amal-sub-tab"        onclick="goAmalTab('students',this)">👥 ছাত্রভিত্তিক</button>
   </div>
-  <div class="list-scroll" id="taskList"></div>
+  <div id="amal-panel-list" class="amal-panel">
+    <div class="filter-bar">
+      <button class="filter-chip active" onclick="fTask('all',this)">সব</button>
+      <button class="filter-chip"        onclick="fTask('daily',this)">🔁 দৈনিক</button>
+      <button class="filter-chip"        onclick="fTask('onetime',this)">📌 এককালীন</button>
+      <button class="filter-chip"        onclick="fTask('done',this)">✅ সম্পন্ন</button>
+      <button class="filter-chip"        onclick="fTask('late',this)">❌ দেরি</button>
+    </div>
+    <div class="list-scroll" id="taskList"></div>
+  </div>
+  <div id="amal-panel-overview" class="amal-panel" style="display:none">
+    <div class="list-scroll" id="amalOverviewContent"></div>
+  </div>
+  <div id="amal-panel-students" class="amal-panel" style="display:none">
+    <div class="list-scroll" id="amalLeaderboardContent"></div>
+  </div>
 </div>
 
 <!-- ══ EXAMS ══════════════════════════════════════════════ -->
@@ -476,6 +490,7 @@
 <script src="remote-sync.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <script src="pdf-merge.js"></script>
+<script src="api-amal.js"></script>
 <script src="api.js"></script>
 <script src="pwa-notify.js"></script>
 <script>
@@ -1109,7 +1124,7 @@ function renderTaskList(f){
       </div>
       <div class="task-card-bd"><div class="task-card-desc">${esc(t.desc||'')}</div></div>
       <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-      <div class="assignees">${ids.map(sid=>{ const s=API.Students.getById(sid); if(!s) return ''; const as=isDaily?(API.Tasks.isDailyDoneToday(t,sid)?'done':'pending'):t.assignees[sid]; return `<button class="a-chip ${as}" onclick="toggleA('${t.id}','${sid}')">${ic[as]||'⏳'} ${esc(API.Students.displayWaqfId(s.waqfId))} · ${s.name.split(' ')[0]}</button>`; }).join('')}</div>
+      <div class="assignees">${ids.map(sid=>{ const s=API.Students.getById(sid); if(!s) return ''; const as=isDaily?(API.Tasks.isDailyDoneToday(t,sid)?'done':'pending'):t.assignees[sid]; return `<span class="a-chip ${as}" style="cursor:default;opacity:.95">${ic[as]||'⏳'} ${esc(API.Students.displayWaqfId(s.waqfId))} · ${s.name.split(' ')[0]}</span>`; }).join('')}</div>
       <div class="task-card-ft">
         <span class="task-meta">${isDaily?'🔄 প্রতিদিন':'📅 '+t.deadline}</span>
         <span class="task-meta">✅ ${doneCount}/${ids.length} জন</span>
@@ -1137,10 +1152,97 @@ function renderTaskList(f){
 
   el.innerHTML=h||'<div class="empty-state"><div class="icon">🔍</div><p>এই ফিল্টারে কিছু নেই।</p></div>';
 }
-function fTask(f,btn){ document.querySelectorAll('#screen-tasks .filter-chip').forEach(c=>c.classList.remove('active')); btn.classList.add('active'); renderTaskList(f); }
-function toggleA(tid,sid){ API.Tasks.toggleStatus(tid,sid); renderTaskList(); updateBadge(); }
+function fTask(f,btn){ document.querySelectorAll('#amal-panel-list .filter-chip').forEach(c=>c.classList.remove('active')); btn.classList.add('active'); renderTaskList(f); }
+function toggleA(){ showToast('✅ আমল সম্পন্ন করবে ছাত্র নিজে।'); }
 function deleteTask(tid){ if(!confirm('এই আমলটি মুছবেন?')) return; API.Tasks.delete(tid); renderTaskList(); updateBadge(); showToast('🗑 আমল মুছে ফেলা হয়েছে'); }
 function updateBadge(){ const n=API.Tasks.pendingCount(); const b=document.getElementById('tBadge'); b.textContent=n; b.classList.toggle('show',n>0); }
+
+// ── আমল sub-tabs ─────────────────────────────────────────────
+let _amalTab='list';
+function goAmalTab(tab,btn){
+  _amalTab=tab;
+  document.querySelectorAll('.amal-sub-tab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  document.querySelectorAll('#screen-tasks .amal-panel').forEach(p=>p.style.display='none');
+  document.getElementById('amal-panel-'+tab).style.display='';
+  if(tab==='overview') renderAmalOverview();
+  else if(tab==='students') renderAmalLeaderboard();
+  else renderTaskList();
+}
+function renderAmalOverview(dateStr){
+  const date=dateStr||API.today();
+  const el=document.getElementById('amalOverviewContent'); if(!el) return;
+  const overview=API.Tasks.getTodayOverview(date);
+  const stuMap=Object.fromEntries(API.Students.getAll().map(s=>[s.id,s]));
+  let totalDone=0,totalAsgn=0;
+  overview.forEach(o=>{totalDone+=o.completed.length;totalAsgn+=o.completed.length+o.pending.length;});
+  const pct=totalAsgn>0?Math.round(totalDone/totalAsgn*100):0;
+  const prev=(()=>{const d=new Date(date);d.setDate(d.getDate()-1);return d.toISOString().split('T')[0];})();
+  const next=(()=>{const d=new Date(date);d.setDate(d.getDate()+1);return d.toISOString().split('T')[0];})();
+  const displayDate=new Date(date).toLocaleDateString('bn-BD',{weekday:'long',day:'numeric',month:'long'});
+  let h=`<div class="summary-cards">
+    <div class="summary-card blue"><div class="sc-val">${pct}%</div><div class="sc-lbl">সম্পন্নের হার</div></div>
+    <div class="summary-card green"><div class="sc-val">${totalDone}</div><div class="sc-lbl">সম্পন্ন</div></div>
+    <div class="summary-card orange"><div class="sc-val">${totalAsgn-totalDone}</div><div class="sc-lbl">বাকি</div></div>
+  </div>
+  <div class="date-nav">
+    <button class="date-nav-btn" onclick="renderAmalOverview('${prev}')">◀ আগের দিন</button>
+    <span class="date-nav-title">${displayDate}</span>
+    <button class="date-nav-btn" onclick="renderAmalOverview('${next}')" ${date>=API.today()?'disabled':''}>পরের দিন ▶</button>
+  </div>`;
+  overview.forEach(({task,completed,pending,percent})=>{
+    const assignees=Object.keys(task.assignees||{});
+    const avatars=assignees.map(sid=>{
+      const s=stuMap[sid]; if(!s) return '';
+      return `<span class="amal-avatar ${completed.includes(sid)?'done':'pending'}" style="background:${s.color||'#128C7E'}" title="${esc(s.name)}">${(s.name||'?').slice(0,2)}</span>`;
+    }).join('');
+    h+=`<div class="amal-card">
+      <div class="amal-card-hd"><span class="amal-card-title">${esc(task.title)}</span>
+        <span class="type-badge ${task.type==='daily'?'daily':'onetime'}">${task.type==='daily'?'🔁':'📌'}</span></div>
+      <div class="amal-prog-wrap"><div class="amal-prog-bar"><div class="amal-prog-fill" style="width:${percent}%"></div></div>
+        <span class="amal-prog-txt">${completed.length}/${assignees.length}</span></div>
+      <div class="amal-avatar-strip">${avatars}</div>
+    </div>`;
+  });
+  if(!overview.length) h+=`<div class="empty-state"><div class="icon">📋</div><p>এই তারিখে কোনো আমল নেই।</p></div>`;
+  el.innerHTML=h;
+}
+function renderAmalLeaderboard(period){
+  const _p=period||window._lbPeriod||'week'; window._lbPeriod=_p;
+  const el=document.getElementById('amalLeaderboardContent'); if(!el) return;
+  const lb=API.Tasks.getLeaderboard(_p);
+  const medals=['🥇','🥈','🥉'];
+  let h=`<div class="filter-bar">
+    <button class="filter-chip ${_p==='week'?'active':''}" onclick="renderAmalLeaderboard('week')">এই সপ্তাহ</button>
+    <button class="filter-chip ${_p==='month'?'active':''}" onclick="renderAmalLeaderboard('month')">এই মাস</button>
+  </div>`;
+  lb.forEach((item,i)=>{
+    h+=`<div class="leaderboard-item" onclick="_toggleLbDetail('ld-${esc(item.sid)}')">
+      <div class="lb-rank">${i<3?medals[i]:i+1}</div>
+      <div class="lb-avatar" style="background:${item.color||'#128C7E'}">${(item.name||'?').slice(0,2)}</div>
+      <div class="lb-info"><div class="lb-name">${esc(item.name)}</div><div class="lb-meta">${item.done}/${item.total} আমল</div></div>
+      <div class="lb-right"><div class="lb-pct">${item.percent}%</div>${item.streak>0?`<div class="lb-streak">🔥 ${item.streak}</div>`:''}</div>
+    </div>
+    <div class="stu-detail" id="ld-${esc(item.sid)}" style="display:none">${_stuWeekGrid(item.sid)}</div>`;
+  });
+  if(!lb.length) h+=`<div class="empty-state"><div class="icon">👥</div><p>কোনো ছাত্র নেই।</p></div>`;
+  el.innerHTML=h;
+}
+function _stuWeekGrid(sid){
+  const today=API.today();
+  const dates=[];
+  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);dates.push(d.toISOString().split('T')[0]);}
+  const tasks=API.Tasks.getForStudent(sid).filter(t=>t.type==='daily');
+  const cells=dates.map(date=>{
+    const comps=window.ApiAmal?window.ApiAmal.Completions.getForDate(date).filter(c=>c.student_id===sid&&c.status==='done'):[];
+    const done=comps.filter(c=>tasks.find(t=>t.id===c.task_id)).length;
+    const lbl=new Date(date).toLocaleDateString('bn-BD',{weekday:'short'});
+    const cls=date===today?'today':!tasks.length?'empty':done===0?'miss':done<tasks.length?'partial':'done';
+    return `<div class="wk-cell ${cls}"><div class="wk-day">${lbl}</div><div class="wk-dot"></div></div>`;
+  }).join('');
+  return `<div class="wk-grid">${cells}</div>`;
+}
+function _toggleLbDetail(id){const el=document.getElementById(id);if(el)el.style.display=el.style.display==='none'?'':'none';}
 
 function setTaskType(type){
   newTaskType=type;
@@ -1531,7 +1633,7 @@ function goTab(tab){
   document.getElementById('fab').style.display=tab==='settings'?'none':'flex';
   if(tab==='exams')  { renderQuizList(); goExamTab('list'); }
   if(tab==='docs')   { renderDocsGrouped(); }
-  if(tab==='tasks')  renderTaskList();
+  if(tab==='tasks')  { if(_amalTab==='overview') renderAmalOverview(); else if(_amalTab==='students') renderAmalLeaderboard(); else renderTaskList(); }
 }
 function fabClick(){
   if(curTab==='students') openModal('addStudentModal');

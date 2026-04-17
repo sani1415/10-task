@@ -111,6 +111,7 @@ const API = (() => {
         let db=readDB();
         if(!db||!db.students?.length) db=seedDemo();
         else ensureChatsShape(db);
+        Tasks.syncTodayFromCompletions();
         return Promise.resolve(db);
       }
       return RS.bootstrap().then(async () => {
@@ -119,6 +120,7 @@ const API = (() => {
         const secure = RS.usesSecureKv?.();
         if (secure) {
           ensureChatsShape(c);
+          Tasks.syncTodayFromCompletions();
           return c;
         }
         const needSeed = !c || (!c.students?.length && !c.allowEmptyStudents);
@@ -134,6 +136,7 @@ const API = (() => {
           RS.mem.teacherPin = DEF_PIN;
           await RS.flushKey('teacher_pin', { pin: DEF_PIN });
         }
+        Tasks.syncTodayFromCompletions();
         return c;
       });
     },
@@ -159,7 +162,9 @@ const API = (() => {
       const tnotes = _useRemote ? RS.mem.tnotes : JSON.parse(localStorage.getItem('madrasa_tnotes')||'{}');
       // chats: remote-এ RS.mem.core.chats, local-এ db.chats
       const chats = _useRemote ? (RS.mem.core?.chats || {}) : (this.get().chats || {});
-      return JSON.stringify({ db:this.get(), goals, exams, docs, academic, tnotes, chats, _backupAt: new Date().toISOString() }, null, 2);
+      const completions = window.ApiAmal ? window.ApiAmal.Completions._all()
+        : (()=>{ try{return JSON.parse(localStorage.getItem('madrasa_completions')||'[]');}catch{return[];} })();
+      return JSON.stringify({ db:this.get(), goals, exams, docs, academic, tnotes, chats, completions, _backupAt: new Date().toISOString() }, null, 2);
     },
     importJSON(json){
       const p=JSON.parse(json); if(!p.db?.students) throw new Error('invalid');
@@ -174,6 +179,7 @@ const API = (() => {
         RS.mem.docs = Array.isArray(p.docs) ? p.docs : [];
         RS.mem.academic = p.academic || {};
         RS.mem.tnotes = p.tnotes || {};
+        if (Array.isArray(p.completions)) RS.mem.completions = p.completions;
         return RS.flushAllFromMem().then(()=>p.db);
       }
       if(p.goals) localStorage.setItem(GOALS_KEY,JSON.stringify(p.goals));
@@ -181,6 +187,7 @@ const API = (() => {
       if(p.docs) localStorage.setItem(DOCS_KEY,JSON.stringify(p.docs));
       if(p.academic) localStorage.setItem('madrasa_academic',JSON.stringify(p.academic));
       if(p.tnotes) localStorage.setItem('madrasa_tnotes',JSON.stringify(p.tnotes));
+      if(Array.isArray(p.completions)) localStorage.setItem('madrasa_completions',JSON.stringify(p.completions));
       return Promise.resolve(p.db);
     },
     /** সব ছাত্র + টাস্ক/পরীক্ষা/ডক/লক্ষ্য/নোট খালি; শিক্ষক তথ্য ও গ্রুপ ব্রডকাস্ট চ্যাট রাখে। */
@@ -319,6 +326,7 @@ const API = (() => {
       if (!this.getById(sid)) throw new Error('student_not_found');
       // Delete all related rows from the remote DB first (before local changes)
       if (_useRemote && RS.clearStudentDataRemote) RS.clearStudentDataRemote(sid);
+      const AA = window.ApiAmal; if (AA) AA.Completions.clearStudent(sid);
       const db0 = DB.get();
       db0.chats[sid] = [];
       DB.save(db0);
@@ -701,82 +709,103 @@ const API = (() => {
 
   // ── TASKS ─────────────────────────────────────────────────
   const Tasks = {
-    getAll()          { return DB.get().tasks||[]; },
-    getForStudent(sid){ return this.getAll().filter(t=>t.assignees&&t.assignees[sid]); },
+    getAll()           { return DB.get().tasks||[]; },
+    getForStudent(sid) { return this.getAll().filter(t=>t.assignees&&t.assignees[sid]); },
 
     add({ title, desc, deadline, type='onetime', assigneeIds }) {
       const db=DB.get();
-      const task = {
+      const task={
         id:uid('t'), title, desc,
-        type: type||'onetime',
-        deadline: type==='onetime' ? (deadline||nextDate(7)) : '',
+        type:type||'onetime',
+        deadline:type==='onetime'?(deadline||nextDate(7)):'',
         created:today(),
-        assignees: Object.fromEntries(assigneeIds.map(id=>[id,'pending'])),
-        completedBy: {},
+        assignees:Object.fromEntries(assigneeIds.map(id=>[id,'pending'])),
+        completedBy:{},
       };
-      db.tasks.push(task); DB.save(db);
-      return task;
+      db.tasks.push(task); DB.save(db); return task;
     },
 
-    // For one-time tasks: cycle pending→done→late
-    toggleStatus(tid,sid) {
-      const db=DB.get(); const t=db.tasks.find(x=>x.id===tid); if(!t) return null;
-      const c=t.assignees[sid]; t.assignees[sid]=c==='pending'?'done':c==='done'?'late':'pending';
-      DB.save(db); return t;
+    // ── Completions API ────────────────────────────────────────
+    markCompleted(tid,sid,opts)    { const AA=window.ApiAmal; return AA&&AA.markCompleted(tid,sid,opts); },
+    unmarkCompleted(tid,sid,date)  { const AA=window.ApiAmal; AA&&AA.unmarkCompleted(tid,sid,date); },
+    isCompleted(tid,sid,date)      { const AA=window.ApiAmal; return !!(AA&&AA.isCompleted(tid,sid,date)); },
+
+    getTodayStatus(task,sid) {
+      if (task.type==='daily') return this.isCompleted(task.id,sid,today())?'done':'pending';
+      return task.assignees?.[sid]==='done'?'done':'pending';
     },
 
-    // Mark daily task done for today
-    markDailyDone(tid, sid) {
-      const db=DB.get(); const t=db.tasks.find(x=>x.id===tid); if(!t) return null;
-      if(!t.completedBy) t.completedBy={};
-      t.completedBy[sid] = { date:today(), time:nowTime() };
-      t.assignees[sid]='done';
-      DB.save(db); return t;
+    syncTodayFromCompletions() {
+      const AA=window.ApiAmal;
+      if (!AA) { this._legacyResetDaily(); return; }
+      const db=DB.get();
+      db.tasks=AA.syncTodayFromCompletions(db.tasks);
+      DB.save(db);
     },
 
-    // Reset daily tasks for a new day (call on app init)
-    resetDailyForToday() {
+    _legacyResetDaily() {
       const db=DB.get(); const todayStr=today(); let changed=false;
       db.tasks.forEach(t=>{
-        if(t.type!=='daily') return;
+        if (t.type!=='daily') return;
         Object.keys(t.assignees||{}).forEach(sid=>{
           const cb=t.completedBy?.[sid];
-          if(t.assignees[sid]==='done' && cb?.date !== todayStr) {
-            t.assignees[sid]='pending'; changed=true;
-          }
+          if (t.assignees[sid]==='done'&&cb?.date!==todayStr){ t.assignees[sid]='pending'; changed=true; }
         });
       });
-      if(changed) DB.save(db);
+      if (changed) DB.save(db);
     },
 
-    // Mark one-time task done (student side)
-    markDone(tid, sid) {
+    // Legacy compat — also records in Completions
+    markDailyDone(tid,sid) {
+      const db=DB.get(); const t=db.tasks.find(x=>x.id===tid); if(!t) return null;
+      if (!t.completedBy) t.completedBy={};
+      t.completedBy[sid]={date:today(),time:nowTime()};
+      t.assignees[sid]='done';
+      DB.save(db);
+      const AA=window.ApiAmal; if (AA) AA.markCompleted(tid,sid,{status:'done'});
+      return t;
+    },
+    markDone(tid,sid) {
       const db=DB.get(); const t=db.tasks.find(x=>x.id===tid); if(!t) return null;
       t.assignees[sid]='done';
-      if(!t.completedBy) t.completedBy={};
-      t.completedBy[sid]={ date:today(), time:nowTime() };
+      if (!t.completedBy) t.completedBy={};
+      t.completedBy[sid]={date:today(),time:nowTime()};
+      DB.save(db);
+      const AA=window.ApiAmal; if (AA) AA.markCompleted(tid,sid,{status:'done'});
+      return t;
+    },
+    isDailyDoneToday(task,sid) {
+      return this.isCompleted(task.id,sid,today())||task.completedBy?.[sid]?.date===today();
+    },
+    toggleStatus(tid,sid) {
+      const db=DB.get(); const t=db.tasks.find(x=>x.id===tid); if(!t) return null;
+      if (t.type==='daily') {
+        const done=this.isCompleted(tid,sid,today());
+        if (done) this.unmarkCompleted(tid,sid,today()); else this.markCompleted(tid,sid);
+        t.assignees[sid]=done?'pending':'done';
+      } else {
+        const c=t.assignees[sid];
+        t.assignees[sid]=c==='pending'?'done':c==='done'?'late':'pending';
+      }
       DB.save(db); return t;
     },
-
-    isDailyDoneToday(task, sid) {
-      return task.completedBy?.[sid]?.date === today();
-    },
+    resetDailyForToday() { this.syncTodayFromCompletions(); },
 
     pendingCount(sid=null) {
       const tasks=this.getAll(); let n=0;
-      if(sid) return tasks.filter(t=>{
-        if(t.type==='daily') return !this.isDailyDoneToday(t,sid);
+      if (sid) return tasks.filter(t=>{
+        if (t.type==='daily') return !this.isDailyDoneToday(t,sid);
         return t.assignees?.[sid]==='pending';
       }).length;
       tasks.forEach(t=>Object.keys(t.assignees||{}).forEach(s=>{
-        if(t.type==='daily'){ if(!this.isDailyDoneToday(t,s)) n++; }
-        else { if(t.assignees[s]==='pending') n++; }
+        if (t.type==='daily'){ if(!this.isDailyDoneToday(t,s)) n++; }
+        else{ if(t.assignees[s]==='pending') n++; }
       })); return n;
     },
 
     overallStatus(task) {
       const ids=Object.keys(task.assignees||{});
-      if(task.type==='daily'){
+      if (task.type==='daily'){
         const done=ids.filter(id=>this.isDailyDoneToday(task,id)).length;
         return done===ids.length?'done':done>0?'partial':'pending';
       }
@@ -785,9 +814,14 @@ const API = (() => {
       return done===ids.length?'done':late?'late':'pending';
     },
 
-    delete(tid) {
-      const db=DB.get(); db.tasks=db.tasks.filter(t=>t.id!==tid); DB.save(db);
-    },
+    delete(tid) { const db=DB.get(); db.tasks=db.tasks.filter(t=>t.id!==tid); DB.save(db); },
+
+    // ── ApiAmal delegates ─────────────────────────────────────
+    getStreak(sid,tid)       { const AA=window.ApiAmal; return AA?AA.getStreak(sid,tid):{current:0,longest:0}; },
+    getProgressSummary(sid)  { const AA=window.ApiAmal; return AA?AA.getProgressSummary(sid):{today:{done:0,total:0,percent:0},week:{done:0,total:0,percent:0},month:{done:0,total:0,percent:0}}; },
+    getTodayOverview(date)   { const AA=window.ApiAmal; return AA?AA.getTodayOverview(date):[]; },
+    getLeaderboard(period)   { const AA=window.ApiAmal; return AA?AA.getLeaderboard(period):[]; },
+    getCalendarData(sid,y,m) { const AA=window.ApiAmal; return AA?AA.getCalendarData(sid,y,m):{}; },
   };
 
   // ── GOALS ─────────────────────────────────────────────────
