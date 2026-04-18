@@ -668,8 +668,18 @@ async function chkPin(){
   if(API.Auth.checkTeacherPin(pin)){ localStorage.setItem('madrasa_lastPanel','teacher'); document.getElementById('lockScreen').style.display='none'; var _tn2=document.getElementById('teaBottomNav'); if(_tn2) _tn2.style.display='block'; renderAll(); void API.Pwa.enableNotificationsAfterAuth('teacher'); }
   else { document.getElementById('pinErr').textContent='পিন ভুল হয়েছে'; pin=''; dots(); setTimeout(()=>document.getElementById('pinErr').textContent='',2000); }
 }
+function refreshBCReadCounts(){
+  if(typeof RemoteSync!=='undefined' && RemoteSync.getBroadcastReadCounts){
+    RemoteSync.getBroadcastReadCounts().then(rows=>{
+      _bcReadCounts={};
+      (rows||[]).forEach(r=>{ if(r.bc_id) _bcReadCounts[r.bc_id]={read_count:r.read_count||0,total_count:r.total_count||0}; });
+      renderChatList();
+    });
+  }
+}
 function renderAll(){
   renderChatList(); renderStudentList(); renderTaskList(); renderQuizList(); renderDocsGrouped(); updateBadge(); updateDocBadge();
+  refreshBCReadCounts();
   if(curChat){
     if(curChatTab==='msg') renderMsgs(curChat);
     else if(curChatTab==='task') renderChatTasks();
@@ -808,7 +818,13 @@ function renderChatList(f=''){
     .sort((a,b)=>msgTs(b)-msgTs(a));
   let h='';
   if(!f){ const bc=API.Messages.getThread('_bc'); const last=bc[bc.length-1];
-    h+=`<div class="chat-item" onclick="openChat('_broadcast')"><div class="chat-avatar" style="background:#7B1FA2">📢</div><div class="chat-body"><div class="chat-row1"><span class="chat-name">📢 সবাইকে বার্তা</span><span class="chat-time">${last?.time||''}</span></div><div class="chat-row2"><span class="chat-preview">${esc(last?.text||'গ্রুপ বার্তা')}</span></div></div></div>`; }
+    const rcpt=last&&_bcReadCounts[last.id];
+    const rcptHtml=rcpt
+      ? (rcpt.read_count<rcpt.total_count
+          ? `<span style="font-size:11px;font-weight:700;background:#FFF3E0;color:#E65100;border-radius:8px;padding:1px 7px;margin-left:4px">⏳ ${rcpt.read_count}/${rcpt.total_count} দেখেছেন</span>`
+          : `<span style="font-size:11px;font-weight:700;background:#E8F5E9;color:#2E7D32;border-radius:8px;padding:1px 7px;margin-left:4px">✅ সবাই দেখেছেন</span>`)
+      : '';
+    h+=`<div class="chat-item" onclick="openChat('_broadcast')"><div class="chat-avatar" style="background:#7B1FA2">📢</div><div class="chat-body"><div class="chat-row1"><span class="chat-name">📢 সবাইকে বার্তা</span><span class="chat-time">${last?.time||''}</span></div><div class="chat-row2"><span class="chat-preview">${esc(last?.text||'গ্রুপ বার্তা')}</span>${rcptHtml}</div></div></div>`; }
   students.forEach(s=>{
     const msgs=API.Messages.getThread(s.id); const last=msgs[msgs.length-1];
     const ur=API.Messages.unreadCount(s.id,'in'); // messages from student (teacher hasn't read)
