@@ -12,17 +12,55 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>শিক্ষক প্যানেল · Waqful Madinah</title>
-<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="tablet-desktop.css">
 <link rel="stylesheet" href="amal.css">
 <style>
 /* ── Teacher theme ── */
-#lockScreen{background:linear-gradient(160deg,#075E54 0%,#128C7E 70%)}
+/* লগইন: সফট লাইট — শিক্ষক: ঠান্ডা ব্লু-স্লেট */
+#lockScreen.lock-screen-soft{
+  background:linear-gradient(180deg,#e0e9f4 0%,#f5f8fc 46%,#dbe7f3 100%);
+  justify-content:flex-start;
+  gap:0;
+  padding:0;
+}
+.lock-soft-top{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:max(24px,env(safe-area-inset-top)) 20px 16px;min-height:0}
+.lock-soft-brand{text-align:center;max-width:300px}
+.lock-soft-app-name{font-family:'Noto Naskh Arabic',serif;font-weight:600;font-size:20px;line-height:1.35;color:#0f172a}
+.lock-soft-app-name.lock-soft-app-name--err{font-family:var(--font);font-size:14px;font-weight:600;color:#b91c1c}
+.lock-soft-dock{
+  width:100%;max-width:430px;margin:0 auto;
+  background:rgba(255,255,255,.94);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border-radius:28px 28px 0 0;
+  padding:22px 18px max(22px,env(safe-area-inset-bottom));
+  box-shadow:0 -16px 48px rgba(30,58,138,.09);
+  border:1px solid rgba(148,163,184,.35);
+  border-bottom:none;
+  display:flex;flex-direction:column;align-items:center;
+}
+#lockScreen.lock-screen-soft .pin-dots{margin:4px 0 8px}
+#lockScreen.lock-screen-soft .pin-dot{border-color:#cbd5e1;background:transparent}
+#lockScreen.lock-screen-soft .pin-dot.filled{background:#075E54;border-color:#075E54}
+#lockScreen.lock-screen-soft .pin-error{color:#b91c1c;margin:4px 0 8px}
+#lockScreen.lock-screen-soft .pin-key{
+  background:#fff;color:#0f172a;border:1px solid #e2e8f0;
+  box-shadow:0 1px 2px rgba(15,23,42,.04);
+}
+#lockScreen.lock-screen-soft .pin-key:active{background:#f1f5f9}
+#lockScreen.lock-screen-soft .pin-key .sub{color:#64748b;opacity:.85}
+#lockScreen.lock-screen-soft .change-pin-btn{
+  background:transparent;border:1px solid #cbd5e1;color:#475569;
+  margin-top:14px;font-weight:600;
+}
+#lockScreen.lock-screen-soft .change-pin-btn:active{background:#f8fafc}
+#lockScreen.lock-screen-soft .pin-key-spacer{visibility:hidden;pointer-events:none;border:none;background:transparent!important;box-shadow:none!important}
 .header{background:#075E54}
 /* ফ্লোটিং নিচের ট্যাব (শিক্ষক) */
 .tea-main-shell{flex:1;display:flex;flex-direction:column;min-height:0;padding-bottom:calc(12px + 68px + env(safe-area-inset-bottom))}
-#teaBottomNav.tea-float-nav-wrap{display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:100;width:100%;max-width:430px;box-sizing:border-box;padding:0 12px calc(10px + env(safe-area-inset-bottom));pointer-events:none}
+#teaBottomNav.tea-float-nav-wrap{display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:115;width:100%;max-width:430px;box-sizing:border-box;padding:0 12px calc(10px + env(safe-area-inset-bottom));pointer-events:none}
 .tea-float-nav-inner{pointer-events:auto;display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:18px;padding:6px 4px;border:1px solid #f1f5f9;box-shadow:0 -4px 24px rgba(0,0,0,.06),0 8px 32px rgba(7,94,84,.1)}
 .tea-float-nav-inner .tab-btn{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 1px;font-family:var(--font);font-size:9px;font-weight:700;color:#64748b;background:none;border:none;border-radius:12px;cursor:pointer;transition:color .2s,background .2s;position:relative;line-height:1.15}
 .tea-float-nav-inner .tab-btn.active{color:#075E54;background:rgba(7,94,84,.1)}
@@ -34,8 +72,12 @@
 .tab-badge{background:#25D366;color:#075E54}
 #app .fab{bottom:calc(20px + 72px + env(safe-area-inset-bottom));z-index:101}
 .profile-view{z-index:110}
+/* প্রোফাইল খোলা থাকলেও নিচের ট্যাব দেখা যাবে — স্ক্রল কন্টেন্ট নেভের পিছনে যাবে না */
+#profileView.open .profile-body{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px))}
 #teaMainShell #screen-tasks .amal-panel>.list-scroll{padding-bottom:16px}
 .chat-badge{background:#25D366;color:#075E54}.filter-chip.active{background:#075E54}
+#amal-panel-list .stu-filter-pill.active,
+#amal-panel-students .stu-filter-pill.active{background:#075E54!important;color:#fff!important;border-color:#075E54!important;box-shadow:0 8px 20px rgba(7,94,84,.2)}
 .progress-fill{background:#25D366}.send-btn{background:#128C7E}.fab{background:#25D366;color:#075E54}
 .backup-btn{background:#075E54}.pin-copy-btn{background:#075E54}.s-pin{color:#128C7E}
 .msg-bubble.out{background:#DCF8C6;border-bottom-right-radius:4px}.msg-tick{color:#128C7E}
@@ -110,10 +152,6 @@
 .result-meta{font-size:12px;color:var(--gray-400);margin-top:2px}
 .marks-input{width:60px;border:1.5px solid var(--gray-300);border-radius:6px;padding:4px 6px;font-family:var(--font);font-size:13px;text-align:center}
 
-/* ── Daily overview (teacher task tab) ── */
-.task-daily-sep{background:var(--gray-100);padding:8px 16px;font-size:11px;font-weight:700;color:var(--gray-500);letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid var(--gray-200);border-top:1px solid var(--gray-200);display:flex;justify-content:space-between;align-items:center}
-.done-count-badge{font-size:11px;font-weight:600;background:#E8F5E9;color:#2E7D32;padding:2px 8px;border-radius:8px}
-
 /* ── Student profile tabs ── */
 .prof-tabs{display:flex;border-bottom:2px solid var(--gray-200);background:#fff;flex-shrink:0}
 .prof-tab{flex:1;background:none;border:none;padding:11px 2px 9px;font-family:var(--font);font-size:12px;font-weight:600;color:var(--gray-500);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;white-space:nowrap}
@@ -133,19 +171,23 @@
 </div>
 
 <!-- ══ LOCK ══════════════════════════════════════════════ -->
-<div id="lockScreen">
-  <div class="lock-logo">🕌</div>
-  <div class="lock-title">শিক্ষক প্যানেল</div>
-  <div class="lock-sub" id="lockName">Waqful Madinah</div>
-  <div class="pin-dots"><div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div><div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div></div>
-  <div class="pin-error" id="pinErr"></div>
-  <div class="pin-pad">
-    <button class="pin-key" onclick="pk('1')">1</button><button class="pin-key" onclick="pk('2')">2<span class="sub">ABC</span></button><button class="pin-key" onclick="pk('3')">3<span class="sub">DEF</span></button>
-    <button class="pin-key" onclick="pk('4')">4<span class="sub">GHI</span></button><button class="pin-key" onclick="pk('5')">5<span class="sub">JKL</span></button><button class="pin-key" onclick="pk('6')">6<span class="sub">MNO</span></button>
-    <button class="pin-key" onclick="pk('7')">7<span class="sub">PQRS</span></button><button class="pin-key" onclick="pk('8')">8<span class="sub">TUV</span></button><button class="pin-key" onclick="pk('9')">9<span class="sub">WXYZ</span></button>
-    <button class="pin-key" style="opacity:.3"></button><button class="pin-key" onclick="pk('0')">0</button><button class="pin-key" onclick="pd()">⌫</button>
+<div id="lockScreen" class="lock-screen-soft">
+  <div class="lock-soft-top">
+    <div class="lock-soft-brand">
+      <div class="lock-soft-app-name" dir="rtl" lang="ar" id="lockAppName">وقف المدينة</div>
+    </div>
   </div>
-  <button class="change-pin-btn" onclick="showToast('ডিফল্ট পিন: 1234 · সেটিং থেকে পরিবর্তন করুন')">পিন ভুলে গেছেন?</button>
+  <div class="lock-soft-dock">
+    <div class="pin-dots"><div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div><div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div></div>
+    <div class="pin-error" id="pinErr"></div>
+    <div class="pin-pad">
+      <button type="button" class="pin-key" onclick="pk('1')">1</button><button type="button" class="pin-key" onclick="pk('2')">2<span class="sub">ABC</span></button><button type="button" class="pin-key" onclick="pk('3')">3<span class="sub">DEF</span></button>
+      <button type="button" class="pin-key" onclick="pk('4')">4<span class="sub">GHI</span></button><button type="button" class="pin-key" onclick="pk('5')">5<span class="sub">JKL</span></button><button type="button" class="pin-key" onclick="pk('6')">6<span class="sub">MNO</span></button>
+      <button type="button" class="pin-key" onclick="pk('7')">7<span class="sub">PQRS</span></button><button type="button" class="pin-key" onclick="pk('8')">8<span class="sub">TUV</span></button><button type="button" class="pin-key" onclick="pk('9')">9<span class="sub">WXYZ</span></button>
+      <button type="button" class="pin-key pin-key-spacer" tabindex="-1" disabled aria-hidden="true"></button><button type="button" class="pin-key" onclick="pk('0')">0</button><button type="button" class="pin-key" onclick="pd()">⌫</button>
+    </div>
+    <button type="button" class="change-pin-btn" onclick="showToast('ডিফল্ট পিন: 1234 · সেটিং থেকে পরিবর্তন করুন')">পিন ভুলে গেছেন?</button>
+  </div>
 </div>
 
 <!-- ══ MAIN (হেডার + স্ক্রিন + চ্যাট ভিউ — নিচে ফ্লোটিং ট্যাব) ══ -->
@@ -190,20 +232,20 @@
     <button class="amal-sub-tab"        onclick="goAmalTab('students',this)">👥 ছাত্রভিত্তিক</button>
   </div>
   <div id="amal-panel-list" class="amal-panel">
-    <div class="filter-bar">
-      <button class="filter-chip active" onclick="fTask('all',this)">সব</button>
-      <button class="filter-chip"        onclick="fTask('daily',this)">🔁 দৈনিক</button>
-      <button class="filter-chip"        onclick="fTask('onetime',this)">📌 এককালীন</button>
-      <button class="filter-chip"        onclick="fTask('done',this)">✅ সম্পন্ন</button>
-      <button class="filter-chip"        onclick="fTask('late',this)">❌ দেরি</button>
+    <div class="stu-amal-filters no-scrollbar">
+      <button type="button" class="stu-filter-pill active" onclick="fTask('all',this)">সব</button>
+      <button type="button" class="stu-filter-pill"        onclick="fTask('daily',this)">দৈনিক</button>
+      <button type="button" class="stu-filter-pill"        onclick="fTask('onetime',this)">এককালীন</button>
+      <button type="button" class="stu-filter-pill"        onclick="fTask('done',this)">সম্পন্ন</button>
+      <button type="button" class="stu-filter-pill"        onclick="fTask('late',this)">দেরি</button>
     </div>
-    <div class="list-scroll" id="taskList"></div>
+    <div class="list-scroll tea-amal-list" id="taskList"></div>
   </div>
   <div id="amal-panel-overview" class="amal-panel" style="display:none">
     <div class="list-scroll" id="amalOverviewContent"></div>
   </div>
   <div id="amal-panel-students" class="amal-panel" style="display:none">
-    <div class="list-scroll" id="amalLeaderboardContent"></div>
+    <div class="list-scroll tea-lb-scroll" id="amalLeaderboardContent"></div>
   </div>
 </div>
 
@@ -542,13 +584,12 @@ function init(){
     void API.Pwa.registerServiceWorker();
     API.Tasks.resetDailyForToday();
     const t=API.DB.getTeacher();
-    document.getElementById('lockName').textContent=t.madrasa||'Waqful Madinah';
     document.getElementById('tName').value=t.name||'';
     document.getElementById('tMadrasa').value=t.madrasa||'';
     document.getElementById('hTitle').textContent=t.madrasa||'Waqful Madinah';
     document.getElementById('t_dl').value=API.nextDate(3);
     document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); }));
-  }).catch(e=>{ console.error(e); document.getElementById('lockName').textContent='সার্ভার সংযোগ ব্যর্থ'; });
+  }).catch(e=>{ console.error(e); const la=document.getElementById('lockAppName'); if(la){ la.textContent='সার্ভার সংযোগ ব্যর্থ'; la.removeAttribute('dir'); la.removeAttribute('lang'); la.classList.add('lock-soft-app-name--err'); } });
 }
 window.addEventListener('madrasa-remote-sync',()=>{ try{ if(document.getElementById('lockScreen').style.display==='none') renderAll(); }catch(e){ console.error(e); } });
 
@@ -568,14 +609,14 @@ async function chkPin(){
       renderAll();
       void API.Pwa.enableNotificationsAfterAuth('teacher');
     } catch(e){
-      document.getElementById('pinErr').textContent='❌ পিন ভুল হয়েছে';
+      document.getElementById('pinErr').textContent='পিন ভুল হয়েছে';
       pin=''; dots();
       setTimeout(()=>document.getElementById('pinErr').textContent='',2000);
     }
     return;
   }
   if(API.Auth.checkTeacherPin(pin)){ localStorage.setItem('madrasa_lastPanel','teacher'); document.getElementById('lockScreen').style.display='none'; var _tn2=document.getElementById('teaBottomNav'); if(_tn2) _tn2.style.display='block'; renderAll(); void API.Pwa.enableNotificationsAfterAuth('teacher'); }
-  else { document.getElementById('pinErr').textContent='❌ পিন ভুল হয়েছে'; pin=''; dots(); setTimeout(()=>document.getElementById('pinErr').textContent='',2000); }
+  else { document.getElementById('pinErr').textContent='পিন ভুল হয়েছে'; pin=''; dots(); setTimeout(()=>document.getElementById('pinErr').textContent='',2000); }
 }
 function renderAll(){
   renderChatList(); renderStudentList(); renderTaskList(); renderQuizList(); renderDocsGrouped(); updateBadge(); updateDocBadge();
@@ -744,7 +785,6 @@ function openChat(id){
   document.getElementById('hAvatar').style.background=isBC?'#7B1FA2':(s?.color||C[0]);
   document.getElementById('hTitle').textContent=isBC?'সবাইকে বার্তা':s?.name;
   document.getElementById('hSub').textContent=isBC?`${API.Students.getAll().length} জন`:(s?(s.waqfId?API.Students.displayWaqfId(s.waqfId)+' · ':'')+(s.cls||''):'');
-  var _tn=document.getElementById('teaBottomNav'); if(_tn) _tn.style.display='none';
   document.getElementById('fab').style.display='none';
   document.getElementById('searchToggleBtn').style.display='none';
   document.getElementById('inChatSearchBtn').style.display='flex';
@@ -1117,64 +1157,68 @@ function renderTaskList(f){
   const tasks=API.Tasks.getAll();
   const el=document.getElementById('taskList');
   if(!tasks.length){ el.innerHTML='<div class="empty-state"><div class="icon">📋</div><p>কোনো আমল নেই।</p></div>'; return; }
-  const bm={done:'badge-done',pending:'badge-pending',late:'badge-late',partial:'badge-pending'};
-  const lm={done:'✅ সম্পন্ন',pending:'⏳ বকেয়া',late:'❌ দেরি',partial:'🔄 আংশিক'};
-  const ic={done:'✅',pending:'⏳',late:'❌'};
-
+  const ic={done:'✅',pending:'⏳',late:'❌',partial:'🔄'};
   const dailyTasks=tasks.filter(t=>t.type==='daily');
   const onetimeTasks=tasks.filter(t=>t.type==='onetime');
 
-  let h='';
-
-  const renderTaskCard=(t)=>{
+  function taskMatchesFilter(t){
     const st=API.Tasks.overallStatus(t);
     const isDaily=t.type==='daily';
-    if(tFilter==='daily'&&!isDaily) return '';
-    if(tFilter==='onetime'&&isDaily) return '';
-    if(tFilter==='done'&&st!=='done') return '';
-    if(tFilter==='late'&&st!=='late') return '';
-    if(tFilter==='pending'&&st!=='pending'&&st!=='partial') return '';
+    if(tFilter==='daily'&&!isDaily) return false;
+    if(tFilter==='onetime'&&isDaily) return false;
+    if(tFilter==='done'&&st!=='done') return false;
+    if(tFilter==='late'&&st!=='late') return false;
+    if(tFilter==='pending'&&(st!=='pending'&&st!=='partial')) return false;
+    return true;
+  }
+
+  function teaTaskRowHtml(t){
+    if(!taskMatchesFilter(t)) return '';
+    const st=API.Tasks.overallStatus(t);
+    const isDaily=t.type==='daily';
     const ids=Object.keys(t.assignees||{});
     const doneCount=isDaily
       ? ids.filter(id=>API.Tasks.isDailyDoneToday(t,id)).length
       : ids.filter(id=>t.assignees[id]==='done').length;
-    const pct=ids.length?Math.round(doneCount/ids.length*100):0;
-    return `<div class="task-card">
-      <div class="task-card-hd">
-        <span class="task-card-title">${esc(t.title)}<span class="type-badge ${t.type}">${isDaily?'🔁 দৈনিক':'📌 এককালীন'}</span></span>
-        <span class="status-badge ${bm[st]}">${lm[st]}</span>
+    const full=ids.length>0&&doneCount===ids.length;
+    const rowCls='tea-task-row'+(st==='done'?' done':'')+(st==='late'?' late':'');
+    const statCls='tea-task-row-stat'+(full?' full':'');
+    return `<div class="${rowCls}">
+      <span class="tea-task-row-ic" aria-hidden="true">${ic[st]||'⏳'}</span>
+      <div class="tea-task-row-mid">
+        <span class="tea-task-row-title">${esc(t.title)}</span>
       </div>
-      <div class="task-card-bd"><div class="task-card-desc">${esc(t.desc||'')}</div></div>
-      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-      <div class="assignees">${ids.map(sid=>{ const s=API.Students.getById(sid); if(!s) return ''; const as=isDaily?(API.Tasks.isDailyDoneToday(t,sid)?'done':'pending'):t.assignees[sid]; return `<span class="a-chip ${as}" style="cursor:default;opacity:.95">${ic[as]||'⏳'} ${esc(API.Students.displayWaqfId(s.waqfId))} · ${s.name.split(' ')[0]}</span>`; }).join('')}</div>
-      <div class="task-card-ft">
-        <span class="task-meta">${isDaily?'🔄 প্রতিদিন':'📅 '+t.deadline}</span>
-        <span class="task-meta">✅ ${doneCount}/${ids.length} জন</span>
-        <button onclick="deleteTask('${t.id}')" style="background:none;border:none;color:var(--red);font-size:13px;cursor:pointer;padding:4px 8px;border-radius:6px">🗑</button>
-      </div>
+      <span class="stu-task-row-pill ${isDaily?'daily':'onetime'}">${isDaily?'দৈনিক':'এককালীন'}</span>
+      <span class="${statCls}">${doneCount}/${ids.length}</span>
+      <button type="button" class="tea-task-row-del" onclick="deleteTask('${t.id}')" title="মুছুন" aria-label="মুছুন">🗑</button>
     </div>`;
-  };
+  }
+
+  let h='';
 
   if(tFilter==='all'||tFilter==='daily'){
     if(dailyTasks.length){
       const doneToday=dailyTasks.filter(t=>{ const ids=Object.keys(t.assignees||{}); const d=ids.filter(id=>API.Tasks.isDailyDoneToday(t,id)).length; return d===ids.length&&ids.length>0; }).length;
-      h+=`<div class="task-daily-sep">🔁 দৈনিক আমল <span class="done-count-badge">${doneToday}/${dailyTasks.length} আজ সম্পন্ন</span></div>`;
-      dailyTasks.forEach(t=>{ h+=renderTaskCard(t); });
+      h+=`<div class="tea-amal-notice"><span aria-hidden="true">🔄</span><span>দৈনিক আমল — আজ ${doneToday}/${dailyTasks.length} টি সম্পূর্ণ।</span></div>`;
+      dailyTasks.forEach(t=>{ h+=teaTaskRowHtml(t); });
     }
   }
   if(tFilter==='all'||tFilter==='onetime'){
     if(onetimeTasks.length){
-      h+=`<div class="task-daily-sep">📌 এককালীন আমল</div>`;
-      onetimeTasks.forEach(t=>{ h+=renderTaskCard(t); });
+      h+=`<div class="tea-amal-notice tea-amal-notice--once"><span aria-hidden="true">📌</span><span>এককালীন আমল</span></div>`;
+      onetimeTasks.forEach(t=>{ h+=teaTaskRowHtml(t); });
     }
   }
   if(tFilter!=='all'&&tFilter!=='daily'&&tFilter!=='onetime'){
-    tasks.forEach(t=>{ h+=renderTaskCard(t); });
+    const sub=tFilter==='done'?'সম্পন্ন':tFilter==='late'?'বিলম্বিত':'ফিল্টার';
+    let part='';
+    tasks.forEach(t=>{ const r=teaTaskRowHtml(t); if(r) part+=r; });
+    if(part) h+=`<div class="tea-amal-subhd">${sub}</div>`+part;
   }
 
   el.innerHTML=h||'<div class="empty-state"><div class="icon">🔍</div><p>এই ফিল্টারে কিছু নেই।</p></div>';
 }
-function fTask(f,btn){ document.querySelectorAll('#amal-panel-list .filter-chip').forEach(c=>c.classList.remove('active')); btn.classList.add('active'); renderTaskList(f); }
+function fTask(f,btn){ document.querySelectorAll('#amal-panel-list .stu-filter-pill').forEach(c=>c.classList.remove('active')); btn.classList.add('active'); renderTaskList(f); }
 function toggleA(){ showToast('✅ আমল সম্পন্ন করবে ছাত্র নিজে।'); }
 function deleteTask(tid){ if(!confirm('এই আমলটি মুছবেন?')) return; API.Tasks.delete(tid); renderTaskList(); updateBadge(); showToast('🗑 আমল মুছে ফেলা হয়েছে'); }
 function updateBadge(){ const n=API.Tasks.pendingCount(); const b=document.getElementById('tBadge'); b.textContent=n; b.classList.toggle('show',n>0); }
@@ -1233,22 +1277,34 @@ function renderAmalLeaderboard(period){
   const _p=period||window._lbPeriod||'week'; window._lbPeriod=_p;
   const el=document.getElementById('amalLeaderboardContent'); if(!el) return;
   const lb=API.Tasks.getLeaderboard(_p);
-  const medals=['🥇','🥈','🥉'];
-  let h=`<div class="filter-bar">
-    <button class="filter-chip ${_p==='week'?'active':''}" onclick="renderAmalLeaderboard('week')">এই সপ্তাহ</button>
-    <button class="filter-chip ${_p==='month'?'active':''}" onclick="renderAmalLeaderboard('month')">এই মাস</button>
+  const filters=`<div class="stu-amal-filters no-scrollbar">
+    <button type="button" class="stu-filter-pill ${_p==='week'?'active':''}"  onclick="renderAmalLeaderboard('week')">এই সপ্তাহ</button>
+    <button type="button" class="stu-filter-pill ${_p==='month'?'active':''}" onclick="renderAmalLeaderboard('month')">এই মাস</button>
   </div>`;
+  if(!lb.length){ el.innerHTML=filters+`<div class="tea-lb-empty"><p>কোনো ছাত্র নেই।</p><p class="tea-lb-empty-hint">ছাত্র যোগ করলে এখানে অগ্রগতি দেখা যাবে।</p></div>`; return; }
+  let h=filters+`<div class="tea-lb-list">`;
   lb.forEach((item,i)=>{
-    h+=`<div class="leaderboard-item" onclick="_toggleLbDetail('ld-${esc(item.sid)}')">
-      <div class="lb-rank">${i<3?medals[i]:i+1}</div>
-      <div class="lb-avatar" style="background:${item.color||'#128C7E'}">${(item.name||'?').slice(0,2)}</div>
-      <div class="lb-info"><div class="lb-name">${esc(item.name)}</div><div class="lb-meta">${item.done}/${item.total} আমল</div></div>
-      <div class="lb-right"><div class="lb-pct">${item.percent}%</div>${item.streak>0?`<div class="lb-streak">🔥 ${item.streak}</div>`:''}</div>
-    </div>
-    <div class="stu-detail" id="ld-${esc(item.sid)}" style="display:none">${_stuWeekGrid(item.sid)}</div>`;
+    const rank=i+1;
+    const rk=rank<=3?` tea-lb-rank--${rank}`:'';
+    const streak=item.streak>0?`<div class="tea-lb-streak"><span class="tea-lb-streak-n">${item.streak}</span><span class="tea-lb-streak-lbl">দিন ধারাবাহিক</span></div>`:'';
+    h+=`<div class="tea-lb-block">
+      <button type="button" class="tea-lb-row" onclick="_toggleLbDetail('ld-${esc(item.sid)}',this)">
+        <span class="tea-lb-rank${rk}" aria-hidden="true">${rank}</span>
+        <span class="tea-lb-avatar" style="background:${item.color||'#128C7E'}">${(item.name||'?').slice(0,2)}</span>
+        <span class="tea-lb-info">
+          <span class="tea-lb-name">${esc(item.name)}</span>
+          <span class="tea-lb-meta">${item.done}/${item.total} সম্পন্ন</span>
+        </span>
+        <span class="tea-lb-right">
+          <span class="tea-lb-pct">${item.percent}<span class="tea-lb-pct-suffix">%</span></span>
+          ${streak}
+        </span>
+        <span class="tea-lb-chev" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></span>
+      </button>
+      <div class="tea-lb-detail" id="ld-${esc(item.sid)}" style="display:none">${_stuWeekGrid(item.sid)}</div>
+    </div>`;
   });
-  if(!lb.length) h+=`<div class="empty-state"><div class="icon">👥</div><p>কোনো ছাত্র নেই।</p></div>`;
-  el.innerHTML=h;
+  el.innerHTML=h+'</div>';
 }
 function _stuWeekGrid(sid){
   const today=API.today();
@@ -1264,7 +1320,12 @@ function _stuWeekGrid(sid){
   }).join('');
   return `<div class="wk-grid">${cells}</div>`;
 }
-function _toggleLbDetail(id){const el=document.getElementById(id);if(el)el.style.display=el.style.display==='none'?'':'none';}
+function _toggleLbDetail(id,btn){
+  const d=document.getElementById(id); if(!d) return;
+  const open=d.style.display==='none';
+  d.style.display=open?'block':'none';
+  if(btn&&btn.closest){ const row=btn.closest('.tea-lb-row'); if(row) row.classList.toggle('tea-lb-row--open',open); }
+}
 
 function setTaskType(type){
   newTaskType=type;
@@ -1682,15 +1743,12 @@ function openStudentProfile(sid){
   document.querySelectorAll('.prof-tab').forEach((b,i)=>b.classList.toggle('active',i===0));
   renderProfileBody(s);
   document.getElementById('profileView').classList.add('open');
-  var _tn=document.getElementById('teaBottomNav'); if(_tn) _tn.style.display='none';
   document.getElementById('fab').style.display='none';
 }
 function closeStudentProfile(){
   document.getElementById('profileView').classList.remove('open');
-  if(!curChat){
-    var _tn=document.getElementById('teaBottomNav'); if(_tn) _tn.style.display='block';
-    document.getElementById('fab').style.display='flex';
-  }
+  var _tn=document.getElementById('teaBottomNav'); if(_tn) _tn.style.display='block';
+  document.getElementById('fab').style.display=curChat?'none':'flex';
   curProfileSid=null;
 }
 function renderProfileBody(s){

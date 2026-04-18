@@ -380,6 +380,7 @@
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, pull)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'task_assignments' }, pull)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'task_completions' }, pull)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'quizzes' }, pull)
       .subscribe();
   }
 
@@ -438,6 +439,14 @@
     } catch (e) { console.warn('deleteStudentRemote:', e); }
   }
 
+  async function deleteQuizRemote(qid) {
+    if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
+    const sb = getClient(); if (!sb || !qid) return;
+    try {
+      await sb.rpc('madrasa_rel_delete_quiz', { p_teacher_pin: _teacherPin, p_quiz_id: qid });
+    } catch (e) { console.warn('deleteQuizRemote:', e); }
+  }
+
   w.RemoteSync = {
     isRemote, usesSecureKv, getClient,
     mem,
@@ -445,7 +454,7 @@
     unlockTeacherWithPin, unlockStudentWithWaqfPin,
     refreshStudentLockHints,
     schedule, flushKey, flushAllFromMem,
-    markMessagesReadRemote, clearStudentDataRemote, deleteStudentRemote,
+    markMessagesReadRemote, clearStudentDataRemote, deleteStudentRemote, deleteQuizRemote,
     upsertCompletionRemote, deleteCompletionRemote,
     uploadFile, getSignedUrlForPath, consumeUploadResult,
     BUCKET, startRealtimeSync, pullRemoteSnapshot,

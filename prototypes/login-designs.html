@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>লগইন স্ক্রিন — ডিজাইন প্রোটোটাইপ · Waqful Madinah</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700;800&family=Noto+Naskh+Arabic:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Hind Siliguri', sans-serif; -webkit-tap-highlight-color: transparent; }
+    .font-ar { font-family: 'Noto Naskh Arabic', serif; font-weight: 600; }
+    .phone {
+      width: 100%; max-width: 320px; aspect-ratio: 9/19; border-radius: 2.25rem;
+      overflow: hidden; position: relative; box-shadow: 0 25px 50px -12px rgba(0,0,0,.25);
+    }
+    /* Shared keypad */
+    .kp { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; width: 100%; max-width: 220px; margin: 0 auto; }
+    .k {
+      aspect-ratio: 1; border-radius: 9999px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-weight: 600; font-size: 1.1rem; transition: transform .12s ease, background .15s;
+    }
+    .k:active { transform: scale(.94); }
+    .k .sub { font-size: 0.55rem; opacity: .55; font-weight: 500; letter-spacing: .02em; margin-top: 1px; }
+    .dots { display: flex; gap: 0.65rem; justify-content: center; margin: 0.75rem 0 1rem; }
+    .dot { width: 10px; height: 10px; border-radius: 9999px; background: currentColor; opacity: .22; }
+    .dot.on { opacity: 1; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+  <div class="max-w-6xl mx-auto px-4 py-10 pb-20">
+    <header class="mb-10 text-center">
+      <p class="text-xs font-bold uppercase tracking-widest text-emerald-700/80 mb-2">Prototype · লগইন আধুনিকীকরণ</p>
+      <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900">শিক্ষক ও ছাত্র — UI ভেরিয়েন্ট</h1>
+      <p class="mt-3 text-slate-600 text-sm max-w-2xl mx-auto leading-relaxed">
+        নিচের ফ্রেমগুলো শুধু <strong>দৃশ্যমান ধারণা</strong> — বাস্তব অ্যাপে একই লজিক (পিন / ওয়াক্বফ) রেখে স্টাইল বেছে নিতে পারবেন।
+        কোনোটা পছন্দ হলে বললে <code class="bg-white px-1.5 py-0.5 rounded text-emerald-800 text-xs">teacher.html</code> / <code class="bg-white px-1.5 py-0.5 rounded text-emerald-800 text-xs">student.html</code> এ যোগ করা যাবে।
+      </p>
+    </header>
+
+    <!-- Teacher -->
+    <section class="mb-16">
+      <h2 class="text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
+        <span class="w-8 h-8 rounded-xl bg-teal-700 text-white flex items-center justify-center text-sm font-extrabold">T</span>
+        শিক্ষক — ৪ সংখ্যার পিন
+      </h2>
+      <p class="text-sm text-slate-500 mb-8">এক ধাপ · ডট ইন্ডিকেটর · সংখ্যা প্যাড</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10 items-start justify-items-center">
+
+        <!-- T1 Glass -->
+        <div>
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3 text-center">১ · গ্লাস কার্ড</p>
+          <div class="phone bg-gradient-to-br from-teal-900 via-teal-800 to-slate-900 p-5 flex flex-col">
+            <div class="flex-1 flex flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/10 backdrop-blur-xl px-4 py-6 shadow-inner">
+              <div class="w-12 h-12 rounded-2xl bg-white/15 flex items-center justify-center text-xl mb-3">🕌</div>
+              <div class="text-white font-bold text-[15px]">শিক্ষক প্যানেল</div>
+              <div class="text-white/70 text-xs mt-0.5">Waqful Madinah</div>
+              <div class="dots text-white mt-4 mb-2">
+                <span class="dot on"></span><span class="dot on"></span><span class="dot"></span><span class="dot"></span>
+              </div>
+              <div class="kp text-white">
+                <button type="button" class="k bg-white/10 border border-white/10 hover:bg-white/15">1</button>
+                <button type="button" class="k bg-white/10 border border-white/10">2<span class="sub">ABC</span></button>
+                <button type="button" class="k bg-white/10 border border-white/10">3<span class="sub">DEF</span></button>
+                <button type="button" class="k bg-white/10 border border-white/10">4</button>
+                <button type="button" class="k bg-white/10 border border-white/10">5</button>
+                <button type="button" class="k bg-white/10 border border-white/10">6</button>
+                <button type="button" class="k bg-white/10 border border-white/10">7</button>
+                <button type="button" class="k bg-white/10 border border-white/10">8</button>
+                <button type="button" class="k bg-white/10 border border-white/10">9</button>
+                <span class="k opacity-0 pointer-events-none"></span>
+                <button type="button" class="k bg-white/10 border border-white/10">0</button>
+                <button type="button" class="k bg-white/5 border border-white/10 text-lg">⌫</button>
+              </div>
+            </div>
+            <button type="button" class="mt-4 text-white/60 text-xs font-semibold w-full text-center">পিন ভুলে গেছেন?</button>
+          </div>
+        </div>
+
+        <!-- T2 Minimal dark -->
+        <div>
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3 text-center">২ · মিনিমাল ডার্ক</p>
+          <div class="phone bg-zinc-950 p-6 flex flex-col">
+            <div class="flex-1 flex flex-col items-center pt-8">
+              <div class="text-zinc-100 font-bold text-lg tracking-tight">শিক্ষক প্যানেল</div>
+              <div class="text-zinc-500 text-xs mt-1">Waqful Madinah</div>
+              <div class="flex gap-3 mt-8 mb-6">
+                <span class="w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-emerald-500/30"></span>
+                <span class="w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-emerald-500/30"></span>
+                <span class="w-3 h-3 rounded-full bg-zinc-700"></span>
+                <span class="w-3 h-3 rounded-full bg-zinc-700"></span>
+              </div>
+              <div class="kp gap-2 max-w-[210px]">
+                <button type="button" class="k rounded-2xl bg-zinc-800 text-zinc-100 border border-zinc-700/80">1</button>
+                <button type="button" class="k rounded-2xl bg-zinc-800 text-zinc-100 border border-zinc-700/80">2</button>
+                <button type="button" class="k rounded-2xl bg-zinc-800 text-zinc-100 border border-zinc-700/80">3</button>
+                <button type="button" class="k rounded-2xl bg-zinc-800 text-zinc-100 border border-zinc-700/80">4</button>
+                <button type="button" class="k rounded-2xl bg-zinc-800 text-zinc-100 border border-zinc-700/80">5</button>
+                <button type="button" class="k rounded-2xl bg-zinc-800 text-zinc-100 border border-zinc-700/80">6</button>
+                <button type="button" class="k rounded-2xl bg-zinc-800 text-zinc-100 border border-zinc-700/80">7</button>
+                <button type="button" class="k rounded-2xl bg-zinc-800 text-zinc-100 border border-zinc-700/80">8</button>
+                <button type="button" class="k rounded-2xl bg-zinc-800 text-zinc-100 border border-zinc-700/80">9</button>
+                <span class="k opacity-0 pointer-events-none rounded-2xl"></span>
+                <button type="button" class="k rounded-2xl bg-zinc-800 text-zinc-100 border border-zinc-700/80">0</button>
+                <button type="button" class="k rounded-2xl bg-zinc-800 text-zinc-300 border border-zinc-700/80 text-base">⌫</button>
+              </div>
+            </div>
+            <p class="text-center text-zinc-600 text-xs mt-auto">পিন ভুলে গেছেন?</p>
+          </div>
+        </div>
+
+        <!-- T3 Soft light -->
+        <div>
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3 text-center">৩ · সফট লাইট (iOS-লাইক)</p>
+          <div class="phone bg-slate-200 flex flex-col">
+            <div class="flex-1 flex flex-col items-center px-5 pt-10 pb-4">
+              <div class="w-16 h-16 rounded-3xl bg-teal-600 shadow-lg shadow-teal-900/20 flex items-center justify-center text-2xl mb-4">🕌</div>
+              <div class="text-slate-900 font-bold text-[17px]">শিক্ষক প্যানেল</div>
+              <div class="text-slate-500 text-sm">Waqful Madinah</div>
+              <div class="dots text-slate-900 mt-6 mb-4">
+                <span class="dot on"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              </div>
+            </div>
+            <div class="bg-white/90 backdrop-blur rounded-t-[1.75rem] px-4 pt-5 pb-8 shadow-[0_-8px_30px_rgba(0,0,0,.08)]">
+              <div class="kp gap-2.5 text-slate-900">
+                <button type="button" class="k bg-white shadow-sm border border-slate-200/90 text-lg font-semibold">1</button>
+                <button type="button" class="k bg-white shadow-sm border border-slate-200/90">2<span class="sub">ABC</span></button>
+                <button type="button" class="k bg-white shadow-sm border border-slate-200/90">3<span class="sub">DEF</span></button>
+                <button type="button" class="k bg-white shadow-sm border border-slate-200/90">4</button>
+                <button type="button" class="k bg-white shadow-sm border border-slate-200/90">5</button>
+                <button type="button" class="k bg-white shadow-sm border border-slate-200/90">6</button>
+                <button type="button" class="k bg-white shadow-sm border border-slate-200/90">7</button>
+                <button type="button" class="k bg-white shadow-sm border border-slate-200/90">8</button>
+                <button type="button" class="k bg-white shadow-sm border border-slate-200/90">9</button>
+                <span class="k opacity-0"></span>
+                <button type="button" class="k bg-white shadow-sm border border-slate-200/90">0</button>
+                <button type="button" class="k bg-slate-100 border border-slate-200 text-slate-600">⌫</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Student -->
+    <section>
+      <h2 class="text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
+        <span class="w-8 h-8 rounded-xl bg-emerald-700 text-white flex items-center justify-center text-sm font-extrabold">S</span>
+        ছাত্র — ওয়াক্বফ নং + পিন
+      </h2>
+      <p class="text-sm text-slate-500 mb-8">দুই ধাপ · উপরে ব্র্যান্ড / নিচে কিপ্যাড ডক (বর্তমান অ্যাপের মতো স্ট্রাকচার)</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-start justify-items-center max-w-4xl mx-auto">
+
+        <!-- S1 Step waqf — emerald glass dock -->
+        <div>
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3 text-center">ধাপ ১ · ওয়াক্বফ নং (গ্লাস ডক)</p>
+          <div class="phone bg-gradient-to-b from-emerald-950 via-emerald-900 to-emerald-950 flex flex-col">
+            <div class="flex-shrink-0 py-3 px-4 bg-black/20 backdrop-blur-md border-b border-white/10">
+              <div class="flex items-center justify-center gap-2">
+                <div class="text-white text-[15px] leading-snug font-ar" dir="rtl" lang="ar">وقف المدينة</div>
+                <button type="button" class="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-emerald-100/90 border border-white/15 bg-white/10" aria-label="বিজ্ঞপ্তি" title="নোটিফিকেশন">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="flex-1 min-h-0 flex items-center justify-center px-4 opacity-40">
+              <div class="text-emerald-300/50 text-xs text-center">(অপেক্ষমান তালিকা এখানে)</div>
+            </div>
+            <div class="bg-black/35 backdrop-blur-xl border-t border-white/10 px-4 pt-5 pb-6 rounded-t-3xl">
+              <div class="text-center text-emerald-100/95 text-sm font-semibold mb-2">ওয়াক্বফ নং লিখুন</div>
+              <div class="mx-auto max-w-[200px] rounded-2xl bg-white/10 border border-white/15 py-3 text-center text-2xl font-bold text-white tracking-widest mb-4">০০১</div>
+              <div class="kp text-white">
+                <button type="button" class="k bg-white/12 border border-white/10">1</button>
+                <button type="button" class="k bg-white/12 border border-white/10">2<span class="sub">ABC</span></button>
+                <button type="button" class="k bg-white/12 border border-white/10">3</button>
+                <button type="button" class="k bg-white/12 border border-white/10">4</button>
+                <button type="button" class="k bg-white/12 border border-white/10">5</button>
+                <button type="button" class="k bg-white/12 border border-white/10">6</button>
+                <button type="button" class="k bg-white/12 border border-white/10">7</button>
+                <button type="button" class="k bg-white/12 border border-white/10">8</button>
+                <button type="button" class="k bg-white/12 border border-white/10">9</button>
+                <span class="k opacity-0"></span>
+                <button type="button" class="k bg-white/12 border border-white/10">0</button>
+                <button type="button" class="k bg-white/8 border border-white/10">⌫</button>
+              </div>
+              <button type="button" class="w-full mt-4 py-3 rounded-2xl bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-900/40">পরবর্তী →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- S2 Step PIN -->
+        <div>
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3 text-center">ধাপ ২ · পিন (হালকা কার্ড)</p>
+          <div class="phone bg-emerald-900 flex flex-col">
+            <div class="flex-shrink-0 py-3 px-4 bg-emerald-950/80 border-b border-emerald-800/50">
+              <div class="flex items-center justify-center gap-2">
+                <div class="text-white text-[15px] leading-snug font-ar" dir="rtl" lang="ar">وقف المدينة</div>
+                <button type="button" class="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-emerald-200/95 border border-emerald-700/80 bg-emerald-900/60" aria-label="বিজ্ঞপ্তি" title="নোটিফিকেশন">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="flex-1 flex flex-col justify-end p-4">
+              <div class="rounded-3xl bg-white p-5 shadow-2xl">
+                <div class="text-center text-slate-700 text-sm font-semibold mb-3">পিন কোড দিন</div>
+                <div class="flex justify-center gap-3 mb-5">
+                  <span class="w-3.5 h-3.5 rounded-full bg-emerald-600"></span>
+                  <span class="w-3.5 h-3.5 rounded-full bg-emerald-600"></span>
+                  <span class="w-3.5 h-3.5 rounded-full bg-slate-200"></span>
+                  <span class="w-3.5 h-3.5 rounded-full bg-slate-200"></span>
+                </div>
+                <div class="kp text-slate-900 gap-2">
+                  <button type="button" class="k bg-slate-100 rounded-2xl border-0">1</button>
+                  <button type="button" class="k bg-slate-100 rounded-2xl border-0">2</button>
+                  <button type="button" class="k bg-slate-100 rounded-2xl border-0">3</button>
+                  <button type="button" class="k bg-slate-100 rounded-2xl border-0">4</button>
+                  <button type="button" class="k bg-slate-100 rounded-2xl border-0">5</button>
+                  <button type="button" class="k bg-slate-100 rounded-2xl border-0">6</button>
+                  <button type="button" class="k bg-slate-100 rounded-2xl border-0">7</button>
+                  <button type="button" class="k bg-slate-100 rounded-2xl border-0">8</button>
+                  <button type="button" class="k bg-slate-100 rounded-2xl border-0">9</button>
+                  <span class="k opacity-0"></span>
+                  <button type="button" class="k bg-slate-100 rounded-2xl border-0">0</button>
+                  <button type="button" class="k bg-slate-200 rounded-2xl border-0">⌫</button>
+                </div>
+                <button type="button" class="w-full mt-4 py-2.5 text-emerald-800 font-semibold text-sm border border-emerald-200 rounded-2xl">← নং পরিবর্তন</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="mt-16 pt-8 border-t border-slate-200 text-center text-xs text-slate-500">
+      <p><code class="bg-slate-200/80 px-2 py-0.5 rounded">prototypes/login-designs.html</code> — ব্রাউজারে খুলে দেখুন।</p>
+      <p class="mt-2">সুপারিশ: শিক্ষক = টিল গ্রেডিয়েন্ট + গ্লাস কার্ড · ছাত্র = উপর স্টিকি হেডার + নিচে গ্লাস ডক (বর্তমান লেআউটের উন্নতি)।</p>
+    </footer>
+  </div>
+</body>
+</html>

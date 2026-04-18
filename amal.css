@@ -137,3 +137,55 @@
 .stu-task-row-btn:active{transform:scale(.97)}
 .stu-task-row-btn.late{background:#F44336}
 .stu-task-row-done{font-size:11px;font-weight:700;color:#2E7D32;background:#E8F5E9;padding:6px 8px;border-radius:10px;white-space:nowrap;line-height:1.2}
+
+/* শিক্ষক আমল তালিকা — ছাত্রের আমল ট্যাবের সাথে মিল রেখে (কমপ্যাক্ট সারি) */
+#amal-panel-list.amal-panel{background:#f3f4f6}
+#amal-panel-list .stu-amal-filters{padding:14px 16px 10px}
+.tea-amal-list{padding:4px 16px 80px;background:transparent}
+.tea-task-row{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #f1f5f9;border-radius:14px;padding:8px 10px;margin-bottom:6px;box-shadow:0 1px 2px rgba(0,0,0,.05);min-height:44px;transition:background .15s}
+.tea-task-row:active{background:#f8fafc}
+.tea-task-row.done{border-color:#c8e6c9;background:#f9fcf9}
+.tea-task-row.late{border-color:#ffcdd2}
+.tea-task-row-ic{flex-shrink:0;width:24px;text-align:center;font-size:15px;line-height:1}
+.tea-task-row-mid{flex:1;min-width:0}
+.tea-task-row-title{display:block;font-size:14px;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25}
+.tea-task-row-stat{flex-shrink:0;font-size:11px;font-weight:800;color:#64748b;min-width:32px;text-align:center;line-height:1.2}
+.tea-task-row-stat.full{color:#2E7D32}
+.tea-task-row-del{flex-shrink:0;background:#FFEBEE;color:#C62828;border:none;border-radius:10px;padding:6px 8px;font-size:13px;cursor:pointer;line-height:1;opacity:.9}
+.tea-task-row-del:active{transform:scale(.97);opacity:1}
+.tea-amal-notice{display:flex;align-items:center;gap:10px;background:#E8F5E9;border:1px solid #C8E6C9;border-radius:16px;padding:10px 12px;margin:0 0 12px;font-size:11px;font-weight:600;color:#1B5E20;line-height:1.35}
+.tea-amal-notice--once{background:#FFF8E1;border-color:#FFE082;color:#E65100}
+.tea-amal-subhd{padding:6px 4px 8px;font-size:12px;font-weight:700;color:#64748b;letter-spacing:.02em}
+
+/* শিক্ষক ছাত্রভিত্তিক (লিডারবোর্ড) — আধুনিক কার্ড, ইমোজি ছাড়া */
+#amal-panel-students.amal-panel{background:#f3f4f6}
+#amal-panel-students .stu-amal-filters{padding:14px 16px 10px}
+.tea-lb-scroll{padding-bottom:80px}
+.tea-lb-list{padding:4px 16px 12px}
+.tea-lb-block{margin-bottom:10px}
+.tea-lb-row{width:100%;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:10px 12px;box-shadow:0 1px 2px rgba(15,23,42,.04);cursor:pointer;text-align:left;font:inherit;transition:background .15s,box-shadow .15s,border-color .15s}
+.tea-lb-row:active{background:#f8fafc}
+.tea-lb-row--open{border-bottom-left-radius:8px;border-bottom-right-radius:8px;border-bottom-color:transparent;box-shadow:none}
+.tea-lb-rank{width:32px;height:32px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#64748b;background:#f1f5f9;flex-shrink:0}
+.tea-lb-rank--1{background:linear-gradient(145deg,#fef9c3,#fde047);color:#713f12}
+.tea-lb-rank--2{background:linear-gradient(145deg,#f1f5f9,#cbd5e1);color:#334155}
+.tea-lb-rank--3{background:linear-gradient(145deg,#ffedd5,#fdba74);color:#7c2d12}
+.tea-lb-avatar{width:40px;height:40px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0}
+.tea-lb-info{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.tea-lb-name{font-size:14px;font-weight:700;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.tea-lb-meta{font-size:11px;font-weight:600;color:#64748b}
+.tea-lb-right{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;text-align:right}
+.tea-lb-pct{font-size:17px;font-weight:800;color:#075E54;line-height:1.1}
+.tea-lb-pct-suffix{font-size:11px;font-weight:700;color:#94a3b8;margin-left:1px}
+.tea-lb-streak{display:flex;flex-direction:column;align-items:flex-end;gap:0;line-height:1.15}
+.tea-lb-streak-n{font-size:12px;font-weight:800;color:#0f172a}
+.tea-lb-streak-lbl{font-size:9px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.04em}
+.tea-lb-chev{flex-shrink:0;color:#cbd5e1;display:flex;align-items:center;transition:transform .2s,color .2s}
+.tea-lb-row--open .tea-lb-chev{color:#075E54;transform:rotate(90deg)}
+.tea-lb-detail{background:#f8fafc;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 14px 14px;padding:12px 14px 14px;margin:0 2px}
+.tea-lb-empty{padding:28px 20px 40px;text-align:center}
+.tea-lb-empty p{margin:0;font-size:14px;font-weight:600;color:#475569}
+.tea-lb-empty-hint{margin-top:8px!important;font-size:12px!important;font-weight:500!important;color:#94a3b8!important}
+.tea-lb-detail .wk-grid{gap:6px}
+.tea-lb-detail .wk-day{font-size:9px;font-weight:700;color:#64748b;letter-spacing:.02em}
+.tea-lb-detail .wk-dot{width:14px;height:14px}

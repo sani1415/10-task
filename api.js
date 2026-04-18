@@ -903,6 +903,8 @@ const API = (() => {
       data.quizzes=data.quizzes.filter(q=>q.id!==qid);
       data.submissions=data.submissions.filter(s=>s.quizId!==qid);
       this._write(data);
+      /* Remote: saveExams only upserts — DB row must be deleted or quiz returns on next bootstrap. */
+      if (_useRemote && RS.deleteQuizRemote) void RS.deleteQuizRemote(qid);
     },
 
     submitQuiz(qid, sid, answers) {

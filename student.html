@@ -12,13 +12,81 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>وقف المدينة</title>
-<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="tablet-desktop.css">
 <link rel="stylesheet" href="amal.css">
 <style>
 /* ── Student theme ── */
-#lockScreen{background:linear-gradient(160deg,#1B5E20 0%,#2E7D32 60%,#388E3C 100%)}
+/* লগইন: সফট লাইট — শিক্ষার্থী: নরম সেজ/মিন্ট */
+#lockScreen.lock-screen-soft{background:linear-gradient(180deg,#e8f8ef 0%,#f7fef9 48%,#d8f3e0 100%)}
+.lock-screen-soft .lock-sticky-header{
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.92);color:#0f172a;
+  border-bottom:1px solid #c8e6c9;
+  box-shadow:0 1px 3px rgba(27,94,32,.06);
+  padding:12px 16px max(10px,env(safe-area-inset-top));
+}
+.lock-soft-head-cluster{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  max-width:100%;
+}
+.lock-soft-app-name{
+  font-family:'Noto Naskh Arabic',serif;font-weight:600;font-size:17px;line-height:1.3;
+  color:#14532d;
+}
+.lock-soft-app-name.lock-soft-app-name--err{
+  font-family:var(--font);font-size:13px;font-weight:600;color:#b91c1c;
+}
+.lock-soft-notif-btn{
+  flex-shrink:0;width:42px;height:42px;padding:0;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:none;border:none;cursor:pointer;border-radius:12px;
+  color:#2E7D32;
+}
+.lock-soft-notif-btn:active{background:#E8F5E9}
+.lock-soft-notif-btn.is-muted{opacity:.48}
+.lock-soft-notif-btn.is-blocked{color:#64748b}
+.lock-soft-notif-svg{display:block;width:22px;height:22px;flex-shrink:0}
+@keyframes lock-soft-notif-spin{to{transform:rotate(360deg)}}
+.lock-soft-notif-svg.lock-soft-notif-spin{animation:lock-soft-notif-spin .65s linear infinite;transform-origin:center}
+.lock-screen-soft .lock-top{background:transparent}
+.lock-screen-soft .lock-bottom{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  background:rgba(255,255,255,.94);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border-top:1px solid #b2dfbc;
+  border-radius:28px 28px 0 0;
+  box-shadow:0 -16px 48px rgba(27,94,32,.1);
+  padding:18px 16px max(20px,env(safe-area-inset-bottom));
+}
+.lock-screen-soft .pending-sec-label{color:#64748b}
+.lock-screen-soft .pending-item{
+  background:#fff;border:1px solid #e2e8f0;
+  color:#0f172a;
+}
+.lock-screen-soft .pending-item:active{background:#f8fafc}
+.lock-screen-soft .pending-name{color:#0f172a}
+.lock-screen-soft .pending-waqf{color:#64748b!important}
+.lock-screen-soft .login-lbl-c{color:#64748b}
+.lock-screen-soft .login-lbl-name{color:#0f172a}
+.lock-screen-soft .login-keypad-display{
+  background:#f8fafc;border:1px solid #e2e8f0;color:#0f172a;
+}
+.lock-screen-soft .stu-pin-dots .pin-dot{border-color:#cbd5e1;background:transparent}
+.lock-screen-soft .stu-pin-dots .pin-dot.filled{background:#2E7D32;border-color:#2E7D32}
+.lock-screen-soft #lockScreen .pin-key,.lock-screen-soft .pin-key{
+  background:#fff;color:#0f172a;border:1px solid #e2e8f0;
+  box-shadow:0 1px 2px rgba(15,23,42,.04);
+}
+.lock-screen-soft .pin-key:active{background:#f1f5f9}
+.lock-screen-soft .pin-key .sub{color:#64748b;opacity:.9}
+.lock-screen-soft .login-btn{background:#2E7D32;color:#fff;box-shadow:0 4px 14px rgba(46,125,50,.25)}
+.lock-screen-soft .login-btn-ghost{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
+.lock-screen-soft .login-err{color:#b91c1c}
 .header{background:#2E7D32}
 /* ফ্লোটিং নিচের ট্যাব — উপরের ট্যাব বার সরানো */
 .stu-main-shell{flex:1;display:flex;flex-direction:column;min-height:0;padding-bottom:calc(12px + 68px + env(safe-area-inset-bottom))}
@@ -110,7 +178,7 @@
 .upload-progress{height:4px;background:var(--gray-200);border-radius:2px;margin:4px 0;overflow:hidden}
 .upload-progress-fill{height:100%;background:#2E7D32;border-radius:2px;transition:width .3s}
 
-/* ── Sticky lock screen header ── */
+/* ── Sticky lock screen header (ডিফল্ট — লক স্ক্রিনে .lock-screen-soft ওভাররাইড করে) ── */
 .lock-sticky-header{flex-shrink:0;width:100%;text-align:center;color:#fff;font-size:15px;font-weight:700;padding:10px 16px 8px;background:rgba(0,0,0,.2);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,.1)}
 /* ── Pending notifications (lock screen) ── */
 .pending-sec-label{color:rgba(255,255,255,.6);font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px;text-align:center}
@@ -155,12 +223,13 @@
 </div>
 
 <!-- ══ LOCK ══════════════════════════════════════════════ -->
-<div id="lockScreen">
+<div id="lockScreen" class="lock-screen-soft">
   <!-- Sticky header — always visible -->
   <div class="lock-sticky-header">
-    <span>প্রবেশ</span>
-    <div id="lockName" style="font-size:12px;font-weight:500;opacity:.88;margin-top:2px">Waqful Madinah</div>
-    <button id="notifBtn" onclick="enableSharedNotif()" title="নোটিফিকেশন চালু করুন" style="background:none;border:none;cursor:pointer;font-size:18px;padding:0 0 0 8px;vertical-align:middle;opacity:.8">🔔</button>
+    <div class="lock-soft-head-cluster">
+      <span class="lock-soft-app-name" dir="rtl" lang="ar" id="lockAppName">وقف المدينة</span>
+      <button type="button" id="notifBtn" class="lock-soft-notif-btn" onclick="enableSharedNotif()" title="নোটিফিকেশন চালু করুন" aria-label="নোটিফিকেশন চালু করুন"><svg class="lock-soft-notif-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button>
+    </div>
   </div>
   <!-- TOP: scrollable area — pending list -->
   <div class="lock-top">
@@ -493,8 +562,6 @@ function init(){
   Promise.resolve(API.DB.init()).then(()=>{
     void API.Pwa.registerServiceWorker();
     API.Tasks.resetDailyForToday();
-    const lockNameEl=document.getElementById('lockName');
-    if(lockNameEl) lockNameEl.textContent=API.DB.getTeacher().madrasa||'Waqful Madinah';
     document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); }));
     renderPendingSection();
     updateNotifBtn();
@@ -503,35 +570,52 @@ function init(){
     // Subscribe this device for all student notifications (shared device mode)
     // Delay slightly so RemoteSync bootstrap has time to complete
     setTimeout(() => void API.Pwa.enableSharedStudentDevice().then(updateNotifBtn), 2000);
-  }).catch(e=>{ console.error(e); const ln=document.getElementById('lockName'); if(ln) ln.textContent='সার্ভার সংযোগ ব্যর্থ'; });
+  }).catch(e=>{ console.error(e); const la=document.getElementById('lockAppName'); if(la){ la.textContent='সার্ভার সংযোগ ব্যর্থ'; la.removeAttribute('dir'); la.removeAttribute('lang'); la.classList.add('lock-soft-app-name--err'); } });
 }
 window.addEventListener('madrasa-remote-sync',()=>{ try{ const u=document.getElementById('lockScreen').style.display==='none'; if(u&&me) renderAll(); else renderPendingSection(); }catch(e){ console.error(e); } });
 
-// ══ NOTIFICATION BUTTON (lock screen) ══════════════════════
+// ══ NOTIFICATION BUTTON (lock screen) — SVG আইকন ═══════════
+function notifBtnSvgBell(){
+  return '<svg class="lock-soft-notif-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>';
+}
+function notifBtnSvgBellOff(){
+  return '<svg class="lock-soft-notif-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/><line x1="2" y1="2" x2="22" y2="22"/></svg>';
+}
+function notifBtnSvgSpinner(){
+  return '<svg class="lock-soft-notif-svg lock-soft-notif-spin" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9" opacity=".25"/><path d="M21 12a9 9 0 0 0-9-9"/></svg>';
+}
 function updateNotifBtn(){
   const btn=document.getElementById('notifBtn');
   if(!btn) return;
+  btn.style.opacity='';
+  btn.classList.remove('is-muted','is-blocked');
   if(!('Notification' in window)){ btn.style.display='none'; return; }
+  btn.style.display='';
   const perm=Notification.permission;
   if(perm==='granted'){
-    btn.textContent='🔔'; btn.style.opacity='.4';
+    btn.innerHTML=notifBtnSvgBell();
+    btn.classList.add('is-muted');
     btn.title='নোটিফিকেশন চালু আছে — চাপলে পুনরায় নিবন্ধন করবে';
+    btn.setAttribute('aria-label','নোটিফিকেশন চালু আছে');
   } else if(perm==='denied'){
-    btn.textContent='🔕'; btn.style.opacity='1';
+    btn.innerHTML=notifBtnSvgBellOff();
+    btn.classList.add('is-blocked');
     btn.title='নোটিফিকেশন বন্ধ আছে — browser সেটিং থেকে চালু করুন';
+    btn.setAttribute('aria-label','নোটিফিকেশন বন্ধ');
   } else {
-    btn.textContent='🔔'; btn.style.opacity='1';
+    btn.innerHTML=notifBtnSvgBell();
     btn.title='নোটিফিকেশন চালু করুন';
+    btn.setAttribute('aria-label','নোটিফিকেশন চালু করুন');
   }
 }
 async function enableSharedNotif(){
   const btn=document.getElementById('notifBtn');
-  if(btn){ btn.textContent='⏳'; btn.disabled=true; }
+  if(btn){ btn.innerHTML=notifBtnSvgSpinner(); btn.disabled=true; btn.setAttribute('aria-label','নোটিফিকেশন চালু করা হচ্ছে'); }
   try{
     await API.Pwa.enableSharedStudentDevice();
     updateNotifBtn();
-    if(Notification.permission==='granted') showToast('✅ নোটিফিকেশন চালু হয়েছে!');
-    else showToast('❌ নোটিফিকেশন অনুমতি দেওয়া হয়নি');
+    if(Notification.permission==='granted') showToast('নোটিফিকেশন চালু হয়েছে।');
+    else showToast('নোটিফিকেশন অনুমতি দেওয়া হয়নি।');
   }catch(e){ console.error('notif error',e); updateNotifBtn(); }
   finally{ if(btn) btn.disabled=false; }
 }
@@ -596,18 +680,18 @@ async function doLogin(){
     try{
       await API.loginStudentRemote(rawId, pin);
       me=API.Students.getByWaqfShortId(rawId);
-      if(!me){ showLoginErr('❌ লগইন ব্যর্থ'); return; }
+      if(!me){ showLoginErr('লগইন ব্যর্থ'); return; }
       document.getElementById('lockScreen').style.display='none';
       onLogin();
     } catch(e){
-      showLoginErr('❌ পিন বা আইডি ভুল');
+      showLoginErr('পিন বা আইডি ভুল');
       _skPin=''; _skUpdatePinDots();
     }
     return;
   }
   const student=API.Students.getByWaqfShortId(rawId);
-  if(!student){ showLoginErr('❌ ওয়াকফ আইডি পাওয়া যায়নি'); return; }
-  if(pin!==student.pin){ showLoginErr('❌ পিন ভুল হয়েছে'); _skPin=''; _skUpdatePinDots(); return; }
+  if(!student){ showLoginErr('ওয়াকফ আইডি পাওয়া যায়নি'); return; }
+  if(pin!==student.pin){ showLoginErr('পিন ভুল হয়েছে'); _skPin=''; _skUpdatePinDots(); return; }
   me=student;
   document.getElementById('lockScreen').style.display='none';
   onLogin();
