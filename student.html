@@ -1250,7 +1250,7 @@ function renderSentDocs(){
       <div class="doc-sent-icon">${icon}</div>
       <div class="doc-sent-info">
         <div class="doc-sent-name">${esc(d.fileName)}</div>
-        <div class="doc-sent-meta"><span class="doc-cat-badge">${catLabel[d.category]||d.category||'সাধারণ'}</span>${formatBytes(d.fileSize)} · ${formatDate(d.uploadedAt)}</div>
+        <div class="doc-sent-meta"><span class="doc-cat-badge">${catLabel[d.category]||d.category||'সাধারণ'}</span>${formatBytes(d.fileSize)} · ${formatDate(d.uploadedAt)} · ${d.reviewStatus==='pending'?'<span style="color:#E65100;font-weight:700">🔍 পর্যালোচনা চলছে</span>':'<span style="color:#2E7D32;font-weight:700">✅ দেখা হয়েছে</span>'}</div>
       </div>
     </div>`;
   }).join('');

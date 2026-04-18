@@ -305,8 +305,13 @@
   </div>
   <div class="list-scroll">
     <div id="docsReceivedPane">
+      <div id="pendingDocsBanner" style="display:none;margin:8px 12px 0;background:#FFF3E0;border:1.5px solid #FFB74D;border-radius:10px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <span style="font-size:13px;font-weight:600;color:#E65100">⏳ <span id="pendingDocsCount">0</span>টি ডকুমেন্ট পর্যালোচনা বাকি</span>
+        <button onclick="fDoc('pending',document.getElementById('fchip-pending'))" style="font-size:12px;font-weight:700;color:#E65100;background:none;border:1.5px solid #E65100;border-radius:6px;padding:3px 10px;cursor:pointer">সব দেখুন</button>
+      </div>
       <div class="filter-bar">
         <button class="filter-chip active" onclick="fDoc('all',this)">সব</button>
+        <button class="filter-chip" id="fchip-pending" onclick="fDoc('pending',this)">⏳ বাকি</button>
         <button class="filter-chip"        onclick="fDoc('general',this)">সাধারণ</button>
         <button class="filter-chip"        onclick="fDoc('question',this)">রোযনামচা</button>
         <button class="filter-chip"        onclick="fDoc('report',this)">বিবরণ</button>
@@ -1541,7 +1546,10 @@ function updateScore(subId, score, total, passPercent){
 
 // ══ DOCUMENTS ══════════════════════════════════════════════
 function updateDocBadge(){
-  const n=API.Docs.unreadCount(); const b=document.getElementById('docBadge'); b.textContent=n; b.classList.toggle('show',n>0);
+  const unread=API.Docs.unreadCount();
+  const pending=API.Docs.getAll().filter(d=>d.sentBy!=='teacher'&&d.reviewStatus==='pending').length;
+  const n=Math.max(unread,pending);
+  const b=document.getElementById('docBadge'); b.textContent=n; b.classList.toggle('show',n>0);
 }
 function goDocTab(tab, btn){
   docViewTab=tab;
@@ -1560,9 +1568,13 @@ function fDoc(f,btn){ document.querySelectorAll('.doc-tab-btn').length; // just 
 function renderDocsGrouped(){
   // Only show student-sent (received by teacher); sentBy undefined = old records = student-sent
   const all=API.Docs.getAll().filter(d=>d.sentBy!=='teacher');
-  const filtered=docFilter==='all'?all:all.filter(d=>d.category===docFilter);
+  const pendingAll=all.filter(d=>d.reviewStatus==='pending');
+  // Update pending banner
+  const banner=document.getElementById('pendingDocsBanner');
+  if(banner){ banner.style.display=pendingAll.length>0?'flex':'none'; const pc=document.getElementById('pendingDocsCount'); if(pc) pc.textContent=pendingAll.length; }
+  const filtered=docFilter==='all'?all:docFilter==='pending'?pendingAll:all.filter(d=>d.category===docFilter);
   const el=document.getElementById('docsGrouped');
-  if(!filtered.length){ el.innerHTML='<div class="empty-state"><div class="icon">📥</div><p>ছাত্ররা এখনো কোনো ফাইল পাঠায়নি।</p></div>'; return; }
+  if(!filtered.length){ el.innerHTML='<div class="empty-state"><div class="icon">📥</div><p>'+(docFilter==='pending'?'সব পর্যালোচনা সম্পন্ন! ✅':'ছাত্ররা এখনো কোনো ফাইল পাঠায়নি।')+'</p></div>'; return; }
 
   // Group by student
   const groups={};
@@ -1716,8 +1728,14 @@ function goTab(tab){
   curTab=tab;
   // Close profile panel if open
   if(document.getElementById('profileView').classList.contains('open')) closeStudentProfile();
+  // Restore search button (may have been hidden inside a chat)
+  document.getElementById('searchToggleBtn').style.display='flex';
   const sb=document.getElementById('searchBar');
-  if(sb&&sb.style.display!=='none'){ const inp=sb.querySelector('input'); if(inp) inp.value=''; sb.style.display='none'; hideGlobalMsgSearchResults(); renderChatList(''); }
+  if(sb&&sb.style.display!=='none'){
+    const inp=sb.querySelector('input'); if(inp) inp.value='';
+    sb.style.display='none';
+    hideGlobalMsgSearchResults(); renderChatList('');
+  }
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -1754,7 +1772,7 @@ function toggleSearch(forceClose){
   } else {
     if(inp) inp.value='';
     if(curTab==='docs'){ renderDocsGrouped(); }
-    else { hideGlobalMsgSearchResults(); renderChatList(''); }
+    else { hideGlobalMsgSearchResults(); if(curTab==='chats') renderChatList(''); }
   }
 }
 function onSearchInput(q){
