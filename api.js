@@ -624,10 +624,11 @@ const API = (() => {
       });
     },
     broadcast(text) {
-      const db=DB.get(); const m={id:uid('m'),role:'out',text,type:'text',time:nowTime(),read:true};
+      const db=DB.get(); const m={id:uid('m'),role:'out',text,type:'text',time:nowTime(),read:true,isBroadcast:true};
       if(!db.chats['_bc']) db.chats['_bc']=[];
       db.chats['_bc'].push({...m});
-      db.students.forEach(s=>{ if(!db.chats[s.id]) db.chats[s.id]=[]; db.chats[s.id].push({...m,id:uid('m')}); });
+      // Student thread copies are local-only (_skipRemote) — _bc row in Supabase sends one notification to all
+      db.students.forEach(s=>{ if(!db.chats[s.id]) db.chats[s.id]=[]; db.chats[s.id].push({...m,id:uid('m'),_skipRemote:true}); });
       stampNotify(db); DB.save(db); return m;
     },
     sendTask(sid,task) {

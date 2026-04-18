@@ -828,10 +828,11 @@ function renderChat(){
       }
     } else {
       const _bodyHtml=_stuIcsHighlight(m.text,_stuIcsQuery);
+      const _bcTag=m.isBroadcast?`<div style="font-size:10px;font-weight:700;color:#7B1FA2;background:#F3E5F5;border-radius:6px;padding:1px 7px;margin-bottom:4px;display:inline-block">📢 সবার উদ্দেশ্যে</div>`:'';
       if(m.role==='in'){
-        h+=`<div class="msg-wrap out" data-mid="${m.id}">${swiIcon}<div class="msg-bubble out">${replyRef}${_bodyHtml}<div class="msg-meta"><span class="msg-time">${m.time}</span>${tickHtml(m)}</div></div></div>`;
+        h+=`<div class="msg-wrap out" data-mid="${m.id}">${swiIcon}<div class="msg-bubble out">${replyRef}${_bcTag}${_bodyHtml}<div class="msg-meta"><span class="msg-time">${m.time}</span>${tickHtml(m)}</div></div></div>`;
       } else {
-        h+=`<div class="msg-wrap in" data-mid="${m.id}">${swiIcon}<div class="msg-bubble in">${replyRef}${_bodyHtml}<div class="msg-meta"><span class="msg-time">${m.time}</span></div></div></div>`;
+        h+=`<div class="msg-wrap in" data-mid="${m.id}">${swiIcon}<div class="msg-bubble in">${replyRef}${_bcTag}${_bodyHtml}<div class="msg-meta"><span class="msg-time">${m.time}</span></div></div></div>`;
       }
     }
   });

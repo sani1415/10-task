@@ -1100,6 +1100,39 @@ function scrollToMsg(mid){
   el.classList.add('msg-highlight');
   setTimeout(()=>el.classList.remove('msg-highlight'),1200);
 }
+// ── Long-press delete (broadcast chat only) ──────────────────
+(function initLongPressDelete(){
+  let _lp=null;
+  function cancel(){ if(_lp){ clearTimeout(_lp.t); _lp=null; } }
+  document.addEventListener('touchstart',e=>{
+    if(curChat!=='_broadcast') return;
+    const wrap=e.target.closest('#chatMsgs .msg-wrap[data-mid]'); if(!wrap) return;
+    const mid=wrap.dataset.mid;
+    _lp={t:setTimeout(()=>{
+      _lp=null;
+      if(confirm('এই বার্তাটি মুছবেন?')) deleteBCMessage(mid);
+    },600), mid};
+  },{passive:true});
+  document.addEventListener('touchmove',cancel,{passive:true});
+  document.addEventListener('touchend',cancel,{passive:true});
+})();
+function deleteBCMessage(mid){
+  const db=API.DB.get();
+  if(db.chats['_bc']) db.chats['_bc']=db.chats['_bc'].filter(m=>m.id!==mid);
+  // also remove from any student thread (local broadcast copies)
+  Object.keys(db.chats).forEach(tid=>{
+    if(tid!=='_bc') db.chats[tid]=db.chats[tid].filter(m=>m.id!==mid);
+  });
+  API.DB.save(db);
+  if(typeof RemoteSync!=='undefined'&&RemoteSync.deleteMessageRemote) RemoteSync.deleteMessageRemote(mid);
+  if(typeof RemoteSync!=='undefined'&&RemoteSync.mem?.core?.chats){
+    const c=RemoteSync.mem.core.chats;
+    if(c['_bc']) c['_bc']=c['_bc'].filter(m=>m.id!==mid);
+  }
+  renderMsgs('_broadcast');
+  showToast('🗑 বার্তা মুছে ফেলা হয়েছে');
+}
+
 // ── Swipe-to-reply ──────────────────────────────────────────
 (function initSwipeReply(){
   let _st=null;
