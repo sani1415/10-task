@@ -306,7 +306,9 @@ const API = (() => {
       };
       db.students.push(s); db.chats[s.id]=[];
       delete db.allowEmptyStudents;
-      DB.save(db); return s;
+      DB.save(db);
+      if (_useRemote && RS.saveStudentRemote) RS.saveStudentRemote(s);
+      return s;
     },
 
     update(sid, data) {
@@ -627,9 +629,8 @@ const API = (() => {
       const db=DB.get(); const m={id:uid('m'),role:'out',text,type:'text',time:nowTime(),read:false,isBroadcast:true};
       if(!db.chats['_bc']) db.chats['_bc']=[];
       db.chats['_bc'].push({...m});
-      // Student copies: saved to Supabase with bc_copy+bc_id so read-receipts work;
-      // Edge Function skips notification for bc_copy rows (only _bc row notifies all students).
-      db.students.forEach(s=>{ if(!db.chats[s.id]) db.chats[s.id]=[]; db.chats[s.id].push({...m,id:uid('m'),bc_copy:true,bc_id:m.id}); });
+      // Student copies are local-only — _bc row in Supabase is the single notification source.
+      db.students.forEach(s=>{ if(!db.chats[s.id]) db.chats[s.id]=[]; db.chats[s.id].push({...m,id:uid('m'),_skipRemote:true}); });
       stampNotify(db); DB.save(db); return m;
     },
     sendTask(sid,task) {
@@ -724,7 +725,9 @@ const API = (() => {
         assignees:Object.fromEntries(assigneeIds.map(id=>[id,'pending'])),
         completedBy:{},
       };
-      db.tasks.push(task); DB.save(db); return task;
+      db.tasks.push(task); DB.save(db);
+      if (_useRemote && RS.saveTaskRemote) RS.saveTaskRemote(task);
+      return task;
     },
 
     // ── Completions API ────────────────────────────────────────
@@ -1078,6 +1081,50 @@ const API = (() => {
     },
   };
 
+  // ── TEACHER CONTACT GROUPS ───────────────────────────────
+  const _GROUPS_KEY = 'madrasa_groups';
+  const Groups = {
+    _read() {
+      if (_useRemote) return RS.mem.groups || (RS.mem.groups = []);
+      try { return JSON.parse(localStorage.getItem(_GROUPS_KEY)||'[]'); } catch { return []; }
+    },
+    _write(arr) {
+      if (_useRemote) { RS.mem.groups = arr; return; }
+      localStorage.setItem(_GROUPS_KEY, JSON.stringify(arr));
+    },
+    getAll() { return this._read(); },
+    getById(gid) { return this._read().find(g => g.id === gid) || null; },
+    add(name, studentIds) {
+      const arr = this._read();
+      const g = { id: uid('grp'), name: String(name||'').trim(), studentIds: studentIds||[], createdAt: today() };
+      arr.push(g); this._write(arr);
+      if (_useRemote && RS.upsertGroupRemote) RS.upsertGroupRemote(g);
+      return g;
+    },
+    update(gid, name, studentIds) {
+      const arr = this._read(); const g = arr.find(x => x.id === gid); if (!g) return null;
+      g.name = String(name||'').trim(); g.studentIds = studentIds||[];
+      this._write(arr);
+      if (_useRemote && RS.upsertGroupRemote) RS.upsertGroupRemote(g);
+      return g;
+    },
+    delete(gid) {
+      this._write(this._read().filter(g => g.id !== gid));
+      if (_useRemote && RS.deleteGroupRemote) RS.deleteGroupRemote(gid);
+    },
+    sendToGroup(gid, text) {
+      const g = this.getById(gid); if (!g || !g.studentIds.length) return [];
+      const db = DB.get(); const msgs = [];
+      g.studentIds.forEach(sid => {
+        if (!db.chats[sid]) db.chats[sid] = [];
+        const m = { id: uid('m'), role: 'out', text, type: 'text', time: nowTime(), read: false, groupId: gid };
+        db.chats[sid].push(m); msgs.push(m);
+      });
+      if (msgs.length) { stampNotify(db); DB.save(db); }
+      return msgs;
+    },
+  };
+
   // ── TEACHER DIARY ─────────────────────────────────────────
   const _DIARY_KEY = 'madrasa_diary';
   const Diary = {
@@ -1097,7 +1144,7 @@ const API = (() => {
   };
 
   return {
-    Auth, DB, Students, Messages, Tasks, Goals, Exams, Docs, AcademicHistory, TeacherNotes, Diary, today, nowTime, nextDate, uid,
+    Auth, DB, Students, Messages, Tasks, Goals, Exams, Docs, AcademicHistory, TeacherNotes, Diary, Groups, today, nowTime, nextDate, uid,
     MAX_UPLOAD_BYTES,
     prepareFilesForUpload,
     unlockTeacherRemote(pin) {

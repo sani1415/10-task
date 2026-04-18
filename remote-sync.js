@@ -17,7 +17,7 @@
     core: null, goals: null, exams: null,
     docs: [], academic: {}, tnotes: {},
     teacherPin: null, lockHints: [], loaded: false,
-    completions: [],
+    completions: [], groups: [],
   };
 
   function role() { const r = w.__MADRASA_ROLE__; return r === 'teacher' || r === 'student' ? r : ''; }
@@ -331,6 +331,41 @@
     return bootstrapLegacy();
   }
 
+  async function fetchGroupsRemote() {
+    if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
+    const sb = getClient(); if (!sb) return;
+    try {
+      const { data, error } = await sb.rpc('madrasa_rel_get_groups', { p_teacher_pin: _teacherPin });
+      if (error || !data) return;
+      const raw = typeof data === 'string' ? JSON.parse(data) : data;
+      mem.groups = (Array.isArray(raw) ? raw : []).map(g => ({
+        id: g.id, name: g.name,
+        studentIds: Array.isArray(g.student_ids) ? g.student_ids : [],
+        createdAt: g.created_at || '',
+      }));
+    } catch (e) { console.warn('fetchGroupsRemote:', e); }
+  }
+
+  async function upsertGroupRemote(g) {
+    if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
+    const sb = getClient(); if (!sb) return;
+    try {
+      await sb.rpc('madrasa_rel_upsert_group', {
+        p_teacher_pin: _teacherPin,
+        p_id: g.id, p_name: g.name,
+        p_student_ids: g.studentIds || [],
+      });
+    } catch (e) { console.warn('upsertGroupRemote:', e); }
+  }
+
+  async function deleteGroupRemote(gid) {
+    if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
+    const sb = getClient(); if (!sb) return;
+    try {
+      await sb.rpc('madrasa_rel_delete_group', { p_teacher_pin: _teacherPin, p_group_id: gid });
+    } catch (e) { console.warn('deleteGroupRemote:', e); }
+  }
+
   async function unlockTeacherWithPin(pin) {
     const sb = getClient(); if (!sb) throw new Error('Supabase client unavailable');
     const { data, error } = await sb.rpc('madrasa_rel_teacher_bootstrap', { p_teacher_pin: pin });
@@ -338,6 +373,7 @@
     assembleTeacherBundle(data);
     _teacherPin = (mem.teacherPin && mem.teacherPin !== '') ? mem.teacherPin : String(pin);
     mem.loaded = true;
+    void fetchGroupsRemote();
   }
 
   async function unlockStudentWithWaqfPin(waqfRaw, pin) {
@@ -476,6 +512,43 @@
     } catch (e) { console.warn('deleteMessageRemote:', e); }
   }
 
+  async function saveTaskRemote(task) {
+    if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
+    const sb = getClient(); if (!sb || !task) return;
+    try {
+      const p_task = { id: task.id, title: task.title, description: task.desc || '',
+        type: task.type || 'onetime', deadline: task.deadline || '', created_at: task.created || '' };
+      await sb.rpc('madrasa_rel_upsert_task', {
+        p_teacher_pin: _teacherPin, p_task,
+        p_assignee_ids: Object.keys(task.assignees || {}),
+      });
+      for (const [sid, status] of Object.entries(task.assignees || {})) {
+        const cb = (task.completedBy || {})[sid] || {};
+        await sb.rpc('madrasa_rel_update_task_status', {
+          p_pin: _teacherPin, p_role: 'teacher',
+          p_task_id: task.id, p_student_id: sid, p_status: status,
+          p_completed_date: cb.date || null, p_completed_time: cb.time || null,
+        });
+      }
+    } catch (e) { console.warn('saveTaskRemote:', e); }
+  }
+
+  async function saveStudentRemote(student) {
+    if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
+    const sb = getClient(); if (!sb || !student) return;
+    try {
+      const stuToDB = s => ({
+        id: s.id, waqf_id: s.waqfId, name: s.name, cls: s.cls || '', roll: s.roll || '',
+        pin: s.pin, color: s.color || '#128C7E', note: s.note || '',
+        father_name: s.fatherName || '', father_occupation: s.fatherOccupation || '',
+        contact: s.contact || '', district: s.district || '', upazila: s.upazila || '',
+        blood_group: s.bloodGroup || '', enrollment_date: s.enrollmentDate || '',
+        responsibility: s.responsibility || '',
+      });
+      await sb.rpc('madrasa_rel_upsert_student', { p_teacher_pin: _teacherPin, p_student: stuToDB(student) });
+    } catch (e) { console.warn('saveStudentRemote:', e); }
+  }
+
   async function deleteTaskRemote(tid) {
     if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
     const sb = getClient(); if (!sb || !tid) return;
@@ -495,6 +568,8 @@
     schedule, flushKey, flushAllFromMem,
     markDocReviewedRemote, markMessagesReadRemote, clearStudentDataRemote, deleteStudentRemote, deleteQuizRemote, deleteTaskRemote, deleteMessageRemote, getBroadcastReadCounts,
     upsertCompletionRemote, deleteCompletionRemote,
+    fetchGroupsRemote, upsertGroupRemote, deleteGroupRemote,
+    saveTaskRemote, saveStudentRemote,
     uploadFile, getSignedUrlForPath, consumeUploadResult,
     BUCKET, startRealtimeSync, pullRemoteSnapshot,
   };
