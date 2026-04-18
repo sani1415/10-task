@@ -431,7 +431,7 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
         <div class="form-group"><label class="form-label">বিভাগ</label>
           <select class="form-input" id="uploadCat">
             <option value="general">সাধারণ</option>
-            <option value="question">প্রশ্ন</option>
+            <option value="question">রোযনামচা</option>
             <option value="report">বিবরণ</option>
           </select>
         </div>
@@ -1243,7 +1243,7 @@ function renderSentDocs(){
   const docs=API.Docs.getForStudent(me.id);
   const el=document.getElementById('sentDocsList');
   if(!docs.length){ el.innerHTML='<div style="padding:16px;text-align:center;font-size:13px;color:var(--gray-400)">এখনো কোনো ফাইল পাঠাননি।</div>'; return; }
-  const catLabel={general:'সাধারণ',question:'প্রশ্ন',report:'বিবরণ'};
+  const catLabel={general:'সাধারণ',question:'রোযনামচা',report:'বিবরণ'};
   el.innerHTML=docs.map(d=>{
     const _dt=d.fileType||''; const icon=(_dt==='image'||_dt.startsWith('image/'))?'🖼️':(_dt==='pdf'||_dt==='application/pdf')?'📕':'📄';
     return `<div class="doc-sent-item">

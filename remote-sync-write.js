@@ -9,7 +9,8 @@
         pin: s.pin, color: s.color || '#128C7E', note: s.note || '',
         father_name: s.fatherName || '', father_occupation: s.fatherOccupation || '',
         contact: s.contact || '', district: s.district || '', upazila: s.upazila || '',
-        blood_group: s.bloodGroup || '', enrollment_date: s.enrollmentDate || '' };
+        blood_group: s.bloodGroup || '', enrollment_date: s.enrollmentDate || '',
+        responsibility: s.responsibility || '' };
     }
 
     async function saveCore(sb, core) {
@@ -83,7 +84,8 @@
           file_name: d.fileName, file_type: d.fileType || '', file_size: d.fileSize || 0,
           category: d.category || 'general', note: d.note || '',
           storage_path: d.storage_path || null, file_url: d.fileUrl || null,
-          is_read: d.read || false, uploaded_at: null };
+          is_read: d.read || false, uploaded_at: null,
+          review_status: d.reviewStatus || (d.sentBy === 'student' ? 'pending' : 'done') };
         try { await sb.rpc('madrasa_rel_insert_document', { p_pin: pin, p_role: r, p_doc }); }
         catch (e) { console.warn('doc insert:', d.id, e); }
       }

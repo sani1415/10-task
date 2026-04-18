@@ -154,6 +154,7 @@
       const done=Completions.getForStudent(s.id,from,today).filter(c=>c.status==='done'&&myTasks.find(t=>t.id===c.task_id)).length;
       const total=myTasks.length*days;
       return { sid:s.id, name:s.name, waqfId:s.waqfId, color:s.color,
+        responsibility:s.responsibility||'',
         done, total, percent:total>0?Math.round(done/total*100):0, streak:getStreak(s.id).current };
     }).sort((a,b)=>b.percent-a.percent||b.streak-a.streak);
   }

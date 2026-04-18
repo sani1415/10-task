@@ -114,6 +114,8 @@
 .doc-name{font-size:14px;font-weight:600;color:var(--gray-700);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .doc-meta{font-size:11px;color:var(--gray-400);margin-top:2px}
 .doc-cat-badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:8px;background:var(--gray-200);color:var(--gray-600);margin-right:4px}
+.doc-pending-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;background:#FFF3E0;color:#E65100;margin-right:4px}
+.doc-btn.done{background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7}
 .doc-actions{display:flex;gap:6px;flex-shrink:0}
 .doc-btn{width:32px;height:32px;border:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:opacity .2s}
 .doc-btn:active{opacity:.7}
@@ -207,7 +209,7 @@
 <!-- ══ CHATS ══════════════════════════════════════════════ -->
 <div class="screen active" id="screen-chats">
   <div class="search-bar" id="searchBar" style="display:none">
-    <input type="search" id="globalMsgSearchIn" enterkeyhint="search" autocomplete="off" placeholder="🔍 নাম, আইডি বা মেসেজ খুঁজুন…" oninput="onGlobalMsgSearchInput(this.value)">
+    <input type="search" id="globalMsgSearchIn" enterkeyhint="search" autocomplete="off" placeholder="🔍 নাম, আইডি বা মেসেজ খুঁজুন…" oninput="onSearchInput(this.value)">
   </div>
   <div class="global-msg-search-results" id="globalMsgSearchResults" style="display:none"></div>
   <div class="list-scroll" id="chatList"></div>
@@ -306,7 +308,7 @@
       <div class="filter-bar">
         <button class="filter-chip active" onclick="fDoc('all',this)">সব</button>
         <button class="filter-chip"        onclick="fDoc('general',this)">সাধারণ</button>
-        <button class="filter-chip"        onclick="fDoc('question',this)">প্রশ্ন</button>
+        <button class="filter-chip"        onclick="fDoc('question',this)">রোযনামচা</button>
         <button class="filter-chip"        onclick="fDoc('report',this)">বিবরণ</button>
       </div>
       <div id="docsGrouped"></div>
@@ -521,6 +523,7 @@
   <div class="modal-title" id="docPreviewTitle">ডকুমেন্ট</div>
   <div id="docPreviewMeta" style="font-size:13px;color:var(--gray-500);margin-bottom:12px"></div>
   <div id="docPreviewContent" style="text-align:center;margin-bottom:12px"></div>
+  <button class="btn-primary" id="docReviewBtn" style="margin-bottom:8px;display:none;background:#E65100" onclick="markDocReviewedFromPreview()">✅ পর্যালোচনা সম্পন্ন</button>
   <button class="btn-primary" id="docDownloadBtn" style="margin-bottom:8px;display:none" onclick="triggerDocDownload()">⬇️ ডাউনলোড</button>
   <button class="btn-secondary" onclick="closeModal('docPreviewModal')">বন্ধ করুন</button>
 </div></div>
@@ -771,7 +774,7 @@ function renderChatList(f=''){
     // Badge: green = student sent a message teacher hasn't read yet
     let badgeHtml='';
     if(ur) badgeHtml+=`<span class="chat-badge">${ur}</span>`;
-    h+=`<div class="chat-item" onclick="openChat('${s.id}')"><div class="chat-avatar" style="background:${s.color||C[0]}">${s.name.charAt(0)}</div><div class="chat-body"><div class="chat-row1"><span class="chat-name">${esc(s.name)}</span><span class="chat-time">${last?.time||''}</span></div><div class="chat-row2">${s.waqfId?`<span class="chat-waqf">${esc(API.Students.displayWaqfId(s.waqfId))}</span> · `:''}<span class="chat-preview">${preview}</span>${badgeHtml}</div></div></div>`;
+    h+=`<div class="chat-item" onclick="openChat('${s.id}')"><div class="chat-avatar" style="background:${s.color||C[0]}">${s.name.charAt(0)}</div><div class="chat-body"><div class="chat-row1"><span class="chat-name">${esc(s.name)}${s.responsibility?` <span style="font-size:10px;font-weight:700;color:#E65100;background:#FFF3E0;border-radius:5px;padding:1px 5px">${esc(s.responsibility)}</span>`:''}</span><span class="chat-time">${last?.time||''}</span></div><div class="chat-row2">${s.waqfId?`<span class="chat-waqf">${esc(API.Students.displayWaqfId(s.waqfId))}</span> · `:''}<span class="chat-preview">${preview}</span>${badgeHtml}</div></div></div>`;
   });
   document.getElementById('chatList').innerHTML=h||'<div class="empty-state"><div class="icon">💬</div><p>ছাত্র যোগ করুন।</p></div>';
 }
@@ -784,7 +787,7 @@ function openChat(id){
   document.getElementById('hAvatar').textContent=isBC?'📢':s?.name.charAt(0);
   document.getElementById('hAvatar').style.background=isBC?'#7B1FA2':(s?.color||C[0]);
   document.getElementById('hTitle').textContent=isBC?'সবাইকে বার্তা':s?.name;
-  document.getElementById('hSub').textContent=isBC?`${API.Students.getAll().length} জন`:(s?(s.waqfId?API.Students.displayWaqfId(s.waqfId)+' · ':'')+(s.cls||''):'');
+  document.getElementById('hSub').textContent=isBC?`${API.Students.getAll().length} জন`:(s?[s.waqfId?API.Students.displayWaqfId(s.waqfId):null,s.responsibility||null,s.cls||null].filter(Boolean).join(' · '):'');
   document.getElementById('fab').style.display='none';
   document.getElementById('searchToggleBtn').style.display='none';
   document.getElementById('inChatSearchBtn').style.display='flex';
@@ -979,6 +982,7 @@ async function openDocPreview(docId, markAsRead){
   }
   const btn=document.getElementById('docDownloadBtn');
   btn.style.display=data?'block':'none';
+  document.getElementById('docReviewBtn').style.display=meta.reviewStatus==='pending'?'block':'none';
   if(markAsRead){ API.Docs.markRead(docId); updateDocBadge(); }
   openModal('docPreviewModal');
 }
@@ -1111,7 +1115,7 @@ function renderStudentList(f=''){
     return `<div class="student-item" onclick="openStudentProfile('${s.id}')">
       <div class="s-avatar" style="background:${s.color||C[0]}">${s.name.charAt(0)}</div>
       <div class="s-info">
-        <div class="s-name">${esc(s.name)}</div>
+        <div class="s-name">${esc(s.name)}${s.responsibility?` <span style="font-size:11px;font-weight:600;color:#E65100;background:#FFF3E0;border-radius:6px;padding:1px 6px">${esc(s.responsibility)}</span>`:''}</div>
         <div class="s-meta"><span style="color:#128C7E;font-weight:600">${esc(s.waqfId?API.Students.displayWaqfId(s.waqfId):'—')}</span></div>
       </div>
       <div class="s-actions">
@@ -1292,7 +1296,7 @@ function renderAmalLeaderboard(period){
         <span class="tea-lb-rank${rk}" aria-hidden="true">${rank}</span>
         <span class="tea-lb-avatar" style="background:${item.color||'#128C7E'}">${(item.name||'?').slice(0,2)}</span>
         <span class="tea-lb-info">
-          <span class="tea-lb-name">${esc(item.name)}</span>
+          <span class="tea-lb-name">${esc(item.name)}${item.responsibility?` <span style="font-size:10px;font-weight:700;color:#E65100;background:#FFF3E0;border-radius:5px;padding:1px 5px">${esc(item.responsibility)}</span>`:''}</span>
           <span class="tea-lb-meta">${item.done}/${item.total} সম্পন্ন</span>
         </span>
         <span class="tea-lb-right">
@@ -1336,7 +1340,7 @@ function setTaskType(type){
 function openAddTask(preselectId=null){
   document.getElementById('taskStudents').innerHTML=API.Students.getAll().map(s=>`
     <div class="s-check-item"><input type="checkbox" id="tc_${s.id}" value="${s.id}" ${preselectId===s.id?'checked':''} style="accent-color:#128C7E">
-    <label for="tc_${s.id}" style="font-size:14px;cursor:pointer"><span style="color:#128C7E;font-weight:600;font-size:12px">${esc(API.Students.displayWaqfId(s.waqfId))}</span> · ${esc(s.name)} <span style="color:var(--gray-400);font-size:12px">${s.cls||''}</span></label></div>`).join('');
+    <label for="tc_${s.id}" style="font-size:14px;cursor:pointer"><span style="color:#128C7E;font-weight:600;font-size:12px">${esc(API.Students.displayWaqfId(s.waqfId))}</span> · ${esc(s.name)}${s.responsibility?` <span style="font-size:11px;font-weight:700;color:#E65100;background:#FFF3E0;border-radius:5px;padding:1px 5px">${esc(s.responsibility)}</span>`:''} <span style="color:var(--gray-400);font-size:12px">${s.cls||''}</span></label></div>`).join('');
   document.getElementById('selAll').checked=false;
   setTaskType('daily');
   openModal('addTaskModal');
@@ -1373,7 +1377,7 @@ function initCreateQuiz(){
   document.getElementById('qSelAll').checked=false;
   document.getElementById('qStudents').innerHTML=API.Students.getAll().map(s=>`
     <div class="s-check-item"><input type="checkbox" id="qc_${s.id}" value="${s.id}" style="accent-color:#128C7E">
-    <label for="qc_${s.id}" style="font-size:14px;cursor:pointer"><span style="color:#128C7E;font-weight:600;font-size:12px">${esc(API.Students.displayWaqfId(s.waqfId))}</span> · ${esc(s.name)}</label></div>`).join('');
+    <label for="qc_${s.id}" style="font-size:14px;cursor:pointer"><span style="color:#128C7E;font-weight:600;font-size:12px">${esc(API.Students.displayWaqfId(s.waqfId))}</span> · ${esc(s.name)}${s.responsibility?` <span style="font-size:11px;font-weight:700;color:#E65100;background:#FFF3E0;border-radius:5px;padding:1px 5px">${esc(s.responsibility)}</span>`:''}</label></div>`).join('');
   renderQuestions();
 }
 function toggleQAll(cb){ document.querySelectorAll('#qStudents input').forEach(c=>c.checked=cb.checked); }
@@ -1586,14 +1590,16 @@ function renderDocsGrouped(){
 }
 function renderDocItem(d){
   const icon=d.fileType?.startsWith('image/')?'🖼️':d.fileType==='application/pdf'?'📕':'📄';
-  const catLabel={general:'সাধারণ',question:'প্রশ্ন',report:'বিবরণ'}[d.category]||d.category||'সাধারণ';
+  const catLabel={general:'সাধারণ',question:'রোযনামচা',report:'বিবরণ'}[d.category]||d.category||'সাধারণ';
+  const isPending=d.reviewStatus==='pending';
   return `<div class="doc-item" id="ditem_${d.id}">
     <div class="doc-icon">${icon}</div>
     <div class="doc-info">
       <div class="doc-name">${esc(d.fileName)}</div>
-      <div class="doc-meta"><span class="doc-cat-badge">${catLabel}</span>${formatBytes(d.fileSize)} · ${formatDate(d.uploadedAt)}</div>
+      <div class="doc-meta">${isPending?'<span class="doc-pending-badge">⏳ বাকি</span>':''}<span class="doc-cat-badge">${catLabel}</span>${formatBytes(d.fileSize)} · ${formatDate(d.uploadedAt)}</div>
     </div>
     <div class="doc-actions">
+      ${isPending?`<button class="doc-btn done" onclick="markDocReviewed('${d.id}')" title="সম্পন্ন করুন">✅</button>`:''}
       <button class="doc-btn view" onclick="previewDoc('${d.id}')" title="দেখুন">👁</button>
       <button class="doc-btn del"  onclick="deleteDoc('${d.id}')" title="মুছুন">🗑</button>
     </div>
@@ -1613,6 +1619,8 @@ function toggleDocGroup(grpId, sid){
   }
 }
 function previewDoc(id){ openDocPreview(id, true); }
+function markDocReviewed(id){ API.Docs.markReviewed(id); renderDocsGrouped(); updateDocBadge(); showToast('✅ পর্যালোচনা সম্পন্ন'); }
+function markDocReviewedFromPreview(){ if(!curPreviewDocId) return; markDocReviewed(curPreviewDocId); document.getElementById('docReviewBtn').style.display='none'; const el=document.getElementById('ditem_'+curPreviewDocId); if(el) el.querySelector('.doc-pending-badge')?.remove(); }
 async function triggerDocDownload(){
   const meta=API.Docs.getById(curPreviewDocId);
   if(!meta) return;
@@ -1706,6 +1714,8 @@ function doImport(input){ const r=new FileReader(); r.onload=e=>{ try{ API.DB.im
 // ══ NAV ════════════════════════════════════════════════════
 function goTab(tab){
   curTab=tab;
+  // Close profile panel if open
+  if(document.getElementById('profileView').classList.contains('open')) closeStudentProfile();
   const sb=document.getElementById('searchBar');
   if(sb&&sb.style.display!=='none'){ const inp=sb.querySelector('input'); if(inp) inp.value=''; sb.style.display='none'; hideGlobalMsgSearchResults(); renderChatList(''); }
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
@@ -1713,6 +1723,11 @@ function goTab(tab){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+tab).classList.add('active');
   document.getElementById('chatView').classList.remove('open'); curChat=null;
+  // Reset chat header to default
+  const _t=API.DB.getTeacher();
+  document.getElementById('hTitle').textContent=_t.madrasa||'Waqful Madinah';
+  document.getElementById('hSub').textContent='শিক্ষক প্যানেল';
+  document.getElementById('hAvatar').textContent='শি'; document.getElementById('hAvatar').style.background='#128C7E';
   document.getElementById('fab').style.display=tab==='settings'?'none':'flex';
   if(tab==='exams')  { renderQuizList(); goExamTab('list'); }
   if(tab==='docs')   { renderDocsGrouped(); }
@@ -1726,10 +1741,36 @@ function fabClick(){
 }
 function toggleSearch(forceClose){
   const b=document.getElementById('searchBar');
+  const inp=b.querySelector('input');
   const open = forceClose===false ? false : (b.style.display==='none');
   b.style.display=open?'block':'none';
-  if(open){ b.querySelector('input').focus(); }
-  else { const inp=b.querySelector('input'); if(inp) inp.value=''; hideGlobalMsgSearchResults(); renderChatList(''); }
+  if(open){
+    if(curTab==='docs'){
+      inp.placeholder='🔍 ডকুমেন্ট বা ছাত্রের নাম খুঁজুন…';
+    } else {
+      inp.placeholder='🔍 নাম, আইডি বা মেসেজ খুঁজুন…';
+    }
+    inp.focus();
+  } else {
+    if(inp) inp.value='';
+    if(curTab==='docs'){ renderDocsGrouped(); }
+    else { hideGlobalMsgSearchResults(); renderChatList(''); }
+  }
+}
+function onSearchInput(q){
+  if(curTab==='docs') onDocSearchInput(q);
+  else onGlobalMsgSearchInput(q);
+}
+function onDocSearchInput(q){
+  const all=API.Docs.getAll().filter(d=>d.sentBy!=='teacher');
+  const filtered=q?all.filter(d=>{
+    const lq=q.toLowerCase();
+    return (d.fileName||'').toLowerCase().includes(lq)||(d.studentName||'').toLowerCase().includes(lq)||(d.note||'').toLowerCase().includes(lq);
+  }):null;
+  if(!filtered){ renderDocsGrouped(); return; }
+  const el=document.getElementById('docsGrouped');
+  if(!filtered.length){ el.innerHTML='<div class="empty-state"><div class="icon">🔍</div><p>কোনো ফলাফল নেই।</p></div>'; return; }
+  el.innerHTML=filtered.map(d=>`<div style="padding:8px 0;border-bottom:1px solid var(--gray-100)">${renderDocItem(d)}</div>`).join('');
 }
 
 // ══ STUDENT PROFILE ════════════════════════════════════════
@@ -1769,6 +1810,7 @@ function renderProfileBody(s){
     <div class="profile-v2-sheet">
       <div class="profile-v2-sec">মূল তথ্য</div>
       ${pRow('নাম','p_name',s.name)}
+      ${pRow('দায়িত্ব','p_resp',s.responsibility||'')}
       ${pRow('পিতার নাম','p_father',s.fatherName||'')}
       ${pRow('পিতার পেশা','p_focc',s.fatherOccupation||'')}
       ${pRow('মোবাইল','p_contact',s.contact||'')}
@@ -1898,7 +1940,7 @@ function saveProfileEdits(){
   if(!curProfileSid) return;
   const g=id=>document.getElementById(id)?.value.trim()||'';
   API.Students.update(curProfileSid,{
-    name:g('p_name'), fatherName:g('p_father'), fatherOccupation:g('p_focc'),
+    name:g('p_name'), responsibility:g('p_resp'), fatherName:g('p_father'), fatherOccupation:g('p_focc'),
     contact:g('p_contact'), bloodGroup:g('p_blood'),
     district:g('p_district'), upazila:g('p_upazila'),
     cls:g('p_cls'), roll:g('p_roll'), enrollmentDate:g('p_enroll'),

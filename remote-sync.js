@@ -70,7 +70,8 @@
       pin: r.pin, color: r.color || '#128C7E', note: r.note || '',
       fatherName: r.father_name || '', fatherOccupation: r.father_occupation || '',
       contact: r.contact || '', district: r.district || '', upazila: r.upazila || '',
-      bloodGroup: r.blood_group || '', enrollmentDate: r.enrollment_date || '' };
+      bloodGroup: r.blood_group || '', enrollmentDate: r.enrollment_date || '',
+      responsibility: r.responsibility || '' };
   }
 
   function msgFromDB(m) {
@@ -136,7 +137,7 @@
       fileName: d.file_name, fileType: d.file_type || '', fileSize: d.file_size || 0,
       category: d.category || 'general', note: d.note || '',
       storage_path: d.storage_path, fileUrl: d.file_url, read: d.is_read || false,
-      uploadedAt: d.uploaded_at || '' }));
+      uploadedAt: d.uploaded_at || '', reviewStatus: d.review_status || 'done' }));
     const academic = {}, tnotes = {};
     (bundle.academic_history || []).forEach(ah => {
       (academic[ah.student_id] = academic[ah.student_id] || []).push(
@@ -210,7 +211,7 @@
       fileName: d.file_name, fileType: d.file_type || '', fileSize: d.file_size || 0,
       category: d.category || 'general', note: d.note || '',
       storage_path: d.storage_path, fileUrl: d.file_url, read: d.is_read || false,
-      uploadedAt: d.uploaded_at || '' }));
+      uploadedAt: d.uploaded_at || '', reviewStatus: d.review_status || 'done' }));
     const academic = {};
     (bundle.academic_history || []).forEach(ah => {
       (academic[ah.student_id] = academic[ah.student_id] || []).push(
@@ -260,6 +261,16 @@
       await _write.saveExams(sb, mem.exams);
       await _write.saveDocs(sb, mem.docs);
     } catch (e) { console.error('flushAllFromMem:', e); }
+  }
+
+  async function markDocReviewedRemote(docId) {
+    const sb = getClient(); if (!sb || !usesSecureKv()) return;
+    const pin = _teacherPin; if (!pin) return;
+    try {
+      await sb.rpc('madrasa_rel_mark_doc_reviewed', { p_teacher_pin: pin, p_doc_id: docId });
+      const d = (mem.docs || []).find(x => x.id === docId);
+      if (d) { d.reviewStatus = 'done'; d.read = true; }
+    } catch (e) { console.warn('markDocReviewedRemote:', e); }
   }
 
   async function markMessagesReadRemote(threadId, roleStr) {
@@ -454,7 +465,7 @@
     unlockTeacherWithPin, unlockStudentWithWaqfPin,
     refreshStudentLockHints,
     schedule, flushKey, flushAllFromMem,
-    markMessagesReadRemote, clearStudentDataRemote, deleteStudentRemote, deleteQuizRemote,
+    markDocReviewedRemote, markMessagesReadRemote, clearStudentDataRemote, deleteStudentRemote, deleteQuizRemote,
     upsertCompletionRemote, deleteCompletionRemote,
     uploadFile, getSignedUrlForPath, consumeUploadResult,
     BUCKET, startRealtimeSync, pullRemoteSnapshot,

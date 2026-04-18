@@ -296,13 +296,13 @@ const API = (() => {
       if(!enrollmentDate) return null;
       return new Date().getFullYear() - new Date(enrollmentDate).getFullYear();
     },
-    add({ name, cls, roll, note, pin, fatherName='', fatherOccupation='', contact='', district='', upazila='', bloodGroup='', enrollmentDate='' }) {
+    add({ name, cls, roll, note, pin, fatherName='', fatherOccupation='', contact='', district='', upazila='', bloodGroup='', enrollmentDate='', responsibility='' }) {
       const db = DB.get();
       const colors=['#128C7E','#1565C0','#6A1B9A','#BF360C','#1B5E20','#E65100','#004D40','#880E4F'];
       const s = {
         id:uid('s'), waqfId:this.getNextWaqfId(),
         name, cls, roll, note, pin, color:colors[db.students.length%colors.length],
-        fatherName, fatherOccupation, contact, district, upazila, bloodGroup, enrollmentDate,
+        fatherName, fatherOccupation, contact, district, upazila, bloodGroup, enrollmentDate, responsibility,
       };
       db.students.push(s); db.chats[s.id]=[];
       delete db.allowEmptyStudents;
@@ -533,7 +533,7 @@ const API = (() => {
               id:docId, studentId:sid, studentName:student.name,
               fileName:dispName, fileType:file.type, fileSize:file.size,
               category, note, uploadedAt:new Date().toISOString(), read:false,
-              fileUrl, storage_path: storagePath || path, sentBy:'student',
+              fileUrl, storage_path: storagePath || path, sentBy:'student', reviewStatus:'pending',
             };
             const list=RS.mem.docs||[];
             list.unshift(meta);
@@ -554,7 +554,7 @@ const API = (() => {
           const meta={
             id:docId, studentId:sid, studentName:student.name,
             fileName:dispName, fileType:file.type, fileSize:file.size,
-            category, note, uploadedAt:new Date().toISOString(), read:false, sentBy:'student',
+            category, note, uploadedAt:new Date().toISOString(), read:false, sentBy:'student', reviewStatus:'pending',
           };
           try { localStorage.setItem('madrasa_doc_'+docId, e.target.result); }
           catch { reject(new Error('storage_full')); return; }
@@ -1034,6 +1034,12 @@ const API = (() => {
     markRead(id) {
       const list=this._readMeta(); const d=list.find(x=>x.id===id);
       if(d){ d.read=true; this._writeMeta(list); }
+    },
+
+    markReviewed(id) {
+      const list=this._readMeta(); const d=list.find(x=>x.id===id);
+      if(d){ d.reviewStatus='done'; d.read=true; this._writeMeta(list); }
+      if(_useRemote && RS.markDocReviewedRemote) RS.markDocReviewedRemote(id);
     },
 
     delete(id) {
