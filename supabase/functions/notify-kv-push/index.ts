@@ -178,6 +178,9 @@ Deno.serve(async (req: Request) => {
         for (const sub of allSubs)
           await trySend(sub, makePayload("শিক্ষকের নতুন বার্তা এসেছে।", "student", "msg-out-bc"));
       } else {
+        // Skip student-thread copies of broadcast messages — notification already sent via _bc row
+        const extra = record.extra as Record<string, unknown> | null;
+        if (extra?.bc_copy) return jsonResponse({ ok: true, skipped: "bc_copy" });
         // Teacher → specific student: look up student's name and waqf_id
         const { data: stu } = await sb
           .from("students").select("name, waqf_id").eq("id", threadId).maybeSingle();

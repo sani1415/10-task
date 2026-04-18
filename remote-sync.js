@@ -175,15 +175,9 @@
     (bundle.messages || []).forEach(m => {
       _savedMsgIds.add(m.id);
       const msg = msgFromDB(m);
-      if (m.thread_id === '_bc') {
-        // Put broadcast messages into the student's own thread so they appear in chat
-        const bcMsg = { ...msg, isBroadcast: true };
-        chats._bc.push(bcMsg);
-        if (stu && !chats[stu.id].some(x => x.id === m.id)) chats[stu.id].push(bcMsg);
-      } else { if (!chats[m.thread_id]) chats[m.thread_id] = []; chats[m.thread_id].push(msg); }
+      if (m.thread_id === '_bc') chats._bc.push(msg);
+      else { if (!chats[m.thread_id]) chats[m.thread_id] = []; chats[m.thread_id].push(msg); }
     });
-    // Sort student thread by timestamp so broadcast + personal messages are in order
-    if (stu && chats[stu.id]) chats[stu.id].sort((a, b) => (a._ts || 0) - (b._ts || 0));
     const tasks = (bundle.tasks || []).filter(Boolean).map(item => {
       const t = item.task || item, ta = item.assignment || {};
       return { id: t.id, title: t.title, desc: t.description || '', type: t.type || 'onetime',
@@ -464,6 +458,16 @@
     } catch (e) { console.warn('deleteQuizRemote:', e); }
   }
 
+  async function getBroadcastReadCounts() {
+    if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return [];
+    const sb = getClient(); if (!sb) return [];
+    try {
+      const { data, error } = await sb.rpc('madrasa_rel_broadcast_read_counts', { p_teacher_pin: _teacherPin });
+      if (error) return [];
+      return Array.isArray(data) ? data : [];
+    } catch { return []; }
+  }
+
   async function deleteMessageRemote(mid) {
     if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
     const sb = getClient(); if (!sb || !mid) return;
@@ -489,7 +493,7 @@
     unlockTeacherWithPin, unlockStudentWithWaqfPin,
     refreshStudentLockHints,
     schedule, flushKey, flushAllFromMem,
-    markDocReviewedRemote, markMessagesReadRemote, clearStudentDataRemote, deleteStudentRemote, deleteQuizRemote, deleteTaskRemote, deleteMessageRemote,
+    markDocReviewedRemote, markMessagesReadRemote, clearStudentDataRemote, deleteStudentRemote, deleteQuizRemote, deleteTaskRemote, deleteMessageRemote, getBroadcastReadCounts,
     upsertCompletionRemote, deleteCompletionRemote,
     uploadFile, getSignedUrlForPath, consumeUploadResult,
     BUCKET, startRealtimeSync, pullRemoteSnapshot,

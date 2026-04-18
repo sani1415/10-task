@@ -627,8 +627,9 @@ const API = (() => {
       const db=DB.get(); const m={id:uid('m'),role:'out',text,type:'text',time:nowTime(),read:true,isBroadcast:true};
       if(!db.chats['_bc']) db.chats['_bc']=[];
       db.chats['_bc'].push({...m});
-      // Student thread copies are local-only (_skipRemote) — _bc row in Supabase sends one notification to all
-      db.students.forEach(s=>{ if(!db.chats[s.id]) db.chats[s.id]=[]; db.chats[s.id].push({...m,id:uid('m'),_skipRemote:true}); });
+      // Student copies: saved to Supabase with bc_copy+bc_id so read-receipts work;
+      // Edge Function skips notification for bc_copy rows (only _bc row notifies all students).
+      db.students.forEach(s=>{ if(!db.chats[s.id]) db.chats[s.id]=[]; db.chats[s.id].push({...m,id:uid('m'),bc_copy:true,bc_id:m.id}); });
       stampNotify(db); DB.save(db); return m;
     },
     sendTask(sid,task) {

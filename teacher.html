@@ -72,6 +72,9 @@
 .tab-badge{background:#25D366;color:#075E54}
 #app .fab{bottom:calc(20px + 72px + env(safe-area-inset-bottom));z-index:101}
 .profile-view{z-index:110}
+/* ── Broadcast read receipt ── */
+.bc-receipt{font-size:10px;color:#7B1FA2;text-align:right;margin-top:2px;padding-right:2px;font-weight:600}
+
 /* ── Diary panel ── */
 .diary-panel{position:fixed;inset:0;background:#fff;z-index:112;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
 .diary-panel.open{transform:translateX(0)}
@@ -605,6 +608,7 @@
 <script>
 // ══ State ══════════════════════════════════════════════════
 let pin='', curTab='chats', curChat=null, curChatTab='msg', tFilter='all', docFilter='all', editSid=null;
+let _bcReadCounts={}; // { [bc_id]: {read_count, total_count} }
 let newTaskType='daily';
 let examTab='list', docViewTab='received';
 let questions=[], curQContainer='questionList', examChatSid=null;
@@ -849,6 +853,13 @@ function openChat(id){
   document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
   document.getElementById('chatView').classList.add('open');
   renderMsgs(id);
+  if(isBC && typeof RemoteSync!=='undefined' && RemoteSync.getBroadcastReadCounts){
+    RemoteSync.getBroadcastReadCounts().then(rows=>{
+      _bcReadCounts={};
+      (rows||[]).forEach(r=>{ if(r.bc_id) _bcReadCounts[r.bc_id]={read_count:r.read_count||0,total_count:r.total_count||0}; });
+      renderMsgs('_broadcast');
+    });
+  }
   setTimeout(()=>{ document.getElementById('chatMsgs').scrollTop=9e9; document.getElementById('msgIn').focus(); },50);
 }
 function closeChat(){
@@ -997,7 +1008,9 @@ function renderMsgs(id){
     } else {
       const tickHtml=m.role==='out'?(m.read?'<span class="msg-tick" style="color:#25D366">✓✓</span>':'<span class="msg-tick" style="color:rgba(0,0,0,.3)">✓</span>'):'';
       const bodyHtml=typeof _icsHighlight==='function'?_icsHighlight(m.text,_icsQuery):esc(m.text);
-      h+=`<div class="msg-wrap ${m.role}" data-mid="${m.id}">${swiIcon}<div class="msg-bubble ${m.role}">${replyRef}${bodyHtml}<div class="msg-meta"><span class="msg-time">${m.time}</span>${tickHtml}</div></div></div>`;
+      const rcpt=id==='_broadcast'&&m.role==='out'&&_bcReadCounts[m.id]
+        ?`<div class="bc-receipt">👁 ${_bcReadCounts[m.id].read_count}/${_bcReadCounts[m.id].total_count} জন দেখেছেন</div>`:'';
+      h+=`<div class="msg-wrap ${m.role}" data-mid="${m.id}">${swiIcon}<div class="msg-bubble ${m.role}">${replyRef}${bodyHtml}<div class="msg-meta"><span class="msg-time">${m.time}</span>${tickHtml}</div></div>${rcpt}</div>`;
     }
   });
   el.innerHTML=h; setTimeout(()=>el.scrollTop=9e9,50);

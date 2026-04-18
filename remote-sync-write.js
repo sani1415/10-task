@@ -36,7 +36,6 @@
       for (const [threadId, msgs] of Object.entries(core.chats || {})) {
         for (const msg of (msgs || [])) {
           if (ctx.savedMsgIds.has(msg.id)) continue;
-          if (msg._skipRemote) continue; // broadcast copies — only _bc row goes to Supabase
           const { id, role: r, type, text, read, time, ...extra } = msg;
           const p_message = { id, thread_id: threadId, role: r || (isTeacher ? 'out' : 'in'),
             type: type || 'text', text: text || '', extra, is_read: read || false, sent_at: null,
