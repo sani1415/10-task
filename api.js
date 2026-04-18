@@ -624,7 +624,7 @@ const API = (() => {
       });
     },
     broadcast(text) {
-      const db=DB.get(); const m={id:uid('m'),role:'out',text,type:'text',time:nowTime(),read:true,isBroadcast:true};
+      const db=DB.get(); const m={id:uid('m'),role:'out',text,type:'text',time:nowTime(),read:false,isBroadcast:true};
       if(!db.chats['_bc']) db.chats['_bc']=[];
       db.chats['_bc'].push({...m});
       // Student copies: saved to Supabase with bc_copy+bc_id so read-receipts work;

@@ -173,10 +173,14 @@ Deno.serve(async (req: Request) => {
         makePayload(`${studentName}: নতুন বার্তা পাঠিয়েছে।`, "teacher", `msg-in-${threadId}`));
     } else if (msgRole === "out") {
       if (threadId === "_bc") {
-        // Broadcast → notify all students (no name needed)
+        // Broadcast → notify all students once per unique endpoint
         const allSubs = await getAllStudentSubs(sb);
-        for (const sub of allSubs)
+        const bcSentEndpoints = new Set<string>();
+        for (const sub of allSubs) {
+          if (sub.endpoint && bcSentEndpoints.has(sub.endpoint)) continue;
           await trySend(sub, makePayload("শিক্ষকের নতুন বার্তা এসেছে।", "student", "msg-out-bc"));
+          if (sub.endpoint) bcSentEndpoints.add(sub.endpoint);
+        }
       } else {
         // Skip student-thread copies of broadcast messages — notification already sent via _bc row
         const extra = record.extra as Record<string, unknown> | null;
