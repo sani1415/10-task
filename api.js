@@ -814,7 +814,10 @@ const API = (() => {
       return done===ids.length?'done':late?'late':'pending';
     },
 
-    delete(tid) { const db=DB.get(); db.tasks=db.tasks.filter(t=>t.id!==tid); DB.save(db); },
+    delete(tid) {
+      const db=DB.get(); db.tasks=db.tasks.filter(t=>t.id!==tid); DB.save(db);
+      if (_useRemote && RS.deleteTaskRemote) RS.deleteTaskRemote(tid);
+    },
 
     // ── ApiAmal delegates ─────────────────────────────────────
     getStreak(sid,tid)       { const AA=window.ApiAmal; return AA?AA.getStreak(sid,tid):{current:0,longest:0}; },
@@ -1073,8 +1076,26 @@ const API = (() => {
     },
   };
 
+  // ── TEACHER DIARY ─────────────────────────────────────────
+  const _DIARY_KEY = 'madrasa_diary';
+  const Diary = {
+    _read() { try { return JSON.parse(localStorage.getItem(_DIARY_KEY)||'[]'); } catch { return []; } },
+    _write(arr) { localStorage.setItem(_DIARY_KEY, JSON.stringify(arr)); },
+    getAll() { return this._read(); },
+    add(text, date) {
+      const arr = this._read();
+      const entry = { id: uid('di'), date: date || today(), time: nowTime(), text: String(text||'').trim() };
+      arr.unshift(entry); this._write(arr); return entry;
+    },
+    update(id, text) {
+      const arr = this._read(); const e = arr.find(x => x.id === id);
+      if (e) { e.text = String(text||'').trim(); e.edited = today(); this._write(arr); } return e;
+    },
+    delete(id) { const arr = this._read().filter(x => x.id !== id); this._write(arr); },
+  };
+
   return {
-    Auth, DB, Students, Messages, Tasks, Goals, Exams, Docs, AcademicHistory, TeacherNotes, today, nowTime, nextDate, uid,
+    Auth, DB, Students, Messages, Tasks, Goals, Exams, Docs, AcademicHistory, TeacherNotes, Diary, today, nowTime, nextDate, uid,
     MAX_UPLOAD_BYTES,
     prepareFilesForUpload,
     unlockTeacherRemote(pin) {

@@ -458,6 +458,16 @@
     } catch (e) { console.warn('deleteQuizRemote:', e); }
   }
 
+  async function deleteTaskRemote(tid) {
+    if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
+    const sb = getClient(); if (!sb || !tid) return;
+    try {
+      await sb.rpc('madrasa_rel_delete_task', { p_teacher_pin: _teacherPin, p_task_id: tid });
+      if (mem.core && Array.isArray(mem.core.tasks))
+        mem.core.tasks = mem.core.tasks.filter(t => t.id !== tid);
+    } catch (e) { console.warn('deleteTaskRemote:', e); }
+  }
+
   w.RemoteSync = {
     isRemote, usesSecureKv, getClient,
     mem,
@@ -465,7 +475,7 @@
     unlockTeacherWithPin, unlockStudentWithWaqfPin,
     refreshStudentLockHints,
     schedule, flushKey, flushAllFromMem,
-    markDocReviewedRemote, markMessagesReadRemote, clearStudentDataRemote, deleteStudentRemote, deleteQuizRemote,
+    markDocReviewedRemote, markMessagesReadRemote, clearStudentDataRemote, deleteStudentRemote, deleteQuizRemote, deleteTaskRemote,
     upsertCompletionRemote, deleteCompletionRemote,
     uploadFile, getSignedUrlForPath, consumeUploadResult,
     BUCKET, startRealtimeSync, pullRemoteSnapshot,

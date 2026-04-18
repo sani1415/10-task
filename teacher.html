@@ -72,6 +72,19 @@
 .tab-badge{background:#25D366;color:#075E54}
 #app .fab{bottom:calc(20px + 72px + env(safe-area-inset-bottom));z-index:101}
 .profile-view{z-index:110}
+/* ── Diary panel ── */
+.diary-panel{position:fixed;inset:0;background:#fff;z-index:112;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+.diary-panel.open{transform:translateX(0)}
+.diary-hd{display:flex;align-items:center;gap:10px;padding:max(14px,env(safe-area-inset-top)) 12px 10px;background:#075E54;color:#fff}
+.diary-new-btn{margin-left:auto;background:rgba(255,255,255,.18);border:none;color:#fff;font-family:var(--font);font-size:13px;font-weight:700;padding:6px 14px;border-radius:20px;cursor:pointer;white-space:nowrap}
+.diary-entry-card{margin:10px 14px 0;border-radius:14px;background:#f8fafc;border:1px solid #e8edf2;overflow:hidden}
+.diary-entry-hd{display:flex;align-items:center;gap:8px;padding:10px 12px 8px;border-bottom:1px solid #f1f5f9}
+.diary-entry-date{font-size:12px;font-weight:700;color:#075E54;background:#E8F5F3;border-radius:8px;padding:2px 8px}
+.diary-entry-time{font-size:11px;color:#94a3b8}
+.diary-entry-body{padding:10px 12px;font-size:14px;color:#1e293b;white-space:pre-wrap;line-height:1.6}
+.diary-entry-actions{display:flex;gap:6px;padding:0 12px 10px}
+.diary-act-btn{font-size:12px;font-weight:600;border:none;border-radius:8px;padding:4px 12px;cursor:pointer}
+.diary-act-btn.edit{background:#E8F5F3;color:#075E54}.diary-act-btn.del{background:#FEE2E2;color:#991B1B}
 /* প্রোফাইল খোলা থাকলেও নিচের ট্যাব দেখা যাবে — স্ক্রল কন্টেন্ট নেভের পিছনে যাবে না */
 #profileView.open .profile-body{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px))}
 #teaMainShell #screen-tasks .amal-panel>.list-scroll{padding-bottom:16px}
@@ -202,6 +215,7 @@
   <div class="header-info" style="cursor:default" id="hInfo" onclick="if(curChat&&curChat!=='_broadcast')openStudentProfile(curChat)"><div class="header-title" id="hTitle">Waqful Madinah</div><div class="header-sub" id="hSub">শিক্ষক প্যানেল</div></div>
   <div class="header-actions">
     <button class="header-btn" id="inChatSearchBtn" style="display:none" onclick="toggleInChatSearch()" title="এই চ্যাটে খুঁজুন">🔍</button>
+    <button class="header-btn" id="diaryToggleBtn" onclick="openDiary()" title="ডায়েরি">📓</button>
     <button class="header-btn" id="searchToggleBtn" onclick="toggleSearch()">🔍</button>
   </div>
 </div>
@@ -449,6 +463,30 @@
   </div>
   <div class="profile-body" id="profileBody"></div>
 </div>
+
+<!-- ══ DIARY PANEL ══════════════════════════════════════════ -->
+<div class="diary-panel" id="diaryPanel">
+  <div class="diary-hd">
+    <button class="profile-hd-back" onclick="closeDiary()">‹</button>
+    <div class="profile-hd-info">
+      <div class="profile-hd-name">📓 আমার ডায়েরি</div>
+      <div class="profile-hd-sub" id="diaryHdSub">ব্যক্তিগত অভিজ্ঞতা ও ঘটনা</div>
+    </div>
+    <button class="diary-new-btn" onclick="openDiaryEntryModal()">＋ নতুন</button>
+  </div>
+  <div class="list-scroll" id="diaryList"></div>
+</div>
+
+<!-- Diary entry modal -->
+<div class="modal-overlay" id="diaryEntryModal"><div class="modal-sheet">
+  <div class="modal-handle"></div>
+  <div class="modal-title" id="diaryModalTitle">নতুন ডায়েরি এন্ট্রি</div>
+  <input type="date" id="diaryEntryDate" class="form-input" style="margin-bottom:10px">
+  <textarea id="diaryEntryText" class="form-input" rows="6" placeholder="আজকের অভিজ্ঞতা, ঘটনা বা চিন্তা লিখুন…" style="resize:none;min-height:130px" oninput="autoResize(this)"></textarea>
+  <input type="hidden" id="diaryEditingId">
+  <button class="btn-primary" style="margin-top:10px" onclick="saveDiaryEntry()">💾 সেভ করুন</button>
+  <button class="btn-secondary" style="margin-top:6px" onclick="closeModal('diaryEntryModal')">বাতিল</button>
+</div></div>
 
 <button class="fab" id="fab" onclick="fabClick()">＋</button>
 
@@ -1809,6 +1847,69 @@ function closeStudentProfile(){
   var _tn=document.getElementById('teaBottomNav'); if(_tn) _tn.style.display='block';
   document.getElementById('fab').style.display=curChat?'none':'flex';
   curProfileSid=null;
+}
+
+// ── Diary ──────────────────────────────────────────────────
+function openDiary(){
+  renderDiaryList();
+  document.getElementById('diaryPanel').classList.add('open');
+  var _tn=document.getElementById('teaBottomNav'); if(_tn) _tn.style.display='none';
+  document.getElementById('fab').style.display='none';
+}
+function closeDiary(){
+  document.getElementById('diaryPanel').classList.remove('open');
+  var _tn=document.getElementById('teaBottomNav'); if(_tn) _tn.style.display='block';
+  document.getElementById('fab').style.display=curChat?'none':'flex';
+}
+function renderDiaryList(){
+  const entries=API.Diary.getAll();
+  const sub=document.getElementById('diaryHdSub');
+  if(sub) sub.textContent=entries.length?entries.length+'টি এন্ট্রি':'ব্যক্তিগত অভিজ্ঞতা ও ঘটনা';
+  const el=document.getElementById('diaryList');
+  if(!entries.length){ el.innerHTML='<div style="text-align:center;padding:60px 20px;color:#94a3b8;font-size:14px">কোনো এন্ট্রি নেই।<br>＋ নতুন বাটনে লিখুন।</div>'; return; }
+  el.innerHTML=entries.map(e=>`
+    <div class="diary-entry-card">
+      <div class="diary-entry-hd">
+        <span class="diary-entry-date">${esc(e.date)}</span>
+        <span class="diary-entry-time">${esc(e.time||'')}${e.edited?' · সম্পাদিত':''}</span>
+      </div>
+      <div class="diary-entry-body">${esc(e.text)}</div>
+      <div class="diary-entry-actions">
+        <button class="diary-act-btn edit" onclick="editDiaryEntry('${esc(e.id)}')">✏️ সম্পাদনা</button>
+        <button class="diary-act-btn del" onclick="deleteDiaryEntry('${esc(e.id)}')">🗑 মুছুন</button>
+      </div>
+    </div>`).join('');
+}
+function openDiaryEntryModal(id){
+  document.getElementById('diaryEditingId').value=id||'';
+  document.getElementById('diaryModalTitle').textContent=id?'এন্ট্রি সম্পাদনা':'নতুন ডায়েরি এন্ট্রি';
+  if(id){
+    const e=API.Diary.getAll().find(x=>x.id===id);
+    document.getElementById('diaryEntryDate').value=e?.date||API.today();
+    document.getElementById('diaryEntryText').value=e?.text||'';
+  } else {
+    document.getElementById('diaryEntryDate').value=API.today();
+    document.getElementById('diaryEntryText').value='';
+  }
+  openModal('diaryEntryModal');
+}
+function editDiaryEntry(id){ openDiaryEntryModal(id); }
+function saveDiaryEntry(){
+  const id=document.getElementById('diaryEditingId').value;
+  const text=document.getElementById('diaryEntryText').value.trim();
+  const date=document.getElementById('diaryEntryDate').value;
+  if(!text){ showToast('⚠️ কিছু লিখুন'); return; }
+  if(id) API.Diary.update(id,text);
+  else API.Diary.add(text,date);
+  closeModal('diaryEntryModal');
+  renderDiaryList();
+  showToast('✅ ডায়েরি সেভ হয়েছে');
+}
+function deleteDiaryEntry(id){
+  if(!confirm('এই এন্ট্রিটি মুছবেন?')) return;
+  API.Diary.delete(id);
+  renderDiaryList();
+  showToast('🗑 মুছে ফেলা হয়েছে');
 }
 function renderProfileBody(s){
   const batch=API.Students.getBatchYear(s.enrollmentDate);
