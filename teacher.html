@@ -19,8 +19,20 @@
 <style>
 /* ── Teacher theme ── */
 #lockScreen{background:linear-gradient(160deg,#075E54 0%,#128C7E 70%)}
-.header{background:#075E54}.tab-bar{background:#075E54;border-bottom:2px solid #25D366}
-.tab-btn.active{border-bottom-color:#25D366}.tab-badge{background:#25D366;color:#075E54}
+.header{background:#075E54}
+/* ফ্লোটিং নিচের ট্যাব (শিক্ষক) */
+.tea-main-shell{flex:1;display:flex;flex-direction:column;min-height:0;padding-bottom:calc(12px + 68px + env(safe-area-inset-bottom))}
+#teaBottomNav.tea-float-nav-wrap{display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:100;width:100%;max-width:430px;box-sizing:border-box;padding:0 12px calc(10px + env(safe-area-inset-bottom));pointer-events:none}
+.tea-float-nav-inner{pointer-events:auto;display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:18px;padding:6px 4px;border:1px solid #f1f5f9;box-shadow:0 -4px 24px rgba(0,0,0,.06),0 8px 32px rgba(7,94,84,.1)}
+.tea-float-nav-inner .tab-btn{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 1px;font-family:var(--font);font-size:9px;font-weight:700;color:#64748b;background:none;border:none;border-radius:12px;cursor:pointer;transition:color .2s,background .2s;position:relative;line-height:1.15}
+.tea-float-nav-inner .tab-btn.active{color:#075E54;background:rgba(7,94,84,.1)}
+.tea-float-nav-inner .tab-ic{font-size:17px;line-height:1;display:block}
+.tea-float-nav-inner .tab-lbl{display:block;text-align:center}
+.tea-float-nav-inner .tab-badge{top:2px;right:4px}
+.tab-badge{background:#25D366;color:#075E54}
+#app .fab{bottom:calc(20px + 72px + env(safe-area-inset-bottom));z-index:101}
+.profile-view{z-index:110}
+#teaMainShell #screen-tasks .amal-panel>.list-scroll{padding-bottom:16px}
 .chat-badge{background:#25D366;color:#075E54}.filter-chip.active{background:#075E54}
 .progress-fill{background:#25D366}.send-btn{background:#128C7E}.fab{background:#25D366;color:#075E54}
 .backup-btn{background:#075E54}.pin-copy-btn{background:#075E54}.s-pin{color:#128C7E}
@@ -134,6 +146,9 @@
   <button class="change-pin-btn" onclick="showToast('ডিফল্ট পিন: 1234 · সেটিং থেকে পরিবর্তন করুন')">পিন ভুলে গেছেন?</button>
 </div>
 
+<!-- ══ MAIN (হেডার + স্ক্রিন + চ্যাট ভিউ — নিচে ফ্লোটিং ট্যাব) ══ -->
+<div id="teaMainShell" class="tea-main-shell">
+
 <!-- ══ HEADER ════════════════════════════════════════════ -->
 <div class="header" id="hdr">
   <button class="header-back" id="backBtn" onclick="closeChat()">‹</button>
@@ -143,16 +158,6 @@
     <button class="header-btn" id="inChatSearchBtn" style="display:none" onclick="toggleInChatSearch()" title="এই চ্যাটে খুঁজুন">🔍</button>
     <button class="header-btn" id="searchToggleBtn" onclick="toggleSearch()">🔍</button>
   </div>
-</div>
-
-<!-- ══ TAB BAR ═══════════════════════════════════════════ -->
-<div class="tab-bar" id="tabBar">
-  <button class="tab-btn active" onclick="goTab('chats')"    id="tab-chats">💬 চ্যাট</button>
-  <button class="tab-btn"        onclick="goTab('students')" id="tab-students">👥 ছাত্র</button>
-  <button class="tab-btn"        onclick="goTab('tasks')"    id="tab-tasks">📋 আমল<span class="tab-badge" id="tBadge"></span></button>
-  <button class="tab-btn"        onclick="goTab('exams')"    id="tab-exams">📝 পরীক্ষা</button>
-  <button class="tab-btn"        onclick="goTab('docs')"     id="tab-docs">📎 ডকুমেন্ট<span class="tab-badge" id="docBadge"></span></button>
-  <button class="tab-btn"        onclick="goTab('settings')" id="tab-settings">⚙️</button>
 </div>
 
 <!-- ══ CHATS ══════════════════════════════════════════════ -->
@@ -306,25 +311,6 @@
   </div>
 </div>
 
-<!-- ══ STUDENT PROFILE VIEW ═══════════════════════════════ -->
-<div class="profile-view" id="profileView">
-  <div class="profile-hd">
-    <button class="profile-hd-back" onclick="closeStudentProfile()">‹</button>
-    <div class="profile-hd-info">
-      <div class="profile-hd-name" id="profileHdName">ছাত্রের প্রোফাইল</div>
-      <div class="profile-hd-sub" id="profileHdSub">পরিচয় ও তথ্য</div>
-    </div>
-    <button class="profile-save-btn" onclick="saveProfileEdits()">💾 সেভ</button>
-  </div>
-  <div class="prof-tabs">
-    <button class="prof-tab active" id="ptab-info"    onclick="switchProfileTab('info',this)">👤 তথ্য</button>
-    <button class="prof-tab"        id="ptab-acad"    onclick="switchProfileTab('acad',this)">📚 একাডেমিক</button>
-    <button class="prof-tab"        id="ptab-notes"   onclick="switchProfileTab('notes',this)">🗒️ নোট</button>
-    <button class="prof-tab"        id="ptab-actions" onclick="switchProfileTab('actions',this)">⚙️ বিকল্প</button>
-  </div>
-  <div class="profile-body" id="profileBody"></div>
-</div>
-
 <!-- ══ CHAT VIEW ══════════════════════════════════════════ -->
 <div class="chat-view" id="chatView">
   <div class="bc-notice" id="bcNotice">📢 গ্রুপ বার্তা — সবাইকে পাঠানো হবে</div>
@@ -378,6 +364,39 @@
     <div class="chat-input-wrap"><textarea id="msgIn" placeholder="বার্তা লিখুন..." rows="1" oninput="autoResize(this)"></textarea></div>
     <button class="send-btn" onclick="sendMsg()">➤</button>
   </div>
+</div>
+
+</div><!-- /teaMainShell -->
+
+<!-- ══ ফ্লোটিং নিচের ট্যাব বার ═══════════════════════════════ -->
+<nav id="teaBottomNav" class="tea-float-nav-wrap" aria-label="প্রধান মেনু">
+  <div class="tea-float-nav-inner">
+    <button type="button" class="tab-btn active" onclick="goTab('chats')"    id="tab-chats"><span class="tab-ic" aria-hidden="true">💬</span><span class="tab-lbl">চ্যাট</span></button>
+    <button type="button" class="tab-btn"        onclick="goTab('students')" id="tab-students"><span class="tab-ic" aria-hidden="true">👥</span><span class="tab-lbl">ছাত্র</span></button>
+    <button type="button" class="tab-btn"        onclick="goTab('tasks')"    id="tab-tasks"><span class="tab-ic" aria-hidden="true">📋</span><span class="tab-lbl">আমল</span><span class="tab-badge" id="tBadge"></span></button>
+    <button type="button" class="tab-btn"        onclick="goTab('exams')"    id="tab-exams"><span class="tab-ic" aria-hidden="true">📝</span><span class="tab-lbl">পরীক্ষা</span></button>
+    <button type="button" class="tab-btn"        onclick="goTab('docs')"     id="tab-docs"><span class="tab-ic" aria-hidden="true">📎</span><span class="tab-lbl">ডকুমেন্ট</span><span class="tab-badge" id="docBadge"></span></button>
+    <button type="button" class="tab-btn"        onclick="goTab('settings')" id="tab-settings"><span class="tab-ic" aria-hidden="true">⚙️</span><span class="tab-lbl">সেটিং</span></button>
+  </div>
+</nav>
+
+<!-- ══ STUDENT PROFILE VIEW ═══════════════════════════════ -->
+<div class="profile-view" id="profileView">
+  <div class="profile-hd">
+    <button class="profile-hd-back" onclick="closeStudentProfile()">‹</button>
+    <div class="profile-hd-info">
+      <div class="profile-hd-name" id="profileHdName">ছাত্রের প্রোফাইল</div>
+      <div class="profile-hd-sub" id="profileHdSub">পরিচয় ও তথ্য</div>
+    </div>
+    <button class="profile-save-btn" onclick="saveProfileEdits()">💾 সেভ</button>
+  </div>
+  <div class="prof-tabs">
+    <button class="prof-tab active" id="ptab-info"    onclick="switchProfileTab('info',this)">👤 তথ্য</button>
+    <button class="prof-tab"        id="ptab-acad"    onclick="switchProfileTab('acad',this)">📚 একাডেমিক</button>
+    <button class="prof-tab"        id="ptab-notes"   onclick="switchProfileTab('notes',this)">🗒️ নোট</button>
+    <button class="prof-tab"        id="ptab-actions" onclick="switchProfileTab('actions',this)">⚙️ বিকল্প</button>
+  </div>
+  <div class="profile-body" id="profileBody"></div>
 </div>
 
 <button class="fab" id="fab" onclick="fabClick()">＋</button>
@@ -542,6 +561,7 @@ async function chkPin(){
       await API.DB.finalizeRemoteTeacherAfterUnlock();
       localStorage.setItem('madrasa_lastPanel','teacher');
       document.getElementById('lockScreen').style.display='none';
+      var _tn=document.getElementById('teaBottomNav'); if(_tn) _tn.style.display='block';
       pin=''; dots();
       renderAll();
       void API.Pwa.enableNotificationsAfterAuth('teacher');
@@ -552,7 +572,7 @@ async function chkPin(){
     }
     return;
   }
-  if(API.Auth.checkTeacherPin(pin)){ localStorage.setItem('madrasa_lastPanel','teacher'); document.getElementById('lockScreen').style.display='none'; renderAll(); void API.Pwa.enableNotificationsAfterAuth('teacher'); }
+  if(API.Auth.checkTeacherPin(pin)){ localStorage.setItem('madrasa_lastPanel','teacher'); document.getElementById('lockScreen').style.display='none'; var _tn2=document.getElementById('teaBottomNav'); if(_tn2) _tn2.style.display='block'; renderAll(); void API.Pwa.enableNotificationsAfterAuth('teacher'); }
   else { document.getElementById('pinErr').textContent='❌ পিন ভুল হয়েছে'; pin=''; dots(); setTimeout(()=>document.getElementById('pinErr').textContent='',2000); }
 }
 function renderAll(){
@@ -722,7 +742,7 @@ function openChat(id){
   document.getElementById('hAvatar').style.background=isBC?'#7B1FA2':(s?.color||C[0]);
   document.getElementById('hTitle').textContent=isBC?'সবাইকে বার্তা':s?.name;
   document.getElementById('hSub').textContent=isBC?`${API.Students.getAll().length} জন`:(s?(s.waqfId?API.Students.displayWaqfId(s.waqfId)+' · ':'')+(s.cls||''):'');
-  document.getElementById('tabBar').style.display='none';
+  var _tn=document.getElementById('teaBottomNav'); if(_tn) _tn.style.display='none';
   document.getElementById('fab').style.display='none';
   document.getElementById('searchToggleBtn').style.display='none';
   document.getElementById('inChatSearchBtn').style.display='flex';
@@ -746,7 +766,7 @@ function openChat(id){
 function closeChat(){
   closeInChatSearch();
   curChat=null; curChatTab='msg'; document.getElementById('chatView').classList.remove('open');
-  document.getElementById('tabBar').style.display='flex'; document.getElementById('fab').style.display='flex';
+  var _tn=document.getElementById('teaBottomNav'); if(_tn) _tn.style.display='block'; document.getElementById('fab').style.display='flex';
   document.getElementById('backBtn').style.display='none';
   document.getElementById('searchToggleBtn').style.display='flex';
   document.getElementById('inChatSearchBtn').style.display='none';
@@ -1660,13 +1680,13 @@ function openStudentProfile(sid){
   document.querySelectorAll('.prof-tab').forEach((b,i)=>b.classList.toggle('active',i===0));
   renderProfileBody(s);
   document.getElementById('profileView').classList.add('open');
-  document.getElementById('tabBar').style.display='none';
+  var _tn=document.getElementById('teaBottomNav'); if(_tn) _tn.style.display='none';
   document.getElementById('fab').style.display='none';
 }
 function closeStudentProfile(){
   document.getElementById('profileView').classList.remove('open');
   if(!curChat){
-    document.getElementById('tabBar').style.display='flex';
+    var _tn=document.getElementById('teaBottomNav'); if(_tn) _tn.style.display='block';
     document.getElementById('fab').style.display='flex';
   }
   curProfileSid=null;

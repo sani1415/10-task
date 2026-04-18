@@ -19,8 +19,17 @@
 <style>
 /* ── Student theme ── */
 #lockScreen{background:linear-gradient(160deg,#1B5E20 0%,#2E7D32 60%,#388E3C 100%)}
-.header{background:#2E7D32}.tab-bar{background:#2E7D32;border-bottom:2px solid #66BB6A}
-.tab-btn.active{border-bottom-color:#66BB6A}.tab-badge{background:#66BB6A;color:#1B5E20}
+.header{background:#2E7D32}
+/* ফ্লোটিং নিচের ট্যাব — উপরের ট্যাব বার সরানো */
+.stu-main-shell{flex:1;display:flex;flex-direction:column;min-height:0;padding-bottom:calc(12px + 68px + env(safe-area-inset-bottom))}
+#stuBottomNav.stu-float-nav-wrap{display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:100;width:100%;max-width:430px;box-sizing:border-box;padding:0 12px calc(10px + env(safe-area-inset-bottom));pointer-events:none}
+.stu-float-nav-inner{pointer-events:auto;display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:18px;padding:6px 4px;border:1px solid #f1f5f9;box-shadow:0 -4px 24px rgba(0,0,0,.06),0 8px 32px rgba(15,118,110,.08)}
+.stu-float-nav-inner .tab-btn{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 1px;font-family:var(--font);font-size:9px;font-weight:700;color:#64748b;background:none;border:none;border-radius:12px;cursor:pointer;transition:color .2s,background .2s;position:relative;line-height:1.15}
+.stu-float-nav-inner .tab-btn.active{color:#2E7D32;background:rgba(46,125,50,.1)}
+.stu-float-nav-inner .tab-ic{font-size:17px;line-height:1;display:block}
+.stu-float-nav-inner .tab-lbl{display:block;text-align:center}
+.stu-float-nav-inner .tab-badge{top:2px;right:4px}
+.tab-badge{background:#66BB6A;color:#1B5E20}
 .filter-chip.active{background:#2E7D32}.progress-fill{background:#66BB6A}
 .send-btn{background:#2E7D32}.goal-add-btn{background:#2E7D32}.goal-check{border-color:#2E7D32}
 .goal-check.done{background:#2E7D32;border-color:#2E7D32}.btn-primary{background:#2E7D32}
@@ -43,6 +52,15 @@
 .type-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:6px}
 .type-badge.daily{background:#E8F5E9;color:#2E7D32}.type-badge.onetime{background:#FFF3E0;color:#E65100}
 .daily-reset-notice{font-size:12px;color:#2E7D32;background:#E8F5E9;border-radius:8px;padding:6px 10px;margin:8px 12px;display:flex;align-items:center;gap:6px}
+/* আমল ট্যাব — prototype-aligned accents */
+#screen-tasks{background:#f3f4f6}
+.stu-filter-pill.active{background:#2E7D32!important;color:#fff!important;border-color:#2E7D32!important;box-shadow:0 8px 20px rgba(46,125,50,.2)}
+.stu-amal-live{background:#E8F5E9;color:#2E7D32}
+.home-amal-dash{background:#E8F5E9;border:1px solid #C8E6C9;border-radius:14px;padding:12px 14px;margin:0 12px 14px;text-align:center}
+.home-amal-dash-txt{font-size:13px;color:#1B5E20;line-height:1.5;margin:0 0 10px}
+.home-amal-dash-btn{width:100%;background:#2E7D32;color:#fff;border:none;border-radius:12px;padding:10px 14px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(46,125,50,.2)}
+.home-amal-dash-btn:active{transform:scale(.98)}
+#stuMainShell #screen-tasks .amal-panel>.list-scroll{padding-bottom:16px}
 
 /* ── Exams ── */
 .exam-card{background:#fff;margin:10px 12px;border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden}
@@ -216,6 +234,8 @@ function skp(field,digit){if(field==='id'){if(_skId.length>=3)return;_skId+=digi
 function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay();}else{_skPin=_skPin.slice(0,-1);_skUpdatePinDots();}}
 </script>
 
+<!-- ══ MAIN (হেডার + স্ক্রিন — নিচে ফ্লোটিং ট্যাব) ═══════════════ -->
+<div id="stuMainShell" class="stu-main-shell">
 <!-- ══ HEADER ════════════════════════════════════════════ -->
 <div class="header">
   <div class="header-avatar" id="hAvatar" style="background:rgba(255,255,255,.25);cursor:pointer" onclick="openStudentSelfProfile()">?</div>
@@ -226,16 +246,6 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
   </div>
 </div>
 
-<!-- ══ TAB BAR ═══════════════════════════════════════════ -->
-<div class="tab-bar">
-  <button class="tab-btn active" onclick="goTab('chat')"  id="tab-chat">💬 রিসালা<span class="tab-badge" id="urBadge"></span></button>
-  <button class="tab-btn"        onclick="goTab('home')"  id="tab-home">🏠 হোম</button>
-  <button class="tab-btn"        onclick="goTab('tasks')" id="tab-tasks">📋 আমল<span class="tab-badge" id="tBadge"></span></button>
-  <button class="tab-btn"        onclick="goTab('exams')" id="tab-exams">📝 পরীক্ষা<span class="tab-badge" id="examBadge"></span></button>
-  <button class="tab-btn"        onclick="goTab('goals')" id="tab-goals">🎯 লক্ষ্য</button>
-  <button class="tab-btn"        onclick="goTab('docs')"  id="tab-docs">📎 ফাইল</button>
-</div>
-
 <!-- ══ HOME ══════════════════════════════════════════════ -->
 <div class="screen" id="screen-home">
   <div class="list-scroll">
@@ -244,8 +254,8 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
       <div class="stat-card orange"><div class="stat-num" id="sPend">0</div><div class="stat-label">⏳ অপেক্ষমান</div></div>
       <div class="stat-card red"><div class="stat-num" id="sLate">0</div><div class="stat-label">❌ বিলম্বিত</div></div>
     </div>
-    <div class="sec-hd">সাম্প্রতিক আমল <span class="sec-link" onclick="goTab('tasks')">সব দেখুন →</span></div>
-    <div id="homeTaskPrev"></div>
+    <div class="sec-hd">আমল</div>
+    <div id="homeAmalSummary"></div>
     <div class="sec-hd">পরীক্ষা <span class="sec-link" onclick="goTab('exams')">সব দেখুন →</span></div>
     <div id="homeExamPrev"></div>
     <div class="sec-hd">আমার লক্ষ্য <span class="sec-link" onclick="goTab('goals')">সব দেখুন →</span></div>
@@ -299,15 +309,14 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
     <button class="amal-sub-tab"        onclick="goAmalTab('history',this)">📅 ইতিহাস</button>
   </div>
   <div id="amal-panel-today" class="amal-panel">
-    <div id="amalStreakBar"></div>
-    <div id="amalProgressRings"></div>
-    <div class="filter-bar">
-      <button class="filter-chip active" onclick="fTask('all',this)">সব</button>
-      <button class="filter-chip"        onclick="fTask('daily',this)">🔁 দৈনিক</button>
-      <button class="filter-chip"        onclick="fTask('onetime',this)">📌 এককালীন</button>
-      <button class="filter-chip"        onclick="fTask('done',this)">✅ সম্পন্ন</button>
+    <div id="amalDashboard"></div>
+    <div class="stu-amal-filters no-scrollbar">
+      <button type="button" class="stu-filter-pill active" onclick="fTask('all',this)">সব</button>
+      <button type="button" class="stu-filter-pill"        onclick="fTask('daily',this)">দৈনিক</button>
+      <button type="button" class="stu-filter-pill"        onclick="fTask('onetime',this)">এককালীন</button>
+      <button type="button" class="stu-filter-pill"        onclick="fTask('done',this)">সম্পন্ন</button>
     </div>
-    <div class="list-scroll" id="taskList"></div>
+    <div class="list-scroll stu-amal-list" id="taskList"></div>
   </div>
   <div id="amal-panel-history" class="amal-panel" style="display:none">
     <div class="list-scroll" id="amalCalendarContent"></div>
@@ -390,6 +399,20 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
     <div style="height:20px"></div>
   </div>
 </div>
+
+</div><!-- /stuMainShell -->
+
+<!-- ══ ফ্লোটিং নিচের ট্যাব বার ═══════════════════════════════ -->
+<nav id="stuBottomNav" class="stu-float-nav-wrap" aria-label="প্রধান মেনু">
+  <div class="stu-float-nav-inner">
+    <button type="button" class="tab-btn active" onclick="goTab('chat')"  id="tab-chat"><span class="tab-ic" aria-hidden="true">💬</span><span class="tab-lbl">রিসালা</span><span class="tab-badge" id="urBadge"></span></button>
+    <button type="button" class="tab-btn"        onclick="goTab('home')"  id="tab-home"><span class="tab-ic" aria-hidden="true">🏠</span><span class="tab-lbl">হোম</span></button>
+    <button type="button" class="tab-btn"        onclick="goTab('tasks')" id="tab-tasks"><span class="tab-ic" aria-hidden="true">📋</span><span class="tab-lbl">আমল</span><span class="tab-badge" id="tBadge"></span></button>
+    <button type="button" class="tab-btn"        onclick="goTab('exams')" id="tab-exams"><span class="tab-ic" aria-hidden="true">📝</span><span class="tab-lbl">পরীক্ষা</span><span class="tab-badge" id="examBadge"></span></button>
+    <button type="button" class="tab-btn"        onclick="goTab('goals')" id="tab-goals"><span class="tab-ic" aria-hidden="true">🎯</span><span class="tab-lbl">লক্ষ্য</span></button>
+    <button type="button" class="tab-btn"        onclick="goTab('docs')"  id="tab-docs"><span class="tab-ic" aria-hidden="true">📎</span><span class="tab-lbl">ফাইল</span></button>
+  </div>
+</nav>
 
 <!-- ══ MODALS ══════════════════════════════════════════════ -->
 <div class="modal-overlay" id="addGoalModal"><div class="modal-sheet">
@@ -599,6 +622,7 @@ function onLogin(){
   document.getElementById('hTitle').textContent=me.name;
   { const p=[]; if(me.waqfId) p.push(API.Students.getShortId(me)); if(me.cls) p.push(me.cls); document.getElementById('hSub').textContent=p.length?p.join(' · '):'ওয়াকিফ'; }
   const sb=document.getElementById('stuInChatSearchBtn'); if(sb) sb.style.display='flex';
+  var _nav=document.getElementById('stuBottomNav'); if(_nav) _nav.style.display='block';
   renderAll();
   goTab('chat');
   void API.Pwa.enableNotificationsAfterAuth('student', { waqfId: me && me.waqfId });
@@ -607,6 +631,7 @@ function logout(){
   me=null;
   closeStuInChatSearch();
   const sb=document.getElementById('stuInChatSearchBtn'); if(sb) sb.style.display='none';
+  var _nav=document.getElementById('stuBottomNav'); if(_nav) _nav.style.display='none';
   _skId=''; _skPin=''; _skUpdateIdDisplay(); _skUpdatePinDots();
   showLoginErr('');
   document.getElementById('loginStepPin').style.display='none';
@@ -617,7 +642,7 @@ function logout(){
   Promise.resolve(API.refreshStudentLockHints()).then(()=>renderPendingSection());
   goTab('chat');
 }
-function renderAll(){ renderHome(); renderChat(); renderTaskList(); renderAmalStreakBar(); renderAmalProgressRings(); renderExamList(); renderSentDocs(); renderReceivedDocs(); renderGoals(); updateBadges(); }
+function renderAll(){ renderHome(); renderChat(); renderTaskList(); renderAmalDashboard(); renderExamList(); renderSentDocs(); renderReceivedDocs(); renderGoals(); updateBadges(); }
 
 // ══ HOME ═══════════════════════════════════════════════════
 function renderHome(){
@@ -632,8 +657,17 @@ function renderHome(){
   document.getElementById('sPend').textContent=pend;
   document.getElementById('sLate').textContent=late;
 
-  const recent=tasks.filter(t=>t.type==='daily'?!API.Tasks.isDailyDoneToday(t,me.id):t.assignees[me.id]!=='done').slice(0,2);
-  document.getElementById('homeTaskPrev').innerHTML=recent.length?recent.map(t=>atCardHtml(t,true)).join(''):'<div style="padding:12px 16px;font-size:13px;color:var(--gray-400)">✅ সব আমল সম্পন্ন!</div>';
+  const dailyAll=daily.length;
+  const dailyDoneToday=daily.filter(t=>API.Tasks.isDailyDoneToday(t,me.id)).length;
+  const sumEl=document.getElementById('homeAmalSummary');
+  if(sumEl){
+    let txt;
+    if(!tasks.length) txt='উস্তাদ এখনো কোনো আমল দেননি।';
+    else if(pend===0) txt='✅ সব আমল সম্পন্ন! মাশাআল্লাহ।';
+    else if(dailyAll>0) txt=`আজ ${dailyDoneToday}/${dailyAll} দৈনিক সম্পন্ন · মোট ${pend}টি অপেক্ষমান। বিস্তারিত ও সম্পূর্ণ করতে নিচের বাটনে চাপুন।`;
+    else txt=`মোট ${pend}টি আমল অপেক্ষমান। তালিকা ও সম্পূর্ণ করতে আমল ট্যাবে যান।`;
+    sumEl.innerHTML=`<div class="home-amal-dash"><p class="home-amal-dash-txt">${txt}</p><button type="button" class="home-amal-dash-btn" onclick="goTab('tasks')">📋 আমল ট্যাবে যান</button></div>`;
+  }
 
   const pendingExams=API.Exams.getQuizzesForStudent(me.id).filter(q=>!API.Exams.getSubmission(q.id,me.id)).slice(0,2);
   document.getElementById('homeExamPrev').innerHTML=pendingExams.length
@@ -830,28 +864,28 @@ function scrollToMsg(mid){
 })();
 
 // ══ TASKS ══════════════════════════════════════════════════
-function atCardHtml(task, compact){
+function atCardHtml(task){
   const isDaily=task.type==='daily';
   const isDoneToday=isDaily&&API.Tasks.isDailyDoneToday(task,me.id);
   const st=isDaily?(isDoneToday?'done':'pending'):task.assignees[me.id];
   const ic={done:'✅',pending:'⏳',late:'❌'};
   const cl={done:'done',late:'late',pending:''};
-  return `<div class="at-card ${cl[st]||''}" style="margin:0 12px ${compact?'8':'10'}px">
-    <div class="at-card-body">
-      <div class="at-card-title">${ic[st]||'⏳'} ${esc(task.title)} <span class="type-badge ${isDaily?'daily':'onetime'}">${isDaily?'🔁':'📌'}</span></div>
-      ${!compact?`<div class="at-card-desc">${esc(task.desc||'')}</div>`:''}
-      <div class="at-card-ft">
-        <div class="at-deadline">${isDaily?'🔄 প্রতিদিন':'📅 '+task.deadline}</div>
-        ${isDaily
-          ? (isDoneToday
-            ? `<span style="font-size:12px;background:#E8F5E9;color:#2E7D32;padding:4px 10px;border-radius:12px;font-weight:600">আজকের জন্য সম্পন্ন ✅</span>`
-            : `<button class="at-done-btn" onclick="markDailyDone('${task.id}')">আজ সম্পন্ন করেছি</button>`)
-          : (st!=='done'
-            ? `<button class="at-done-btn ${st}" onclick="markDone('${task.id}')">সম্পন্ন করেছি</button>`
-            : `<span style="font-size:12px;background:#E8F5E9;color:#2E7D32;padding:4px 10px;border-radius:12px;font-weight:600">সম্পন্ন ✅</span>`)
-        }
-      </div>
+  const badge=isDaily?'দৈনিক':'এককালীন';
+  const btnDaily=isDoneToday
+    ? `<span class="stu-task-row-done">আজ ✓</span>`
+    : `<button type="button" class="stu-task-row-btn" onclick="markDailyDone('${task.id}')">আজ সম্পন্ন</button>`;
+  const btnOnce=st!=='done'
+    ? `<button type="button" class="stu-task-row-btn ${st==='late'?'late':''}" onclick="markDone('${task.id}')">সম্পন্ন</button>`
+    : `<span class="stu-task-row-done">✓</span>`;
+  const sub=isDaily?'':(task.deadline?(' · '+esc(task.deadline)):'');
+
+  return `<div class="stu-task-row ${cl[st]||''}">
+    <span class="stu-task-row-ic" aria-hidden="true">${ic[st]||'⏳'}</span>
+    <div class="stu-task-row-mid">
+      <span class="stu-task-row-title">${esc(task.title)}${sub}</span>
     </div>
+    <span class="stu-task-row-pill ${isDaily?'daily':'onetime'}">${esc(badge)}</span>
+    <div class="stu-task-row-act">${isDaily?btnDaily:btnOnce}</div>
   </div>`;
 }
 function renderTaskList(f){
@@ -862,17 +896,23 @@ function renderTaskList(f){
   let h='';
   if((tFilter==='all'||tFilter==='daily')&&daily.length){
     const doneToday=daily.filter(t=>API.Tasks.isDailyDoneToday(t,me.id)).length;
-    h+=`<div class="daily-reset-notice">🔄 দৈনিক আমল — আজ ${doneToday}/${daily.length} সম্পন্ন। প্রতিদিন নতুন হয়।</div>`;
-    daily.forEach(t=>{ h+=atCardHtml(t,false); });
+    h+=`<div class="stu-daily-notice"><span class="stu-daily-notice-ic" aria-hidden="true">🔄</span><span>দৈনিক আমল — আজ ${doneToday}/${daily.length} সম্পন্ন। প্রতিদিন নতুন হয়।</span></div>`;
+    daily.forEach(t=>{ h+=atCardHtml(t); });
+  } else if(tFilter==='done'&&daily.length){
+    const doneDaily=daily.filter(t=>API.Tasks.isDailyDoneToday(t,me.id));
+    if(doneDaily.length){
+      h+=`<div class="stu-daily-notice"><span class="stu-daily-notice-ic" aria-hidden="true">✅</span><span>আজ সম্পন্ন দৈনিক আমল।</span></div>`;
+      doneDaily.forEach(t=>{ h+=atCardHtml(t); });
+    }
   }
   if((tFilter==='all'||tFilter==='onetime'||tFilter==='done')&&onetime.length){
     const filtered=tFilter==='done'?onetime.filter(t=>t.assignees[me.id]==='done'):onetime;
-    filtered.forEach(t=>{ h+=atCardHtml(t,false); });
+    filtered.forEach(t=>{ h+=atCardHtml(t); });
   }
   if(!h) h=`<div class="empty-state"><div class="icon">${tFilter==='all'?'📋':'🔍'}</div><p>${tFilter==='all'?'উস্তাদ এখনো কোনো আমল দেননি।':'এই ফিল্টারে কিছু নেই।'}</p></div>`;
   el.innerHTML=h+'<div style="height:20px"></div>';
 }
-function fTask(f,btn){ document.querySelectorAll('#amal-panel-today .filter-chip').forEach(c=>c.classList.remove('active')); btn.classList.add('active'); renderTaskList(f); }
+function fTask(f,btn){ document.querySelectorAll('#amal-panel-today .stu-filter-pill').forEach(c=>c.classList.remove('active')); btn.classList.add('active'); renderTaskList(f); }
 function markDailyDone(tid){ API.Tasks.markDailyDone(tid,me.id); renderAll(); showToast('مَا شَاءَ اللّٰه! আজকের আমল সম্পন্ন ✅'); }
 function markDone(tid){ API.Tasks.markDone(tid,me.id); renderAll(); showToast('مَا شَاءَ اللّٰه! আমল সম্পন্ন ✅'); }
 
@@ -884,33 +924,38 @@ function goAmalTab(tab,btn){
   if(btn) btn.classList.add('active');
   document.querySelectorAll('#screen-tasks .amal-panel').forEach(p=>p.style.display='none');
   document.getElementById('amal-panel-'+tab).style.display='';
-  if(tab==='today'){ renderAmalStreakBar(); renderAmalProgressRings(); renderTaskList(); }
+  if(tab==='today'){ renderAmalDashboard(); renderTaskList(); }
   else if(tab==='history') renderAmalCalendar();
 }
-function renderAmalStreakBar(){
-  const el=document.getElementById('amalStreakBar'); if(!el||!me) return;
+function renderAmalDashboard(){
+  const el=document.getElementById('amalDashboard'); if(!el||!me) return;
   const streak=API.Tasks.getStreak(me.id);
-  const tasks=API.Tasks.getForStudent(me.id).filter(t=>t.type==='daily');
-  const todayDone=tasks.filter(t=>API.Tasks.isCompleted(t.id,me.id)).length;
-  if(!tasks.length){el.innerHTML='';return;}
-  el.innerHTML=`<div class="s-streak-bar">
-    <div class="s-streak-circle"><div class="s-streak-num">${streak.current}</div><div class="s-streak-lbl">ধারাবাহিক</div></div>
-    <div class="s-streak-info">
-      <div class="s-streak-title">আজকের আমল</div>
-      <div class="s-streak-count">${todayDone} / ${tasks.length} সম্পন্ন</div>
-      ${streak.longest>1?`<div class="s-streak-best">সর্বোচ্চ: ${streak.longest} দিন</div>`:''}
+  const dailyTasks=API.Tasks.getForStudent(me.id).filter(t=>t.type==='daily');
+  const todayDone=dailyTasks.filter(t=>API.Tasks.isDailyDoneToday(t,me.id)).length;
+  const prog=API.Tasks.getProgressSummary(me.id);
+  const R=28, C=2*Math.PI*R;
+  function ringCol(pct, stroke, lbl, done, tot){
+    const p=Math.round(Math.min(100,Math.max(0,Number(pct)||0)));
+    const off=C*(1-p/100);
+    const svg=`<svg class="stu-ring-svg" width="64" height="64" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="${R}" fill="none" stroke="#e8e8e8" stroke-width="6"/><circle cx="32" cy="32" r="${R}" fill="none" stroke="${stroke}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${off}" transform="rotate(-90 32 32)" style="transition:stroke-dashoffset .35s"/></svg>`;
+    return `<div class="stu-ring-col"><div class="stu-svg-ring-wrap">${svg}<span class="stu-ring-pct">${p}%</span></div><span class="stu-ring-lbl">${lbl}</span><span class="stu-ring-sub">${done}/${tot}</span></div>`;
+  }
+  if(!dailyTasks.length){
+    el.innerHTML=`<div class="stu-amal-dash-wrap"><div class="stu-amal-dash-card stu-amal-dash-card--empty"><div class="stu-amal-dash-hd"><div><div class="stu-amal-dash-title">আজকের আমল</div><div class="stu-amal-dash-sub">কোনো দৈনিক আমল নেই</div></div></div><p class="stu-amal-dash-hint">উস্তাদ দৈনিক আমল যোগ করলে এখানে অগ্রগতি দেখা যাবে।</p></div></div>`;
+    return;
+  }
+  el.innerHTML=`<div class="stu-amal-dash-wrap">
+    <div class="stu-amal-dash-card">
+      <div class="stu-amal-dash-hd">
+        <div>
+          <div class="stu-amal-dash-title">আজকের আমল</div>
+          <div class="stu-amal-dash-sub">${dailyTasks.length}টির মধ্যে ${todayDone}টি সম্পন্ন${streak.current>1?' · ধারাবাহিক '+streak.current+' দিন':''}</div>
+        </div>
+        <span class="stu-amal-live">Live</span>
+      </div>
+      <div class="stu-amal-rings">${ringCol(prog.today.percent,'#2E7D32','আজ',prog.today.done,prog.today.total)}${ringCol(prog.week.percent,'#43A047','সপ্তাহ',prog.week.done,prog.week.total)}${ringCol(prog.month.percent,'#42A5F5','মাস',prog.month.done,prog.month.total)}</div>
     </div>
   </div>`;
-}
-function renderAmalProgressRings(){
-  const el=document.getElementById('amalProgressRings'); if(!el||!me) return;
-  const prog=API.Tasks.getProgressSummary(me.id);
-  if(!prog.today.total){el.innerHTML='';return;}
-  const ring=(lbl,v,color)=>`<div class="pr-ring-wrap">
-    <div class="pr-ring" style="background:conic-gradient(${color} ${Math.round(v.percent*3.6)}deg,var(--gray-200) 0deg)">
-      <div class="pr-ring-inner"><span class="pr-pct">${v.percent}%</span></div></div>
-    <div class="pr-label">${lbl}</div><div class="pr-sub">${v.done}/${v.total}</div></div>`;
-  el.innerHTML=`<div class="pr-strip">${ring('আজ',prog.today,'#2E7D32')}${ring('সপ্তাহ',prog.week,'#1565C0')}${ring('মাস',prog.month,'#6A1B9A')}</div>`;
 }
 function renderAmalCalendar(){
   const el=document.getElementById('amalCalendarContent'); if(!el||!me) return;
@@ -982,7 +1027,7 @@ function startQuiz(qid){
   renderQuizBody(quiz);
   startQuizTimer(quiz.timeLimit*60);
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.querySelector('.tab-bar').style.display='none';
+  var _sbn=document.getElementById('stuBottomNav'); if(_sbn) _sbn.style.display='none';
   document.querySelector('.header').style.display='none';
   document.getElementById('quizView').classList.add('open');
 }
@@ -1055,7 +1100,7 @@ function submitQuiz(){
 function exitQuiz(){
   clearInterval(quizTimerInterval); activeQuizId=null;
   document.getElementById('quizView').classList.remove('open');
-  document.querySelector('.tab-bar').style.display='flex';
+  var _sbn2=document.getElementById('stuBottomNav'); if(_sbn2) _sbn2.style.display='block';
   document.querySelector('.header').style.display='flex';
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-exams').classList.add('active');
@@ -1293,6 +1338,7 @@ function goTab(tab){
   if(tab!=='chat') closeStuInChatSearch();
   if(tab==='chat' && me){ API.Messages.markRead(me.id,'out'); renderChat(); updateBadges(); setTimeout(()=>document.getElementById('chatMsgs').scrollTop=9e9,50); }
   if(tab==='exams') renderExamList();
+  if(tab==='tasks' && me){ renderAmalDashboard(); renderTaskList(); }
   if(tab==='docs'){ renderSentDocs(); renderReceivedDocs(); }
 }
 

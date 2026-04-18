@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="bn" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>নিচের ট্যাব — ডিজাইন ভেরিয়েন্ট</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Hind Siliguri', sans-serif; -webkit-tap-highlight-color: transparent; }
+    /* Material: animated pill under active tab */
+    .m3-nav { position: relative; }
+    .m3-indicator {
+      position: absolute; bottom: 0; left: 0; height: 3px; width: 20%;
+      background: #2E7D32; border-radius: 3px 3px 0 0;
+      transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .m3-nav[data-i="0"] .m3-indicator { transform: translateX(0%); }
+    .m3-nav[data-i="1"] .m3-indicator { transform: translateX(100%); }
+    .m3-nav[data-i="2"] .m3-indicator { transform: translateX(200%); }
+    .m3-nav[data-i="3"] .m3-indicator { transform: translateX(300%); }
+    .m3-nav[data-i="4"] .m3-indicator { transform: translateX(400%); }
+    .m3-tab { width: 20%; }
+    /* Floating bar inner shadow */
+    .float-inner { box-shadow: 0 -4px 24px rgba(0,0,0,.06), 0 8px 32px rgba(15,118,110,.08); }
+    /* Center lift: middle tab */
+    .center-lift .tab-mid {
+      transform: translateY(-10px);
+      border-radius: 999px;
+      width: 52px; height: 52px;
+      margin: 0 auto;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    .center-lift .tab-mid.is-on {
+      background: #2E7D32;
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(46,125,50,.35);
+    }
+    .center-lift .tab-mid.is-off {
+      background: #e2e8f0;
+      color: #64748b;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+      transform: translateY(-4px);
+    }
+    /* Glass */
+    .glass-nav {
+      background: rgba(255,255,255,.72);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+  </style>
+</head>
+<body class="bg-slate-200 min-h-screen pb-16">
+
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200 px-4 py-3 shadow-sm">
+    <h1 class="text-lg font-bold text-slate-800">নিচের নেভিগেশন — সব ভেরিয়েন্ট</h1>
+    <p class="text-xs text-slate-500 mt-1">প্রতিটি বক্সে চাপ দিয়ে ট্যাব বদলিয়ে দেখুন (ইন্টারঅ্যাক্টিভ)।</p>
+  </header>
+
+  <main class="max-w-lg mx-auto px-4 pt-6 space-y-12">
+
+    <!-- 1 Standard iOS-like -->
+    <section>
+      <h2 class="text-sm font-bold text-slate-600 mb-2 flex items-center gap-2">
+        <span class="bg-emerald-100 text-emerald-800 w-6 h-6 rounded-full flex items-center justify-center text-xs">১</span>
+        স্ট্যান্ডার্ড (iOS-স্টাইল ফ্ল্যাট বার)
+      </h2>
+      <p class="text-xs text-slate-500 mb-3">সরল বর্ডার, সক্রিয় ট্যাবে রঙ ও বোল্ড লেবেল।</p>
+      <div class="demo-shell rounded-[2rem] overflow-hidden border border-slate-300/80 bg-white shadow-xl max-w-sm mx-auto" data-demo="ios">
+        <div class="h-36 bg-gradient-to-b from-slate-50 to-slate-100 flex items-center justify-center text-slate-400 text-sm px-4 text-center">
+          মূল কন্টেন্ট এলাকা
+        </div>
+        <nav class="flex justify-between items-stretch border-t border-slate-200 bg-white pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] px-1">
+          <button type="button" class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl text-slate-400 text-[10px] font-bold" data-i="0"><span class="text-lg">💬</span>রিসালা</button>
+          <button type="button" class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl text-slate-400 text-[10px] font-bold" data-i="1"><span class="text-lg">🏠</span>হোম</button>
+          <button type="button" class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl text-emerald-700 text-[10px] font-bold" data-i="2"><span class="text-lg">📋</span>আমল</button>
+          <button type="button" class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl text-slate-400 text-[10px] font-bold" data-i="3"><span class="text-lg">📝</span>পরীক্ষা</button>
+          <button type="button" class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl text-slate-400 text-[10px] font-bold" data-i="4"><span class="text-lg">📎</span>ফাইল</button>
+        </nav>
+      </div>
+    </section>
+
+    <!-- 2 Material indicator -->
+    <section>
+      <h2 class="text-sm font-bold text-slate-600 mb-2 flex items-center gap-2">
+        <span class="bg-emerald-100 text-emerald-800 w-6 h-6 rounded-full flex items-center justify-center text-xs">২</span>
+        ম্যাটেরিয়াল (নিচে স্লাইডিং ইন্ডিকেটর)
+      </h2>
+      <p class="text-xs text-slate-500 mb-3">সক্রিয় ট্যাবের নিচে সবুজ লাইন সরে যায়।</p>
+      <div class="demo-shell rounded-[2rem] overflow-hidden border border-slate-300/80 bg-white shadow-xl max-w-sm mx-auto" data-demo="mat">
+        <div class="h-36 bg-gradient-to-b from-slate-50 to-slate-100 flex items-center justify-center text-slate-400 text-sm">মূল কন্টেন্ট</div>
+        <nav class="m3-nav relative flex bg-white border-t border-slate-100 pb-[max(0.25rem,env(safe-area-inset-bottom))]" data-i="2">
+          <div class="m3-indicator"></div>
+          <button type="button" class="nav-btn m3-tab flex flex-col items-center gap-0.5 py-2.5 text-slate-400 text-[10px] font-bold" data-i="0"><span class="text-lg">💬</span>রিসালা</button>
+          <button type="button" class="nav-btn m3-tab flex flex-col items-center gap-0.5 py-2.5 text-slate-400 text-[10px] font-bold" data-i="1"><span class="text-lg">🏠</span>হোম</button>
+          <button type="button" class="nav-btn m3-tab flex flex-col items-center gap-0.5 py-2.5 text-emerald-700 text-[10px] font-bold" data-i="2"><span class="text-lg">📋</span>আমল</button>
+          <button type="button" class="nav-btn m3-tab flex flex-col items-center gap-0.5 py-2.5 text-slate-400 text-[10px] font-bold" data-i="3"><span class="text-lg">📝</span>পরীক্ষা</button>
+          <button type="button" class="nav-btn m3-tab flex flex-col items-center gap-0.5 py-2.5 text-slate-400 text-[10px] font-bold" data-i="4"><span class="text-lg">📎</span>ফাইল</button>
+        </nav>
+      </div>
+    </section>
+
+    <!-- 3 Floating -->
+    <section>
+      <h2 class="text-sm font-bold text-slate-600 mb-2 flex items-center gap-2">
+        <span class="bg-emerald-100 text-emerald-800 w-6 h-6 rounded-full flex items-center justify-center text-xs">৩</span>
+        ফ্লোটিং (উঁচু, গোল কোণ, ছায়া)
+      </h2>
+      <p class="text-xs text-slate-500 mb-3">বারটি পর্দার নিচ থেকে একটু ভেসে থাকে — কার্ডের সাথে মিল রাখতে ভালো।</p>
+      <div class="demo-shell rounded-[2rem] overflow-hidden border border-slate-300/80 bg-slate-100 shadow-xl max-w-sm mx-auto pb-3" data-demo="float">
+        <div class="h-40 bg-gradient-to-b from-white to-slate-100 flex items-center justify-center text-slate-400 text-sm rounded-b-3xl">মূল কন্টেন্ট</div>
+        <div class="px-3 pt-2">
+          <nav class="float-inner flex justify-between items-center bg-white rounded-2xl px-2 py-2 border border-slate-100">
+            <button type="button" class="nav-btn flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-slate-400 text-[10px] font-bold min-w-0 flex-1" data-i="0"><span class="text-lg">💬</span>রিসালা</button>
+            <button type="button" class="nav-btn flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-slate-400 text-[10px] font-bold min-w-0 flex-1" data-i="1"><span class="text-lg">🏠</span>হোম</button>
+            <button type="button" class="nav-btn flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-emerald-700 text-[10px] font-bold min-w-0 flex-1" data-i="2"><span class="text-lg">📋</span>আমল</button>
+            <button type="button" class="nav-btn flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-slate-400 text-[10px] font-bold min-w-0 flex-1" data-i="3"><span class="text-lg">📝</span>পরীক্ষা</button>
+            <button type="button" class="nav-btn flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-slate-400 text-[10px] font-bold min-w-0 flex-1" data-i="4"><span class="text-lg">📎</span>ফাইল</button>
+          </nav>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 Center emphasis -->
+    <section>
+      <h2 class="text-sm font-bold text-slate-600 mb-2 flex items-center gap-2">
+        <span class="bg-emerald-100 text-emerald-800 w-6 h-6 rounded-full flex items-center justify-center text-xs">৪</span>
+        মাঝের ট্যাব হাইলাইট (আমল = প্রাধান্য)
+      </h2>
+      <p class="text-xs text-slate-500 mb-3">মাঝের আইকন বড় ও উঁচু — যদি “আমল” মূল ফিচার হয়।</p>
+      <div class="demo-shell rounded-[2rem] overflow-hidden border border-slate-300/80 bg-white shadow-xl max-w-sm mx-auto" data-demo="center">
+        <div class="h-36 bg-gradient-to-b from-slate-50 to-slate-100 flex items-center justify-center text-slate-400 text-sm">মূল কন্টেন্ট</div>
+        <nav class="center-lift flex justify-between items-end border-t border-slate-200 bg-white px-2 pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+          <button type="button" class="nav-btn flex flex-col items-center gap-0.5 py-2 w-[18%] text-slate-400 text-[10px] font-bold" data-i="0"><span class="text-xl">💬</span>রিসালা</button>
+          <button type="button" class="nav-btn flex flex-col items-center gap-0.5 py-2 w-[18%] text-slate-400 text-[10px] font-bold" data-i="1"><span class="text-xl">🏠</span>হোম</button>
+          <button type="button" class="nav-btn tab-mid is-on flex flex-col items-center justify-center gap-0 text-[9px] font-bold -mt-3" data-i="2"><span class="text-xl leading-none">📋</span><span class="mt-0.5">আমল</span></button>
+          <button type="button" class="nav-btn flex flex-col items-center gap-0.5 py-2 w-[18%] text-slate-400 text-[10px] font-bold" data-i="3"><span class="text-xl">📝</span>পরীক্ষা</button>
+          <button type="button" class="nav-btn flex flex-col items-center gap-0.5 py-2 w-[18%] text-slate-400 text-[10px] font-bold" data-i="4"><span class="text-xl">📎</span>ফাইল</button>
+        </nav>
+      </div>
+    </section>
+
+    <!-- 5 Glass blur -->
+    <section>
+      <h2 class="text-sm font-bold text-slate-600 mb-2 flex items-center gap-2">
+        <span class="bg-emerald-100 text-emerald-800 w-6 h-6 rounded-full flex items-center justify-center text-xs">৫</span>
+        গ্লাস / ব্লার (iOS-সুলভ ওভারলে)
+      </h2>
+      <p class="text-xs text-slate-500 mb-3">কন্টেন্টের উপর হালকা কাঁচ; নিচের নোচ/হোম ইন্ডিকেটরের সাথে ভালো লাগে।</p>
+      <div class="demo-shell rounded-[2rem] overflow-hidden border border-slate-300/80 shadow-xl max-w-sm mx-auto relative" data-demo="glass">
+        <div class="h-44 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%232E7D32\' fill-opacity=\'0.06\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] bg-emerald-50 flex items-center justify-center text-emerald-800/50 text-sm font-medium">স্ক্রল করা কন্টেন্ট…</div>
+        <nav class="glass-nav flex justify-between items-stretch border-t border-white/30 px-1 pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+          <button type="button" class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl text-slate-500 text-[10px] font-bold" data-i="0"><span class="text-lg">💬</span>রিসালা</button>
+          <button type="button" class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl text-slate-500 text-[10px] font-bold" data-i="1"><span class="text-lg">🏠</span>হোম</button>
+          <button type="button" class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl text-emerald-800 text-[10px] font-bold" data-i="2"><span class="text-lg">📋</span>আমল</button>
+          <button type="button" class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl text-slate-500 text-[10px] font-bold" data-i="3"><span class="text-lg">📝</span>পরীক্ষা</button>
+          <button type="button" class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl text-slate-500 text-[10px] font-bold" data-i="4"><span class="text-lg">📎</span>ফাইল</button>
+        </nav>
+      </div>
+    </section>
+
+    <!-- 6 Compact icon-dominant -->
+    <section>
+      <h2 class="text-sm font-bold text-slate-600 mb-2 flex items-center gap-2">
+        <span class="bg-emerald-100 text-emerald-800 w-6 h-6 rounded-full flex items-center justify-center text-xs">৬</span>
+        কম্প্যাক্ট (আইকন প্রাধান্য, ছোট লেবেল)
+      </h2>
+      <p class="text-xs text-slate-500 mb-3">৫টির বেশি ট্যাব বা ছোট স্ক্রিনে জায়গা বাঁচায়।</p>
+      <div class="demo-shell rounded-[2rem] overflow-hidden border border-slate-300/80 bg-white shadow-xl max-w-sm mx-auto" data-demo="compact">
+        <div class="h-32 bg-slate-50 flex items-center justify-center text-slate-400 text-sm">মূল কন্টেন্ট</div>
+        <nav class="flex justify-between items-center border-t border-slate-200 bg-white py-1.5 px-1 pb-[max(0.4rem,env(safe-area-inset-bottom))]">
+          <button type="button" class="nav-btn flex flex-col items-center gap-0 py-1.5 flex-1 text-slate-400 text-[9px] font-semibold" data-i="0"><span class="text-[22px] leading-none">💬</span>রিসালা</button>
+          <button type="button" class="nav-btn flex flex-col items-center gap-0 py-1.5 flex-1 text-slate-400 text-[9px] font-semibold" data-i="1"><span class="text-[22px] leading-none">🏠</span>হোম</button>
+          <button type="button" class="nav-btn flex flex-col items-center gap-0 py-1.5 flex-1 text-emerald-700 text-[9px] font-semibold" data-i="2"><span class="text-[22px] leading-none">📋</span>আমল</button>
+          <button type="button" class="nav-btn flex flex-col items-center gap-0 py-1.5 flex-1 text-slate-400 text-[9px] font-semibold" data-i="3"><span class="text-[22px] leading-none">📝</span>পরীক্ষা</button>
+          <button type="button" class="nav-btn flex flex-col items-center gap-0 py-1.5 flex-1 text-slate-400 text-[9px] font-semibold" data-i="4"><span class="text-[22px] leading-none">📎</span>ফাইল</button>
+        </nav>
+      </div>
+    </section>
+
+    <p class="text-center text-xs text-slate-500 pb-8">ফাইল: <code class="bg-slate-100 px-1 rounded">prototypes/bottom-tab-designs.html</code> — ব্রাউজারে খুলে দেখুন।</p>
+  </main>
+
+  <script>
+    function paintNav(shell, index) {
+      var demo = shell.dataset.demo;
+      var nav = shell.querySelector('nav');
+      var buttons = shell.querySelectorAll('.nav-btn');
+
+      if (nav && nav.classList.contains('m3-nav')) {
+        nav.dataset.i = String(index);
+      }
+
+      buttons.forEach(function (btn, i) {
+        var active = i === index;
+        if (demo === 'center') {
+          if (btn.classList.contains('tab-mid')) {
+            btn.classList.toggle('is-on', active);
+            btn.classList.toggle('is-off', !active);
+            return;
+          }
+          btn.classList.toggle('text-emerald-700', active);
+          btn.classList.toggle('text-slate-400', !active);
+          return;
+        }
+
+        if (demo === 'glass') {
+          btn.classList.toggle('text-emerald-800', active);
+          btn.classList.toggle('text-slate-500', !active);
+          return;
+        }
+
+        btn.classList.toggle('text-emerald-700', active);
+        btn.classList.toggle('text-slate-400', !active);
+      });
+    }
+    document.querySelectorAll('.demo-shell').forEach(function (shell) {
+      paintNav(shell, 2);
+      shell.querySelectorAll('.nav-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          paintNav(shell, parseInt(btn.getAttribute('data-i'), 10));
+        });
+      });
+    });
+  </script>
+</body>
+</html>

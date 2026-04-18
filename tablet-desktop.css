@@ -68,6 +68,36 @@
   }
 }
 
+/* ছাত্র অ্যাপ — ফ্লোটিং নিচের ট্যাব (প্রস্থ #app-এর মতো) */
+@media (min-width: 600px) {
+  #stuBottomNav.stu-float-nav-wrap {
+    left: 0;
+    right: 0;
+    transform: none;
+    max-width: none;
+  }
+  .stu-float-nav-inner .tab-btn {
+    font-size: 11px;
+    padding: 8px 4px;
+  }
+  .stu-float-nav-inner .tab-ic {
+    font-size: 20px;
+  }
+  #teaBottomNav.tea-float-nav-wrap {
+    left: 0;
+    right: 0;
+    transform: none;
+    max-width: none;
+  }
+  .tea-float-nav-inner .tab-btn {
+    font-size: 11px;
+    padding: 8px 4px;
+  }
+  .tea-float-nav-inner .tab-ic {
+    font-size: 20px;
+  }
+}
+
 @media (min-width: 600px) {
   .modal-overlay.open {
     align-items: center;
