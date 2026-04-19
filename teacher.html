@@ -2,7 +2,7 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,interactive-widget=resizes-content">
 <meta name="theme-color" content="#075E54">
 <meta name="description" content="শিক্ষক প্যানেল — Waqful Madinah">
 <meta name="mobile-web-app-capable" content="yes">
@@ -59,7 +59,9 @@
 #lockScreen.lock-screen-soft .pin-key-spacer{visibility:hidden;pointer-events:none;border:none;background:transparent!important;box-shadow:none!important}
 .header{background:#075E54}
 /* ফ্লোটিং নিচের ট্যাব (শিক্ষক) */
-.tea-main-shell{flex:1;display:flex;flex-direction:column;min-height:0;padding-bottom:calc(12px + 68px + env(safe-area-inset-bottom))}
+.tea-main-shell{flex:1;display:flex;flex-direction:column;min-height:0;padding-bottom:var(--shell-pb,calc(12px + 68px + env(safe-area-inset-bottom)))}
+#app.in-chat #teaBottomNav{display:none!important}
+#app.in-chat .tea-main-shell{padding-bottom:0}
 #teaBottomNav.tea-float-nav-wrap{display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:115;width:100%;max-width:430px;box-sizing:border-box;padding:0 12px calc(10px + env(safe-area-inset-bottom));pointer-events:none}
 .tea-float-nav-inner{pointer-events:auto;display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:18px;padding:6px 4px;border:1px solid #f1f5f9;box-shadow:0 -4px 24px rgba(0,0,0,.06),0 8px 32px rgba(7,94,84,.1)}
 .tea-float-nav-inner .tab-btn{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 1px;font-family:var(--font);font-size:9px;font-weight:700;color:#64748b;background:none;border:none;border-radius:12px;cursor:pointer;transition:color .2s,background .2s;position:relative;line-height:1.15}
@@ -919,6 +921,7 @@ function renderChatList(f=''){
   document.getElementById('chatList').innerHTML=h||'<div class="empty-state"><div class="icon">💬</div><p>ছাত্র যোগ করুন।</p></div>';
 }
 function openChat(id){
+  document.getElementById('app').classList.add('in-chat');
   curChat=id; const isBC=id==='_broadcast';
   const s=isBC?null:API.Students.getById(id);
   // Mark student messages as read — this triggers double-tick on student's side
@@ -958,6 +961,7 @@ function openChat(id){
 function closeChat(){
   closeInChatSearch();
   curChat=null; curChatTab='msg'; document.getElementById('chatView').classList.remove('open');
+  document.getElementById('app').classList.remove('in-chat');
   var _tn=document.getElementById('teaBottomNav'); if(_tn) _tn.style.display='block'; document.getElementById('fab').style.display='flex';
   document.getElementById('backBtn').style.display='none';
   document.getElementById('searchToggleBtn').style.display='flex';
@@ -2391,11 +2395,15 @@ function handleCSVImport(input){
   reader.readAsText(file);
 }
 
-// Fix mobile viewport height (100vh bug on Android)
-function fixVH(){ document.documentElement.style.setProperty('--real-vh',(window.visualViewport?.height||window.innerHeight)*0.01+'px'); }
+// Hide bottom nav when keyboard is open (interactive-widget=resizes-content handles the rest)
+function fixVH(){
+  const kbOpen=window.visualViewport&&(window.innerHeight-window.visualViewport.height>100);
+  document.documentElement.classList.toggle('kb-open',!!kbOpen);
+  document.documentElement.style.setProperty('--shell-pb',kbOpen?'0px':'calc(12px + 68px + env(safe-area-inset-bottom))');
+}
 fixVH();
-window.addEventListener('resize', fixVH);
-if(window.visualViewport) window.visualViewport.addEventListener('resize', fixVH);
+window.addEventListener('resize',fixVH);
+if(window.visualViewport) window.visualViewport.addEventListener('resize',fixVH);
 
 document.addEventListener('visibilitychange', () => {
   if(document.visibilityState==='visible') {

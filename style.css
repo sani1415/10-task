@@ -11,7 +11,7 @@
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:var(--font);background:var(--gray-200);height:100vh;height:100dvh;height:calc(var(--real-vh,1vh)*100);overflow:hidden;display:flex;justify-content:center;align-items:center}
-#app{width:100%;max-width:430px;height:100vh;height:100dvh;height:calc(var(--real-vh,1vh)*100);background:var(--white);display:flex;flex-direction:column;overflow:hidden;position:relative}
+#app{position:fixed;left:50%;transform:translateX(-50%);width:100%;max-width:430px;top:0;bottom:0;background:var(--white);display:flex;flex-direction:column;overflow:hidden}
 /* Lock */
 #lockScreen{position:absolute;inset:0;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
 .lock-logo{font-size:52px}.lock-title{color:#fff;font-size:22px;font-weight:700}
