@@ -21,7 +21,7 @@
 
 ## Service Worker Cache Rule
 - **`sw.js` এর `CACHE` version (`waqful-full-vN`) প্রতিবার যেকোনো file edit করলে N বাড়াতে হবে।**
-- Current version: **v47** (last bumped: contact groups feature)
+- Current version: **v56** (last bumped: diary Supabase sync)
 - যেকোনো `.html`, `.css`, `.js` file বদলালে → `sw.js` খুলে `waqful-full-vN` → `vN+1` করো।
 - নতুন file তৈরি হলে `LOCAL_SHELL` array-তেও যোগ করো।
 
@@ -59,9 +59,10 @@
   15. `014_bootstrap_add_completions.sql` — teacher/student bootstrap-এ গত ৩৫ দিনের completions যোগ
   16. `015_madrasa_rel_delete_quiz.sql` — শিক্ষক পরীক্ষা মুছলে `quizzes` টেবিল থেকে সারি মোছা (নাহলে রিফ্রেশে ফিরে আসত)
   17. `021_student_groups.sql` — `student_groups` টেবিল + RPCs: `upsert_group`, `delete_group`, `get_groups` (শিক্ষকের contact group / tag system)
+  18. `022_diary.sql` — `diary` টেবিল + RPCs: `upsert_diary`, `delete_diary`, `get_diary`; teacher bootstrap-এ diary যোগ
 - **ছাত্র ওয়াকফ আইডি:** ডাটাবেস ও সিঙ্কে `waqf_001` রাখা হয়; UI-তে `API.Students.displayWaqfId` / `getShortId` দিয়ে `001` দেখানো।
 - **`students.pin`:** আর গ্লোবালি ইউনিক নয় — একই পিন একাধিক ছাত্রে থাকতে পারে; রিমোট লগইন `madrasa_rel_student_bootstrap(p_waqf, p_pin)` জোড়ায়।
-- **Relational tables:** `madrasa_config`, `students`, `messages`, `tasks`, `task_assignments`, `task_completions`, `goals`, `quizzes`, `quiz_questions`, `quiz_assignees`, `quiz_submissions`, `documents`, `academic_history`, `teacher_notes`, `pwa_subscriptions`. All have RLS enabled; zero direct REST access — everything goes through `madrasa_rel_*` RPCs.
+- **Relational tables:** `madrasa_config`, `students`, `messages`, `tasks`, `task_assignments`, `task_completions`, `goals`, `quizzes`, `quiz_questions`, `quiz_assignees`, `quiz_submissions`, `documents`, `academic_history`, `teacher_notes`, `pwa_subscriptions`, `student_groups`, `diary`. All have RLS enabled; zero direct REST access — everything goes through `madrasa_rel_*` RPCs.
 - **RPC functions (`madrasa_rel_*`, all `GRANT EXECUTE TO anon`):**
   - `madrasa_rel_public_branding()` — no PIN
   - `madrasa_rel_student_lock_hints()` — no PIN

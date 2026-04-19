@@ -1128,19 +1128,32 @@ const API = (() => {
   // ── TEACHER DIARY ─────────────────────────────────────────
   const _DIARY_KEY = 'madrasa_diary';
   const Diary = {
-    _read() { try { return JSON.parse(localStorage.getItem(_DIARY_KEY)||'[]'); } catch { return []; } },
-    _write(arr) { localStorage.setItem(_DIARY_KEY, JSON.stringify(arr)); },
+    _read() {
+      if (_useRemote) return RS.mem.diary || (RS.mem.diary = []);
+      try { return JSON.parse(localStorage.getItem(_DIARY_KEY)||'[]'); } catch { return []; }
+    },
+    _write(arr) {
+      if (_useRemote) { RS.mem.diary = arr; return; }
+      localStorage.setItem(_DIARY_KEY, JSON.stringify(arr));
+    },
     getAll() { return this._read(); },
     add(text, date) {
       const arr = this._read();
       const entry = { id: uid('di'), date: date || today(), time: nowTime(), text: String(text||'').trim() };
-      arr.unshift(entry); this._write(arr); return entry;
+      arr.unshift(entry); this._write(arr);
+      if (_useRemote && RS.upsertDiaryRemote) RS.upsertDiaryRemote(entry);
+      return entry;
     },
     update(id, text) {
       const arr = this._read(); const e = arr.find(x => x.id === id);
-      if (e) { e.text = String(text||'').trim(); e.edited = today(); this._write(arr); } return e;
+      if (e) { e.text = String(text||'').trim(); e.edited = today(); this._write(arr);
+        if (_useRemote && RS.upsertDiaryRemote) RS.upsertDiaryRemote(e); }
+      return e;
     },
-    delete(id) { const arr = this._read().filter(x => x.id !== id); this._write(arr); },
+    delete(id) {
+      this._write(this._read().filter(x => x.id !== id));
+      if (_useRemote && RS.deleteDiaryRemote) RS.deleteDiaryRemote(id);
+    },
   };
 
   return {

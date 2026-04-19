@@ -17,7 +17,7 @@
     core: null, goals: null, exams: null,
     docs: [], academic: {}, tnotes: {},
     teacherPin: null, lockHints: [], loaded: false,
-    completions: [], groups: [],
+    completions: [], groups: [], diary: [],
   };
 
   function role() { const r = w.__MADRASA_ROLE__; return r === 'teacher' || r === 'student' ? r : ''; }
@@ -366,6 +366,40 @@
     } catch (e) { console.warn('deleteGroupRemote:', e); }
   }
 
+  async function fetchDiaryRemote() {
+    if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
+    const sb = getClient(); if (!sb) return;
+    try {
+      const { data, error } = await sb.rpc('madrasa_rel_get_diary', { p_teacher_pin: _teacherPin });
+      if (error || !data) return;
+      const raw = typeof data === 'string' ? JSON.parse(data) : data;
+      mem.diary = (Array.isArray(raw) ? raw : []).map(d => ({
+        id: d.id, date: d.date || '', time: d.time || '',
+        text: d.text || '', edited: d.edited || null,
+      }));
+    } catch (e) { console.warn('fetchDiaryRemote:', e); }
+  }
+
+  async function upsertDiaryRemote(entry) {
+    if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
+    const sb = getClient(); if (!sb) return;
+    try {
+      await sb.rpc('madrasa_rel_upsert_diary', {
+        p_teacher_pin: _teacherPin,
+        p_id: entry.id, p_date: entry.date || '', p_time: entry.time || '',
+        p_text: entry.text || '', p_edited: entry.edited || null,
+      });
+    } catch (e) { console.warn('upsertDiaryRemote:', e); }
+  }
+
+  async function deleteDiaryRemote(id) {
+    if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
+    const sb = getClient(); if (!sb) return;
+    try {
+      await sb.rpc('madrasa_rel_delete_diary', { p_teacher_pin: _teacherPin, p_id: id });
+    } catch (e) { console.warn('deleteDiaryRemote:', e); }
+  }
+
   async function unlockTeacherWithPin(pin) {
     const sb = getClient(); if (!sb) throw new Error('Supabase client unavailable');
     const { data, error } = await sb.rpc('madrasa_rel_teacher_bootstrap', { p_teacher_pin: pin });
@@ -374,6 +408,7 @@
     _teacherPin = (mem.teacherPin && mem.teacherPin !== '') ? mem.teacherPin : String(pin);
     mem.loaded = true;
     void fetchGroupsRemote();
+    void fetchDiaryRemote();
   }
 
   async function unlockStudentWithWaqfPin(waqfRaw, pin) {
@@ -569,6 +604,7 @@
     markDocReviewedRemote, markMessagesReadRemote, clearStudentDataRemote, deleteStudentRemote, deleteQuizRemote, deleteTaskRemote, deleteMessageRemote, getBroadcastReadCounts,
     upsertCompletionRemote, deleteCompletionRemote,
     fetchGroupsRemote, upsertGroupRemote, deleteGroupRemote,
+    fetchDiaryRemote, upsertDiaryRemote, deleteDiaryRemote,
     saveTaskRemote, saveStudentRemote,
     uploadFile, getSignedUrlForPath, consumeUploadResult,
     BUCKET, startRealtimeSync, pullRemoteSnapshot,
