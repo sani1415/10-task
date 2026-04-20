@@ -328,6 +328,8 @@ const API = (() => {
       if (!this.getById(sid)) throw new Error('student_not_found');
       // Delete all related rows from the remote DB first (before local changes)
       if (_useRemote && RS.clearStudentDataRemote) RS.clearStudentDataRemote(sid);
+      if (typeof window !== 'undefined' && window.DailyScheduleAPI && window.DailyScheduleAPI.clearStudent)
+        window.DailyScheduleAPI.clearStudent(sid);
       const AA = window.ApiAmal; if (AA) AA.Completions.clearStudent(sid);
       const db0 = DB.get();
       db0.chats[sid] = [];

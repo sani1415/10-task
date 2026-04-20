@@ -18,6 +18,8 @@
     docs: [], academic: {}, tnotes: {},
     teacherPin: null, lockHints: [], loaded: false,
     completions: [], groups: [], diary: [],
+    dailyScheduleByStudent: {},
+    dailySchedule: { rows: [], pending: null },
   };
 
   function role() { const r = w.__MADRASA_ROLE__; return r === 'teacher' || r === 'student' ? r : ''; }
@@ -80,6 +82,68 @@
       time: m.sent_at ? new Date(m.sent_at).toTimeString().slice(0, 5) : '',
       _ts: m.sent_at ? new Date(m.sent_at).getTime() : 0,
       ...(m.extra && typeof m.extra === 'object' ? m.extra : {}) };
+  }
+
+  function _parseProposalRows(pr) {
+    const arr = Array.isArray(pr) ? pr : [];
+    return arr.map((x, i) => ({
+      id: x.id || ('p' + i),
+      task: String(x.task || ''),
+      time: String(x.time || ''),
+      sort: i,
+    }));
+  }
+
+  function buildDailyScheduleByStudent(bundle) {
+    const rows = bundle.daily_schedule_rows || [];
+    const props = bundle.daily_schedule_proposals || [];
+    const by = {};
+    for (const r of rows) {
+      const sid = r.student_id;
+      if (!by[sid]) by[sid] = { rows: [], pending: null };
+      by[sid].rows.push({
+        id: r.id,
+        task: r.task_text || '',
+        time: r.time_text || '',
+        sort: r.sort_order,
+      });
+    }
+    Object.keys(by).forEach(k => { by[k].rows.sort((a, b) => a.sort - b.sort); });
+    for (const p of props) {
+      const sid = p.student_id;
+      if (!by[sid]) by[sid] = { rows: [], pending: null };
+      by[sid].pending = {
+        rows: _parseProposalRows(p.proposed_rows),
+        status: p.status,
+        submittedAt: p.submitted_at || '',
+        teacherNote: p.teacher_note || '',
+      };
+    }
+    return by;
+  }
+
+  function buildStudentDailySchedule(bundle, sid) {
+    const rows = (bundle.daily_schedule_rows || [])
+      .filter(r => r.student_id === sid)
+      .map(r => ({
+        id: r.id,
+        task: r.task_text || '',
+        time: r.time_text || '',
+        sort: r.sort_order,
+      }));
+    rows.sort((a, b) => a.sort - b.sort);
+    const props = bundle.daily_schedule_proposals || [];
+    const p = Array.isArray(props) ? props.find(x => x.student_id === sid) : null;
+    let pending = null;
+    if (p && p.status) {
+      pending = {
+        rows: _parseProposalRows(p.proposed_rows),
+        status: p.status,
+        submittedAt: p.submitted_at || '',
+        teacherNote: p.teacher_note || '',
+      };
+    }
+    return { rows, pending };
   }
 
   // ── Assemble relational teacher bundle → mem ─────────────────
@@ -164,6 +228,7 @@
         created_at: tc.created_at || null,
       }))
       : [];
+    mem.dailyScheduleByStudent = buildDailyScheduleByStudent(bundle);
   }
 
   // ── Assemble relational student bundle → mem ─────────────────
@@ -234,6 +299,7 @@
         created_at: tc.created_at || null,
       }))
       : [];
+    mem.dailySchedule = stu ? buildStudentDailySchedule(bundle, stu.id) : { rows: [], pending: null };
   }
 
   // ── Schedule / flush ─────────────────────────────────────────
@@ -296,6 +362,7 @@
     mem.goals = {}; mem.exams = { quizzes: [], submissions: [] };
     mem.docs = []; mem.academic = {}; mem.tnotes = {};
     mem.teacherPin = null; mem.lockHints = []; _teacherPin = ''; mem.loaded = true;
+    mem.dailyScheduleByStudent = {};
   }
 
   async function bootstrapStudentIdle() {
@@ -308,6 +375,7 @@
     const { data: hints, error: hErr } = await sb.rpc('madrasa_rel_student_lock_hints');
     mem.lockHints = hErr ? [] : (Array.isArray(hints) ? hints : []);
     mem.loaded = true;
+    mem.dailySchedule = { rows: [], pending: null };
   }
 
   async function bootstrapLegacy() {
@@ -463,6 +531,8 @@
       .on('postgres_changes', { event: '*', schema: 'public', table: 'task_assignments' }, pull)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'task_completions' }, pull)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'quizzes' }, pull)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'daily_schedule_rows' }, pull)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'daily_schedule_proposals' }, pull)
       .subscribe();
   }
 
@@ -625,6 +695,46 @@
     } catch (e) { console.warn('deleteTaskRemote:', e); }
   }
 
+  async function submitDailyScheduleProposalRemote(rows) {
+    if (!usesSecureKv() || role() !== 'student' || !_studentWaqf || !_studentPin) return;
+    const sb = getClient(); if (!sb) return;
+    try {
+      await sb.rpc('madrasa_rel_submit_daily_schedule_proposal', {
+        p_waqf: normalizeWaqfForRpc(_studentWaqf),
+        p_pin: String(_studentPin || ''),
+        p_rows: rows,
+      });
+      await pullRemoteSnapshot();
+    } catch (e) { console.warn('submitDailyScheduleProposalRemote:', e); throw e; }
+  }
+
+  async function setDailyScheduleTeacherRemote(sid, rows) {
+    if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
+    const sb = getClient(); if (!sb) return;
+    try {
+      await sb.rpc('madrasa_rel_set_daily_schedule', {
+        p_teacher_pin: _teacherPin,
+        p_student_id: sid,
+        p_rows: rows,
+      });
+      await pullRemoteSnapshot();
+    } catch (e) { console.warn('setDailyScheduleTeacherRemote:', e); throw e; }
+  }
+
+  async function resolveDailyScheduleProposalRemote(sid, approve, note) {
+    if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
+    const sb = getClient(); if (!sb) return;
+    try {
+      await sb.rpc('madrasa_rel_resolve_daily_schedule_proposal', {
+        p_teacher_pin: _teacherPin,
+        p_student_id: sid,
+        p_approve: !!approve,
+        p_note: String(note || ''),
+      });
+      await pullRemoteSnapshot();
+    } catch (e) { console.warn('resolveDailyScheduleProposalRemote:', e); throw e; }
+  }
+
   w.RemoteSync = {
     isRemote, usesSecureKv, getClient,
     mem,
@@ -637,6 +747,7 @@
     fetchGroupsRemote, upsertGroupRemote, deleteGroupRemote,
     fetchDiaryRemote, upsertDiaryRemote, deleteDiaryRemote,
     saveTaskRemote, saveStudentRemote,
+    submitDailyScheduleProposalRemote, setDailyScheduleTeacherRemote, resolveDailyScheduleProposalRemote,
     uploadFile, getSignedUrlForPath, consumeUploadResult,
     BUCKET, startRealtimeSync, pullRemoteSnapshot,
   };

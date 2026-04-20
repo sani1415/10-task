@@ -197,6 +197,9 @@
 .grp-empty-chips{font-size:13px;color:#94a3b8;padding:8px 14px}
 .grp-compose-hint{flex:1;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:13px;padding:20px}
 .grp-send-bar{display:flex;align-items:flex-end;gap:8px;padding:10px 12px max(12px,env(safe-area-inset-bottom));border-top:1px solid #f1f5f9;background:#fff;flex-shrink:0}
+.schedule-edit-row{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start}
+.schedule-edit-row input{flex:1;font-family:var(--font);font-size:14px;padding:8px 10px;border:1.5px solid var(--gray-300);border-radius:8px}
+.schedule-edit-del{background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:4px}
 </style>
 </head>
 <body>
@@ -483,6 +486,7 @@
   </div>
   <div class="prof-tabs">
     <button class="prof-tab active" id="ptab-info"    onclick="switchProfileTab('info',this)">👤 তথ্য</button>
+    <button class="prof-tab"        id="ptab-schedule" onclick="switchProfileTab('schedule',this)">📅 সময়সূচি</button>
     <button class="prof-tab"        id="ptab-acad"    onclick="switchProfileTab('acad',this)">📚 একাডেমিক</button>
     <button class="prof-tab"        id="ptab-notes"   onclick="switchProfileTab('notes',this)">🗒️ নোট</button>
     <button class="prof-tab"        id="ptab-actions" onclick="switchProfileTab('actions',this)">⚙️ বিকল্প</button>
@@ -664,6 +668,7 @@
 <script src="pdf-merge.js"></script>
 <script src="api-amal.js"></script>
 <script src="api.js"></script>
+<script src="api-daily-schedule.js"></script>
 <script src="pwa-notify.js"></script>
 <script>
 // ══ State ══════════════════════════════════════════════════
@@ -2080,6 +2085,7 @@ function openStudentProfile(sid){
   // Reset to first tab
   document.querySelectorAll('.prof-tab').forEach((b,i)=>b.classList.toggle('active',i===0));
   renderProfileBody(s);
+  if(typeof renderSchedulePane==='function') renderSchedulePane(s);
   document.getElementById('profileView').classList.add('open');
   document.getElementById('fab').style.display='none';
 }
@@ -2181,6 +2187,11 @@ function renderProfileBody(s){
     </div>
   </div>
 
+  <!-- ── Tab: সময়সূচি ─────────────────────────────── -->
+  <div class="prof-pane" id="ppane-schedule" style="display:none">
+    <div id="schedulePaneInner"></div>
+  </div>
+
   <!-- ── Tab: একাডেমিক ──────────────────────────────── -->
   <div class="prof-pane" id="ppane-acad" style="display:none">
     <div class="profile-v2-sheet">
@@ -2252,6 +2263,82 @@ function switchProfileTab(tab,btn){
   btn.classList.add('active');
   document.querySelectorAll('.prof-pane').forEach(p=>p.style.display='none');
   document.getElementById('ppane-'+tab).style.display='block';
+  if(tab==='schedule'&&curProfileSid&&typeof renderSchedulePane==='function') renderSchedulePane(API.Students.getById(curProfileSid));
+}
+function renderSchedulePane(s){
+  const el=document.getElementById('schedulePaneInner');
+  if(!el||!s||!API.DailySchedule) return;
+  const ds=API.DailySchedule.getForStudent(s.id);
+  const rows=ds.rows||[];
+  const pend=ds.pending;
+  let pendBlock='';
+  if(pend&&pend.status==='pending'&&pend.rows&&pend.rows.length){
+    pendBlock=`<div class="profile-v2-sheet" style="margin-bottom:10px">
+      <div class="profile-v2-sec">অনুমোদনের অপেক্ষায় · ছাত্রের প্রস্তাব</div>
+      <table style="width:100%;font-size:13px;border-collapse:collapse">
+      <thead><tr><th style="text-align:left;padding:6px">কাজ</th><th style="text-align:right;padding:6px">সময়</th></tr></thead>
+      <tbody>${pend.rows.map(r=>`<tr><td style="padding:6px;border-bottom:1px solid var(--gray-100)">${esc(r.task)}</td><td style="text-align:right;padding:6px;border-bottom:1px solid var(--gray-100)">${esc(r.time)}</td></tr>`).join('')}</tbody></table>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button type="button" style="background:#2E7D32;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-family:var(--font);font-weight:600;cursor:pointer" onclick="teacherApproveSchedule('${s.id}')">✅ অনুমোদন</button>
+        <button type="button" style="background:#fff;color:#E65100;border:1.5px solid #E65100;border-radius:8px;padding:8px 14px;font-family:var(--font);font-weight:600;cursor:pointer" onclick="teacherRejectSchedulePrompt('${s.id}')">✕ প্রত্যাখ্যান</button>
+      </div>
+    </div>`;
+  }
+  const rowEdits=rows.length?rows:[{task:'',time:''}];
+  const editorRows=rowEdits.map(r=>`<div class="schedule-edit-row"><input type="text" class="sched-t-task" placeholder="কাজ" value="${esc(r.task)}"><input type="text" class="sched-t-time" placeholder="সময়" value="${esc(r.time)}"><button type="button" class="schedule-edit-del" onclick="this.parentNode.remove()">✕</button></div>`).join('');
+  el.innerHTML=pendBlock+`
+    <div class="profile-v2-sheet">
+      <div class="profile-v2-sec">নির্ধারিত সময়সূচি</div>
+      <p style="font-size:12px;color:var(--gray-500);margin:0 0 10px;line-height:1.45">ছাত্র সম্পাদনা অনুমোদনের জন্য পাঠালে এখানে দেখা যাবে। আপনি সরাসরি সেভ করলে তাৎক্ষণিক কার্যকর হবে।</p>
+      <div id="teaScheduleRows">${editorRows}</div>
+      <button type="button" class="btn-secondary" style="width:100%;margin:8px 0" onclick="teaScheduleAddRow()">＋ সারি যোগ</button>
+      <button type="button" class="btn-primary" style="width:100%" onclick="teacherSaveScheduleDirect('${s.id}')">💾 সময়সূচি সেভ করুন</button>
+    </div>`;
+}
+function teaScheduleAddRow(){
+  const wrap=document.getElementById('teaScheduleRows');
+  if(!wrap) return;
+  const d=document.createElement('div');
+  d.className='schedule-edit-row';
+  d.innerHTML='<input type="text" class="sched-t-task" placeholder="কাজ"><input type="text" class="sched-t-time" placeholder="সময়"><button type="button" class="schedule-edit-del" onclick="this.parentNode.remove()">✕</button>';
+  wrap.appendChild(d);
+}
+function teacherCollectScheduleRows(){
+  const out=[];
+  document.querySelectorAll('#teaScheduleRows .schedule-edit-row').forEach(row=>{
+    const t=row.querySelector('.sched-t-task')?.value.trim()||'';
+    const tm=row.querySelector('.sched-t-time')?.value.trim()||'';
+    if(t||tm) out.push({task:t,time:tm});
+  });
+  return out;
+}
+async function teacherSaveScheduleDirect(sid){
+  const rows=teacherCollectScheduleRows();
+  try{
+    await API.DailySchedule.setTeacherDirect(sid,rows);
+    showToast('✅ সময়সূচি সেভ হয়েছে');
+    const st=API.Students.getById(sid);
+    if(st) renderSchedulePane(st);
+    renderAll();
+  }catch(e){ console.error(e); showToast('সেভ করা যায়নি'); }
+}
+async function teacherApproveSchedule(sid){
+  try{
+    await API.DailySchedule.teacherResolve(sid,true,'');
+    showToast('✅ অনুমোদিত হয়েছে');
+    const st=API.Students.getById(sid);
+    if(st) renderSchedulePane(st);
+    renderAll();
+  }catch(e){ console.error(e); showToast('ব্যর্থ'); }
+}
+function teacherRejectSchedulePrompt(sid){
+  const note=prompt('প্রত্যাখ্যানের কারণ (ঐচ্ছিক):','')||'';
+  void API.DailySchedule.teacherResolve(sid,false,note).then(()=>{
+    showToast('প্রত্যাখ্যান রেকর্ড হয়েছে');
+    const st=API.Students.getById(sid);
+    if(st) renderSchedulePane(st);
+    renderAll();
+  }).catch(()=>showToast('ব্যর্থ'));
 }
 function pRow(label,id,val,extra=''){
   return `<div class="profile-v2-row"><span>${esc(label)}</span><input id="${id}" value="${esc(val)}"${extra} placeholder="${esc(label)}…"></div>`;

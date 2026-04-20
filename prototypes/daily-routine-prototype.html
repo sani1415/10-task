@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>দৈনিক সময়সূচি — প্রোটোটাইপ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green: #2E7D32;
+      --green-dk: #1B5E20;
+      --green-lt: #E8F5E9;
+      --white: #fff;
+      --gray-50: #FAFAFA;
+      --gray-100: #F5F5F5;
+      --gray-200: #EBEBEB;
+      --gray-400: #B0B0B0;
+      --gray-500: #888;
+      --gray-600: #555;
+      --gray-700: #333;
+      --shadow-md: 0 2px 8px rgba(0,0,0,.12);
+      --radius: 12px;
+      --font: 'Hind Siliguri', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; }
+    body {
+      font-family: var(--font);
+      background: var(--gray-200);
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      min-height: 100dvh;
+    }
+    /* Phone shell — full width up to 430px */
+    #phone {
+      width: 100%;
+      max-width: 430px;
+      min-height: 100dvh;
+      background: var(--gray-100);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 0 0 1px rgba(0,0,0,.06);
+    }
+    .header {
+      flex-shrink: 0;
+      background: linear-gradient(135deg, var(--green-dk) 0%, var(--green) 100%);
+      color: var(--white);
+      padding: 12px 16px;
+      padding-top: max(12px, env(safe-area-inset-top));
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 56px;
+      box-shadow: var(--shadow-md);
+    }
+    .header-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .header-info { flex: 1; min-width: 0; }
+    .header-title { font-size: 17px; font-weight: 600; line-height: 1.2; }
+    .header-sub { font-size: 12px; opacity: .88; margin-top: 2px; }
+    .header-actions { display: flex; align-items: center; gap: 6px; }
+    .icon-btn {
+      background: rgba(255,255,255,.15);
+      border: none;
+      color: #fff;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .icon-btn:active { background: rgba(255,255,255,.28); }
+    .logout-btn {
+      background: rgba(255,255,255,.15);
+      border: none;
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .main-scroll {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 14px 12px 88px;
+    }
+    .intro {
+      margin-bottom: 14px;
+    }
+    .intro h1 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--gray-700);
+      margin-bottom: 4px;
+    }
+    .intro p {
+      font-size: 13px;
+      color: var(--gray-500);
+      line-height: 1.45;
+    }
+    .schedule-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+      overflow: hidden;
+      border: 1px solid var(--gray-200);
+    }
+    .schedule-table-wrap {
+      overflow-x: auto;
+    }
+    table.schedule {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    table.schedule thead {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: var(--green);
+      color: var(--white);
+    }
+    table.schedule th {
+      text-align: left;
+      font-weight: 600;
+      padding: 12px 14px;
+      font-size: 13px;
+    }
+    table.schedule th:last-child {
+      text-align: right;
+      width: 38%;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+    table.schedule td {
+      padding: 12px 14px;
+      vertical-align: top;
+      border-bottom: 1px solid var(--gray-200);
+      color: var(--gray-700);
+      line-height: 1.45;
+    }
+    table.schedule td:last-child {
+      text-align: right;
+      font-weight: 600;
+      color: var(--green-dk);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    table.schedule tbody tr:nth-child(even) td {
+      background: var(--gray-50);
+    }
+    table.schedule tbody tr:last-child td {
+      border-bottom: none;
+    }
+    .footer-note {
+      margin-top: 14px;
+      padding: 10px 12px;
+      background: var(--green-lt);
+      border-radius: 10px;
+      font-size: 12px;
+      color: var(--green-dk);
+      line-height: 1.5;
+      border: 1px solid #C8E6C9;
+    }
+    /* Bottom nav — matches student floating style */
+    .float-nav-wrap {
+      flex-shrink: 0;
+      padding: 8px 12px;
+      padding-bottom: max(10px, env(safe-area-inset-bottom));
+      background: linear-gradient(to top, rgba(245,245,245,.98) 60%, rgba(245,245,245,0));
+    }
+    .float-nav-inner {
+      display: flex;
+      align-items: stretch;
+      justify-content: space-between;
+      gap: 2px;
+      background: var(--white);
+      border-radius: 20px;
+      padding: 6px 4px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.08), 0 2px 8px rgba(46,125,50,.06);
+      border: 1px solid var(--gray-200);
+    }
+    .tab-btn {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: 6px 2px;
+      border: none;
+      background: none;
+      font-family: var(--font);
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--gray-500);
+      cursor: pointer;
+      border-radius: 14px;
+      transition: background .15s, color .15s;
+    }
+    .tab-btn.active {
+      color: var(--green);
+      background: var(--green-lt);
+    }
+    .tab-ic { font-size: 20px; line-height: 1; opacity: .9; }
+    .tab-btn.active .tab-ic { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<div id="phone">
+  <header class="header">
+    <div class="header-avatar" aria-hidden="true">ম</div>
+    <div class="header-info">
+      <div class="header-title">মুহাম্মাদ আব্দুল্লাহ</div>
+      <div class="header-sub">ওয়াকিফ · ০০১</div>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="icon-btn" title="বিজ্ঞপ্তি" aria-label="বিজ্ঞপ্তি">🔔</button>
+      <button type="button" class="logout-btn">লগআউট</button>
+    </div>
+  </header>
+
+  <main class="main-scroll">
+    <div class="intro">
+      <h1>দৈনিক সময়সূচি</h1>
+      <p>প্রতিদিন একই — মাদরাসার নির্ধারিত রুটিন। শিক্ষক পরিবর্তন করলে এখানে হালনাগাদ হবে।</p>
+    </div>
+
+    <div class="schedule-card">
+      <div class="schedule-table-wrap">
+        <table class="schedule">
+          <thead>
+            <tr>
+              <th>কাজ</th>
+              <th>সময়</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>উঠা ও ফজরের নামাজ</td>
+              <td>৫:০০ – ৫:৪৫</td>
+            </tr>
+            <tr>
+              <td>কুরআন তেলাওয়াত (নিজ ক্বারি)</td>
+              <td>৫:৫০ – ৬:৩০</td>
+            </tr>
+            <tr>
+              <td>নাস্তা ও বিশ্রাম</td>
+              <td>৭:০০ – ৮:০০</td>
+            </tr>
+            <tr>
+              <td>মাদরাসা — প্রথম পিরিয়ড</td>
+              <td>৯:০০ – ১০:৩০</td>
+            </tr>
+            <tr>
+              <td>মাদরাসা — দ্বিতীয় পিরিয়ড</td>
+              <td>১০:৪৫ – ১২:১৫</td>
+            </tr>
+            <tr>
+              <td>যোহরের নামাজ ও দুপুরের খাবার</td>
+              <td>১২:৩০ – ১:৩০</td>
+            </tr>
+            <tr>
+              <td>বিকেলের পাঠ / বিশ্রাম</td>
+              <td>৪:০০ – ৫:১৫</td>
+            </tr>
+            <tr>
+              <td>আসর ও মাগরিব</td>
+              <td>নামাজের ওয়াক্ত অনুযায়ী</td>
+            </tr>
+            <tr>
+              <td>রাতের পড়াশোনা ও ঘুমের প্রস্তুতি</td>
+              <td>৯:৩০ – ১০:৩০</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <p class="footer-note">
+      <strong>নোট:</strong> এটি ডেমো ডেটা। আসল অ্যাপে শিক্ষক একবার সময়সূচি সেট করবে; ছাত্র প্রতিদিন একই টেবিল দেখবে।
+    </p>
+  </main>
+
+  <nav class="float-nav-wrap" aria-label="প্রধান মেনু">
+    <div class="float-nav-inner">
+      <button type="button" class="tab-btn"><span class="tab-ic" aria-hidden="true">💬</span>রিসালা</button>
+      <button type="button" class="tab-btn active"><span class="tab-ic" aria-hidden="true">🏠</span>হোম</button>
+      <button type="button" class="tab-btn"><span class="tab-ic" aria-hidden="true">📋</span>আমল</button>
+      <button type="button" class="tab-btn"><span class="tab-ic" aria-hidden="true">📝</span>পরীক্ষা</button>
+      <button type="button" class="tab-btn"><span class="tab-ic" aria-hidden="true">🎯</span>লক্ষ্য</button>
+      <button type="button" class="tab-btn"><span class="tab-ic" aria-hidden="true">📁</span>ফাইল</button>
+    </div>
+  </nav>
+</div>
+
+</body>
+</html>

@@ -104,9 +104,6 @@
 .goal-check.done{background:#2E7D32;border-color:#2E7D32}.btn-primary{background:#2E7D32}
 .form-input:focus{border-color:#2E7D32}.sec-link{color:#2E7D32}
 .goal-progress-wrap{background:#E8F5E9}.goal-progress-label{color:#2E7D32}.goal-progress-fill{background:#2E7D32}
-.stat-card{border-bottom:3px solid #66BB6A}.stat-num{color:#2E7D32}
-.stat-card.green .stat-num{color:var(--green)}.stat-card.orange .stat-num{color:var(--orange)}.stat-card.red .stat-num{color:var(--red)}
-.stat-card.green{border-bottom-color:#4CAF50}.stat-card.orange{border-bottom-color:var(--orange)}.stat-card.red{border-bottom-color:#F44336}
 .at-done-btn{background:#2E7D32}.at-done-btn.done{background:#4CAF50}.at-done-btn.late{background:#F44336}
 .msg-bubble.out{background:#C8E6C9;border-bottom-right-radius:4px}.msg-tick{color:#2E7D32}.msg-sender{color:#2E7D32}
 .task-bubble-hd{background:#1B5E20}
@@ -125,11 +122,26 @@
 #screen-tasks{background:#f3f4f6}
 .stu-filter-pill.active{background:#2E7D32!important;color:#fff!important;border-color:#2E7D32!important;box-shadow:0 8px 20px rgba(46,125,50,.2)}
 .stu-amal-live{background:#E8F5E9;color:#2E7D32}
-.home-amal-dash{background:#E8F5E9;border:1px solid #C8E6C9;border-radius:14px;padding:12px 14px;margin:0 12px 14px;text-align:center}
-.home-amal-dash-txt{font-size:13px;color:#1B5E20;line-height:1.5;margin:0 0 10px}
-.home-amal-dash-btn{width:100%;background:#2E7D32;color:#fff;border:none;border-radius:12px;padding:10px 14px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(46,125,50,.2)}
-.home-amal-dash-btn:active{transform:scale(.98)}
 #stuMainShell #screen-tasks .amal-panel>.list-scroll{padding-bottom:16px}
+
+/* ── দৈনিক সময়সূচি (হোম) ── */
+.stu-sched-card{background:#fff;margin:0 12px 14px;border-radius:14px;border:1px solid var(--gray-200);box-shadow:var(--shadow-sm);overflow:hidden}
+.stu-sched-card-hd{padding:10px 14px;background:var(--gray-50);font-size:13px;font-weight:700;color:var(--gray-700);border-bottom:1px solid var(--gray-200)}
+.stu-sched-banner{font-size:12px;padding:8px 14px;line-height:1.45}
+.stu-sched-banner.pending{background:#FFF8E1;color:#E65100;border-bottom:1px solid #FFE082}
+.stu-sched-banner.rejected{background:#FFEBEE;color:#B71C1C;border-bottom:1px solid #FFCDD2}
+.stu-sched-table{width:100%;border-collapse:collapse;font-size:13px}
+.stu-sched-table th{text-align:left;background:#2E7D32;color:#fff;padding:8px 10px;font-weight:600}
+.stu-sched-table th:last-child{text-align:right;width:36%}
+.stu-sched-table td{padding:8px 10px;border-bottom:1px solid var(--gray-100);vertical-align:top}
+.stu-sched-table td:last-child{text-align:right;font-weight:600;color:#1B5E20;white-space:pre-wrap;word-break:break-word}
+.stu-sched-table tr:nth-child(even) td{background:var(--gray-50)}
+.stu-sched-foot{padding:10px 12px;display:flex;gap:8px;flex-wrap:wrap}
+.stu-sched-btn{flex:1;min-width:120px;background:#2E7D32;color:#fff;border:none;border-radius:10px;padding:9px 12px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer}
+.stu-sched-btn.secondary{background:var(--gray-200);color:var(--gray-700)}
+.schedule-edit-row{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start}
+.schedule-edit-row input{flex:1;font-family:var(--font);font-size:14px;padding:8px 10px;border:1.5px solid var(--gray-300);border-radius:8px}
+.schedule-edit-del{background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:4px}
 
 /* ── Exams ── */
 .exam-card{background:#fff;margin:10px 12px;border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden}
@@ -319,13 +331,6 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
 <!-- ══ HOME ══════════════════════════════════════════════ -->
 <div class="screen" id="screen-home">
   <div class="list-scroll">
-    <div class="stats-row">
-      <div class="stat-card green"><div class="stat-num" id="sDone">0</div><div class="stat-label">✅ সম্পন্ন</div></div>
-      <div class="stat-card orange"><div class="stat-num" id="sPend">0</div><div class="stat-label">⏳ অপেক্ষমান</div></div>
-      <div class="stat-card red"><div class="stat-num" id="sLate">0</div><div class="stat-label">❌ বিলম্বিত</div></div>
-    </div>
-    <div class="sec-hd">আমল</div>
-    <div id="homeAmalSummary"></div>
     <div class="sec-hd">পরীক্ষা <span class="sec-link" onclick="goTab('exams')">সব দেখুন →</span></div>
     <div id="homeExamPrev"></div>
     <div class="sec-hd">আমার লক্ষ্য <span class="sec-link" onclick="goTab('goals')">সব দেখুন →</span></div>
@@ -377,6 +382,7 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
   <div class="amal-sub-tabs">
     <button class="amal-sub-tab active" onclick="goAmalTab('today',this)">📋 আজ</button>
     <button class="amal-sub-tab"        onclick="goAmalTab('history',this)">📅 ইতিহাস</button>
+    <button class="amal-sub-tab"        onclick="goAmalTab('schedule',this)">🕐 সময়সূচি</button>
   </div>
   <div id="amal-panel-today" class="amal-panel">
     <div id="amalDashboard"></div>
@@ -390,6 +396,9 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
   </div>
   <div id="amal-panel-history" class="amal-panel" style="display:none">
     <div class="list-scroll" id="amalCalendarContent"></div>
+  </div>
+  <div id="amal-panel-schedule" class="amal-panel" style="display:none">
+    <div class="list-scroll" id="taskSchedulePanel"></div>
   </div>
 </div>
 
@@ -519,6 +528,16 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
   <button class="btn-secondary" onclick="closeModal('studentProfileModal')">বন্ধ করুন</button>
 </div></div>
 
+<div class="modal-overlay" id="scheduleEditModal"><div class="modal-sheet" style="max-height:85vh;overflow:auto">
+  <div class="modal-handle"></div>
+  <div class="modal-title">📅 সময়সূচি সম্পাদনা</div>
+  <p style="font-size:12px;color:var(--gray-500);margin:0 0 10px;line-height:1.45">পরিবর্তন শিক্ষক অনুমোদনের পর প্রযোজ্য হবে। অনুমোদন পর্যন্ত নিচের টেবিলে আগের সময়সূচি দেখা যাবে।</p>
+  <div id="scheduleEditRows"></div>
+  <button type="button" class="btn-secondary" style="width:100%;margin-bottom:8px" onclick="scheduleEditAddRow()">＋ সারি যোগ</button>
+  <button class="btn-primary" style="width:100%" onclick="scheduleSubmitForApproval()">📤 অনুমোদনের জন্য পাঠান</button>
+  <button class="btn-secondary" style="width:100%;margin-top:8px" onclick="closeModal('scheduleEditModal')">বাতিল</button>
+</div></div>
+
 <div class="modal-overlay" id="chatDocPreviewModal"><div class="modal-sheet" style="max-width:min(100%,380px)">
   <div class="modal-handle"></div>
   <div class="modal-title" id="chatDocPreviewTitle">ফাইল</div>
@@ -538,6 +557,7 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
 <script src="pdf-merge.js"></script>
 <script src="api-amal.js"></script>
 <script src="api.js"></script>
+<script src="api-daily-schedule.js"></script>
 <script src="pwa-notify.js"></script>
 <script>
 // ══ State ══════════════════════════════════════════════════
@@ -727,33 +747,10 @@ function logout(){
   Promise.resolve(API.refreshStudentLockHints()).then(()=>renderPendingSection());
   goTab('chat');
 }
-function renderAll(){ renderHome(); renderChat(); renderTaskList(); renderAmalDashboard(); renderExamList(); renderSentDocs(); renderReceivedDocs(); renderGoals(); updateBadges(); }
+function renderAll(){ renderHome(); renderTaskSchedulePanel(); renderChat(); renderTaskList(); renderAmalDashboard(); renderExamList(); renderSentDocs(); renderReceivedDocs(); renderGoals(); updateBadges(); }
 
 // ══ HOME ═══════════════════════════════════════════════════
 function renderHome(){
-  const tasks=API.Tasks.getForStudent(me.id);
-  const daily=tasks.filter(t=>t.type==='daily');
-  const onetime=tasks.filter(t=>t.type!=='daily');
-  const dailyDone=daily.filter(t=>API.Tasks.isDailyDoneToday(t,me.id)).length;
-  const onetimeDone=onetime.filter(t=>t.assignees[me.id]==='done').length;
-  const late=onetime.filter(t=>t.assignees[me.id]==='late').length;
-  const pend=daily.filter(t=>!API.Tasks.isDailyDoneToday(t,me.id)).length + onetime.filter(t=>t.assignees[me.id]==='pending').length;
-  document.getElementById('sDone').textContent=dailyDone+onetimeDone;
-  document.getElementById('sPend').textContent=pend;
-  document.getElementById('sLate').textContent=late;
-
-  const dailyAll=daily.length;
-  const dailyDoneToday=daily.filter(t=>API.Tasks.isDailyDoneToday(t,me.id)).length;
-  const sumEl=document.getElementById('homeAmalSummary');
-  if(sumEl){
-    let txt;
-    if(!tasks.length) txt='উস্তাদ এখনো কোনো আমল দেননি।';
-    else if(pend===0) txt='✅ সব আমল সম্পন্ন! মাশাআল্লাহ।';
-    else if(dailyAll>0) txt=`আজ ${dailyDoneToday}/${dailyAll} দৈনিক সম্পন্ন · মোট ${pend}টি অপেক্ষমান। বিস্তারিত ও সম্পূর্ণ করতে নিচের বাটনে চাপুন।`;
-    else txt=`মোট ${pend}টি আমল অপেক্ষমান। তালিকা ও সম্পূর্ণ করতে আমল ট্যাবে যান।`;
-    sumEl.innerHTML=`<div class="home-amal-dash"><p class="home-amal-dash-txt">${txt}</p><button type="button" class="home-amal-dash-btn" onclick="goTab('tasks')">📋 আমল ট্যাবে যান</button></div>`;
-  }
-
   const pendingExams=API.Exams.getQuizzesForStudent(me.id).filter(q=>!API.Exams.getSubmission(q.id,me.id)).slice(0,2);
   document.getElementById('homeExamPrev').innerHTML=pendingExams.length
     ? pendingExams.map(q=>`<div class="exam-card" style="margin:0 12px 8px"><div class="exam-card-hd"><div class="exam-card-icon">📝</div><div class="exam-card-info"><div class="exam-card-title">${esc(q.title)}</div><div class="exam-card-meta">${q.questions?.length||0}টি প্রশ্ন · ${q.timeLimit} মিনিট${q.deadline?' · 📅 '+q.deadline:''}</div></div></div></div>`).join('')
@@ -763,6 +760,59 @@ function renderHome(){
   document.getElementById('homeGoalPrev').innerHTML=goals.length
     ? goals.map(g=>`<div class="goal-item" style="margin:0 12px 8px;border-radius:var(--radius);box-shadow:var(--shadow-sm)"><div class="goal-check ${g.done?'done':''}" onclick="toggleGoal('${g.id}')"></div><div style="flex:1"><div class="goal-text">${esc(g.title)}</div><div class="goal-meta">${catIc(g.cat)} ${g.deadline?'📅 '+g.deadline:''}</div></div></div>`).join('')
     : '<div style="padding:12px 16px;font-size:13px;color:var(--gray-400)">🎯 নতুন লক্ষ্য যোগ করুন!</div>';
+}
+
+function renderTaskSchedulePanel(){
+  const el=document.getElementById('taskSchedulePanel');
+  if(!el||!me||!API.DailySchedule) return;
+  const ds=API.DailySchedule.getForStudent(me.id);
+  const rows=ds.rows||[];
+  const pend=ds.pending;
+  let banner='';
+  if(pend&&pend.status==='pending')
+    banner='<div class="stu-sched-banner pending">⏳ আপনার পরিবর্তনের অনুমোদনের অপেক্ষায়। নিচে বর্তমান সময়সূচি দেখা যাচ্ছে।</div>';
+  else if(pend&&pend.status==='rejected')
+    banner='<div class="stu-sched-banner rejected">✕ শিক্ষক প্রত্যাখ্যান করেছেন'+(pend.teacherNote?(' · '+esc(pend.teacherNote)):'')+'। আবার সম্পাদনা করে পাঠাতে পারেন।</div>';
+  const body=rows.length
+    ? `<table class="stu-sched-table"><thead><tr><th>কাজ</th><th>সময়</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.task)}</td><td>${esc(r.time)}</td></tr>`).join('')}</tbody></table>`
+    : '';
+  el.innerHTML=`<div class="stu-sched-card"><div class="stu-sched-card-hd">বিসমিল্লাহির রহমানির রহিম</div>${banner}${body}<div class="stu-sched-foot"><button type="button" class="stu-sched-btn" onclick="openScheduleEditModal()">✏️ সম্পাদনা</button></div></div><div style="height:16px"></div>`;
+}
+function openScheduleEditModal(){
+  if(!me||!API.DailySchedule) return;
+  const ds=API.DailySchedule.getForStudent(me.id);
+  const editRows=(ds.pending&&ds.pending.status==='pending'&&ds.pending.rows&&ds.pending.rows.length)?ds.pending.rows:(ds.rows&&ds.rows.length?ds.rows:[{id:'',task:'',time:''}]);
+  const wrap=document.getElementById('scheduleEditRows');
+  wrap.innerHTML=editRows.map((r,i)=>`<div class="schedule-edit-row" data-i="${i}"><input type="text" placeholder="কাজ" class="sched-in-task" value="${esc(r.task)}"><input type="text" placeholder="সময়" class="sched-in-time" value="${esc(r.time)}"><button type="button" class="schedule-edit-del" onclick="this.parentNode.remove()" aria-label="সারি মুছুন">✕</button></div>`).join('');
+  if(!wrap.querySelector('.schedule-edit-row')) wrap.innerHTML='<div class="schedule-edit-row"><input type="text" class="sched-in-task" placeholder="কাজ"><input type="text" class="sched-in-time" placeholder="সময়"><button type="button" class="schedule-edit-del" onclick="this.parentNode.remove()">✕</button></div>';
+  openModal('scheduleEditModal');
+}
+function scheduleEditAddRow(){
+  const wrap=document.getElementById('scheduleEditRows');
+  const d=document.createElement('div');
+  d.className='schedule-edit-row';
+  d.innerHTML='<input type="text" class="sched-in-task" placeholder="কাজ"><input type="text" class="sched-in-time" placeholder="সময়"><button type="button" class="schedule-edit-del" onclick="this.parentNode.remove()">✕</button>';
+  wrap.appendChild(d);
+}
+function scheduleCollectRows(){
+  const out=[];
+  document.querySelectorAll('#scheduleEditRows .schedule-edit-row').forEach(row=>{
+    const t=row.querySelector('.sched-in-task')?.value.trim()||'';
+    const tm=row.querySelector('.sched-in-time')?.value.trim()||'';
+    if(t||tm) out.push({task:t,time:tm});
+  });
+  return out;
+}
+async function scheduleSubmitForApproval(){
+  if(!me) return;
+  const rows=scheduleCollectRows();
+  if(!rows.length){ showToast('অন্তত একটি সারি দিন'); return; }
+  try{
+    await API.DailySchedule.submitProposal(me.id,rows);
+    closeModal('scheduleEditModal');
+    renderAll();
+    showToast('প্রস্তাব পাঠানো হয়েছে। শিক্ষক অনুমোদন দিলে কার্যকর হবে।');
+  }catch(e){ console.error(e); showToast('পাঠানো যায়নি'); }
 }
 
 // ══ CHAT ═══════════════════════════════════════════════════
@@ -1033,6 +1083,7 @@ function goAmalTab(tab,btn){
   document.getElementById('amal-panel-'+tab).style.display='';
   if(tab==='today'){ renderAmalDashboard(); renderTaskList(); }
   else if(tab==='history') renderAmalCalendar();
+  else if(tab==='schedule') renderTaskSchedulePanel();
 }
 function renderAmalDashboard(){
   const el=document.getElementById('amalDashboard'); if(!el||!me) return;

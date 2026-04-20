@@ -1,7 +1,7 @@
 # Waqful Madinah — CLAUDE.md
 
 ## Architecture Rules
-- ALL data logic in `api.js` only — HTML files just call `API.*`
+- ALL data logic in `api.js` only — HTML files just call `API.*` (**Exception:** `api-daily-schedule.js` extends `window.API.DailySchedule`, same pattern as `ApiAmal` / `api-amal.js`)
 - ALL shared CSS in `style.css` — theme overrides in HTML `<style>` are OK
 - `tablet-desktop.css` — optional breakpoint layer (tablet / large); load in HTML **after** `style.css`, **before** the per-page theme `<style>` block
 - Never access localStorage directly in HTML — always use `API.DB.get()`
@@ -21,7 +21,7 @@
 
 ## Service Worker Cache Rule
 - **`sw.js` এর `CACHE` version (`waqful-full-vN`) প্রতিবার যেকোনো file edit করলে N বাড়াতে হবে।**
-- Current version: **v56** (last bumped: diary Supabase sync)
+- Current version: **v63** (last bumped: student schedule copy)
 - যেকোনো `.html`, `.css`, `.js` file বদলালে → `sw.js` খুলে `waqful-full-vN` → `vN+1` করো।
 - নতুন file তৈরি হলে `LOCAL_SHELL` array-তেও যোগ করো।
 
@@ -60,9 +60,10 @@
   16. `015_madrasa_rel_delete_quiz.sql` — শিক্ষক পরীক্ষা মুছলে `quizzes` টেবিল থেকে সারি মোছা (নাহলে রিফ্রেশে ফিরে আসত)
   17. `021_student_groups.sql` — `student_groups` টেবিল + RPCs: `upsert_group`, `delete_group`, `get_groups` (শিক্ষকের contact group / tag system)
   18. `022_diary.sql` — `diary` টেবিল + RPCs: `upsert_diary`, `delete_diary`, `get_diary`; teacher bootstrap-এ diary যোগ
+  19. `024_daily_schedule.sql` — `daily_schedule_rows`, `daily_schedule_proposals` + RPCs (`submit_daily_schedule_proposal`, `set_daily_schedule`, `resolve_daily_schedule_proposal`); teacher/student bootstrap + `clear_student_data` আপডেট। **Supabase → Realtime:** `daily_schedule_rows`, `daily_schedule_proposals` টেবিল `supabase_realtime` publication-এ যোগ করুন।
 - **ছাত্র ওয়াকফ আইডি:** ডাটাবেস ও সিঙ্কে `waqf_001` রাখা হয়; UI-তে `API.Students.displayWaqfId` / `getShortId` দিয়ে `001` দেখানো।
 - **`students.pin`:** আর গ্লোবালি ইউনিক নয় — একই পিন একাধিক ছাত্রে থাকতে পারে; রিমোট লগইন `madrasa_rel_student_bootstrap(p_waqf, p_pin)` জোড়ায়।
-- **Relational tables:** `madrasa_config`, `students`, `messages`, `tasks`, `task_assignments`, `task_completions`, `goals`, `quizzes`, `quiz_questions`, `quiz_assignees`, `quiz_submissions`, `documents`, `academic_history`, `teacher_notes`, `pwa_subscriptions`, `student_groups`, `diary`. All have RLS enabled; zero direct REST access — everything goes through `madrasa_rel_*` RPCs.
+- **Relational tables:** `madrasa_config`, `students`, `messages`, `tasks`, `task_assignments`, `task_completions`, `goals`, `quizzes`, `quiz_questions`, `quiz_assignees`, `quiz_submissions`, `documents`, `academic_history`, `teacher_notes`, `pwa_subscriptions`, `student_groups`, `diary`, `daily_schedule_rows`, `daily_schedule_proposals`. All have RLS enabled; zero direct REST access — everything goes through `madrasa_rel_*` RPCs.
 - **RPC functions (`madrasa_rel_*`, all `GRANT EXECUTE TO anon`):**
   - `madrasa_rel_public_branding()` — no PIN
   - `madrasa_rel_student_lock_hints()` — no PIN
@@ -71,7 +72,7 @@
   - Write: `upsert_student`, `delete_student`, `insert_message`, `mark_messages_read`, `upsert_task`, `update_task_status`, `upsert_completion`, `delete_completion`, `upsert_goal`, `upsert_quiz`, `delete_quiz`, `submit_quiz`, `insert_document`, `update_teacher_pin`, `save_pwa_subscription`
   - Read: `student_completions(pin, role, student_id, from, to)`, `daily_completions(teacher_pin, date)`
 - **`remote-sync.js` + `remote-sync-write.js`:** Together replace the old single-file sync. `remote-sync.js` (≤400 lines) handles bootstrap, assembly, schedule/flush, realtime; `remote-sync-write.js` (≤400 lines) handles all relational write operations. `window.RemoteSync` public API is **unchanged** — same method names, same `mem` object shape (`core`, `goals`, `exams`, `docs`, `academic`, `tnotes`, `teacherPin`, `lockHints`, `loaded`). Bootstrap assembles relational rows back into the old blob format so `api.js` reads identically. `schedule(key, getter)` routes to `madrasa_rel_*` RPCs instead of `app_kv` upserts. `markMessagesReadRemote(threadId, role)` is a new method called from `Messages.markRead()` in `api.js`. Load order: `remote-sync-write.js` before `remote-sync.js`.
-- **In-app instant sync:** `remote-sync.js` subscribes to Supabase Realtime **`postgres_changes`** on `messages`, `students`, `tasks`, `task_assignments`, `task_completions`, `quizzes` tables (channel `madrasa_rel_changes`). On change, calls `pullRemoteSnapshot` and dispatches `madrasa-remote-sync`. Realtime must be enabled on those tables (added to `supabase_realtime` publication). This is not OS push — it requires the page open and online.
+- **In-app instant sync:** `remote-sync.js` subscribes to Supabase Realtime **`postgres_changes`** on `messages`, `students`, `tasks`, `task_assignments`, `task_completions`, `quizzes`, `daily_schedule_rows`, `daily_schedule_proposals` tables (channel `madrasa_rel_changes`). On change, calls `pullRemoteSnapshot` and dispatches `madrasa-remote-sync`. Realtime must be enabled on those tables (added to `supabase_realtime` publication). This is not OS push — it requires the page open and online.
 - **Vercel:** Set env `SUPABASE_URL` and `SUPABASE_ANON_KEY`. Optional: **`PWA_VAPID_PUBLIC_KEY`** (Web Push subscription). Build runs `npm run build` → writes `supabase-config.js` and **`pwa-config.js`** (VAPID public only). If env is missing and the target file already exists locally, each script leaves it unchanged.
 - **Storage:** Bucket `waqf-files` is private; uploads use signed URLs (short TTL). Document previews use `API.Docs.resolveFileUrl()`. Document **metadata** lives in the `documents` table; file **bytes** are only in Storage. Per-file upload limit **10 MB** (`API.MAX_UPLOAD_BYTES`, enforced in `api.js` + `remote-sync.js`). Multiple selected **images** are merged to one PDF in the browser (`pdf-merge.js`, jsPDF from CDN in `student.html` / `teacher.html`).
 - **Teacher → ছাত্র প্রোফাইল:** `API.Students.clearAllRelatedData(sid)` keeps the row (name/waqf/pin) but wipes chat, tasks, quiz submissions, doc metadata, goals, academic history, teacher notes. `API.Students.deleteCompletely(sid)` removes the student and the same data (CASCADE in DB); `getNextWaqfId()` reuses the smallest free `waqf_NNN` number. **Student profile body** uses **layout 2** (settings-style rows, `profile-v2-*` in `style.css`).
