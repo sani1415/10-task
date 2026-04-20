@@ -547,6 +547,37 @@
     } catch (e) { console.warn('deleteMessageRemote:', e); }
   }
 
+  async function updateMessageTextRemote(mid, text) {
+    if (!usesSecureKv() || !mid) return;
+    const sb = getClient(); if (!sb) return;
+    const r = role();
+    const pin = r === 'teacher' ? _teacherPin : _studentPin;
+    if (!pin) return;
+    try {
+      await sb.rpc('madrasa_rel_update_message_text', {
+        p_pin: pin,
+        p_role: r === 'teacher' ? 'teacher' : 'student',
+        p_message_id: mid,
+        p_new_text: String(text || ''),
+      });
+    } catch (e) { console.warn('updateMessageTextRemote:', e); }
+  }
+
+  async function deleteOwnMessageRemote(mid) {
+    if (!usesSecureKv() || !mid) return;
+    const sb = getClient(); if (!sb) return;
+    const r = role();
+    const pin = r === 'teacher' ? _teacherPin : _studentPin;
+    if (!pin) return;
+    try {
+      await sb.rpc('madrasa_rel_delete_own_message', {
+        p_pin: pin,
+        p_role: r === 'teacher' ? 'teacher' : 'student',
+        p_message_id: mid,
+      });
+    } catch (e) { console.warn('deleteOwnMessageRemote:', e); }
+  }
+
   async function saveTaskRemote(task) {
     if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
     const sb = getClient(); if (!sb || !task) return;
@@ -601,7 +632,7 @@
     unlockTeacherWithPin, unlockStudentWithWaqfPin,
     refreshStudentLockHints,
     schedule, flushKey, flushAllFromMem,
-    markDocReviewedRemote, markMessagesReadRemote, clearStudentDataRemote, deleteStudentRemote, deleteQuizRemote, deleteTaskRemote, deleteMessageRemote, getBroadcastReadCounts,
+    markDocReviewedRemote, markMessagesReadRemote, clearStudentDataRemote, deleteStudentRemote, deleteQuizRemote, deleteTaskRemote, deleteMessageRemote, updateMessageTextRemote, deleteOwnMessageRemote, getBroadcastReadCounts,
     upsertCompletionRemote, deleteCompletionRemote,
     fetchGroupsRemote, upsertGroupRemote, deleteGroupRemote,
     fetchDiaryRemote, upsertDiaryRemote, deleteDiaryRemote,

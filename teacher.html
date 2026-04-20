@@ -699,7 +699,7 @@ function init(){
     document.getElementById('tMadrasa').value=t.madrasa||'';
     document.getElementById('hTitle').textContent=t.madrasa||'Waqful Madinah';
     document.getElementById('t_dl').value=API.nextDate(3);
-    document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); }));
+    document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{ if(e.target===el) closeModal(el.id); }));
   }).catch(e=>{ console.error(e); const la=document.getElementById('lockAppName'); if(la){ la.textContent='সার্ভার সংযোগ ব্যর্থ'; la.removeAttribute('dir'); la.removeAttribute('lang'); la.classList.add('lock-soft-app-name--err'); } });
 }
 window.addEventListener('madrasa-remote-sync',()=>{ try{ if(document.getElementById('lockScreen').style.display==='none') renderAll(); }catch(e){ console.error(e); } });
@@ -921,6 +921,7 @@ function renderChatList(f=''){
   document.getElementById('chatList').innerHTML=h||'<div class="empty-state"><div class="icon">💬</div><p>ছাত্র যোগ করুন।</p></div>';
 }
 function openChat(id){
+  uiViewTransition(()=>{
   document.getElementById('app').classList.add('in-chat');
   curChat=id; const isBC=id==='_broadcast';
   const s=isBC?null:API.Students.getById(id);
@@ -957,9 +958,11 @@ function openChat(id){
     });
   }
   setTimeout(()=>{ document.getElementById('chatMsgs').scrollTop=9e9; document.getElementById('msgIn').focus(); },50);
+  });
 }
 function closeChat(){
   closeInChatSearch();
+  uiViewTransition(()=>{
   curChat=null; curChatTab='msg'; document.getElementById('chatView').classList.remove('open');
   document.getElementById('app').classList.remove('in-chat');
   var _tn=document.getElementById('teaBottomNav'); if(_tn) _tn.style.display='block'; document.getElementById('fab').style.display='flex';
@@ -973,6 +976,7 @@ function closeChat(){
   document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
   document.getElementById('screen-'+curTab).classList.add('active');
   renderChatList(); updateBadge();
+  });
 }
 function fileIcon(type){ const t=type||''; return (t==='image'||t.startsWith('image/'))?'🖼️':(t==='pdf'||t==='application/pdf')?'📕':t.includes('word')||t.includes('doc')?'📝':t.includes('sheet')||t.includes('excel')?'📊':'📎'; }
 
@@ -1178,7 +1182,10 @@ function renderMsgs(id){
       const bodyHtml=typeof _icsHighlight==='function'?_icsHighlight(m.text,_icsQuery):esc(m.text);
       const rcpt=id==='_broadcast'&&m.role==='out'&&_bcReadCounts[m.id]
         ?`<div class="bc-receipt">👁 ${_bcReadCounts[m.id].read_count}/${_bcReadCounts[m.id].total_count} জন দেখেছেন</div>`:'';
-      h+=`<div class="msg-wrap ${m.role}" data-mid="${m.id}">${swiIcon}<div class="msg-bubble ${m.role}">${replyRef}${bodyHtml}<div class="msg-meta"><span class="msg-time">${m.time}</span>${tickHtml}</div></div>${rcpt}</div>`;
+      const editedTag=m.editedAt?'<span style="font-size:10px;opacity:.75"> · সম্পাদিত</span>':'';
+      const owBar=API.Messages.canModifyOwnMessage(m,true)
+        ?`<span class="msg-ow-bar"><button type="button" class="msg-ow-tool" onclick="event.stopPropagation();openTeacherMsgEdit('${m.id}')" title="সম্পাদনা (১৫ মিনিটের মধ্যে)">✏️</button><button type="button" class="msg-ow-tool" onclick="event.stopPropagation();openTeacherMsgDelete('${m.id}')" title="সবার কাছ থেকে মুছুন">🗑</button></span>`:'';
+      h+=`<div class="msg-wrap ${m.role}" data-mid="${m.id}">${swiIcon}<div class="msg-bubble ${m.role}">${replyRef}${bodyHtml}<div class="msg-meta"><span class="msg-time">${m.time}${editedTag}</span>${tickHtml}${owBar}</div></div>${rcpt}</div>`;
     }
   });
   el.innerHTML=h; setTimeout(()=>el.scrollTop=9e9,50);
@@ -1351,6 +1358,24 @@ function deleteBCMessage(mid){
     if(Math.abs(dx)>=THRESH) triggerReply(wrap.dataset.mid);
   });
 })();
+function openTeacherMsgEdit(mid){
+  const tid=curChat==='_broadcast'?'_bc':curChat;
+  const msgs=API.Messages.getThread(tid);
+  const m=msgs.find(x=>x.id===mid); if(!m||!API.Messages.canModifyOwnMessage(m,true)) return;
+  const nv=prompt('মেসেজ সম্পাদনা করুন:',m.text||'');
+  if(nv===null) return;
+  const t=nv.trim(); if(!t){ showToast('খালি রাখা যাবে না'); return; }
+  const r=API.Messages.updateOwnText(tid,mid,t,true);
+  if(r.ok){ renderMsgs(curChat); showToast('✅ সম্পাদিত হয়েছে'); }
+  else showToast('❌ সম্পাদনা সম্ভব হয়নি');
+}
+function openTeacherMsgDelete(mid){
+  if(!confirm('এই মেসেজ ছাত্রসহ সবার কাছ থেকে চিরতরে মুছে যাবে (শুধু আপনার ডিভাইসে নয়)। চালিয়ে যাবেন?')) return;
+  const tid=curChat==='_broadcast'?'_bc':curChat;
+  const r=API.Messages.deleteOwn(tid,mid,true);
+  if(r.ok){ renderMsgs(curChat); renderChatList(); updateBadge(); showToast('✅ সবার কাছ থেকে মুছে গেছে'); }
+  else showToast('❌ মোছা হয়নি');
+}
 function sendMsg(){
   if(!curChat) return;
   if(chatTeacherPendingFile){ sendTeacherChatFile(); return; }
@@ -1977,6 +2002,7 @@ function doImport(input){ const r=new FileReader(); r.onload=e=>{ try{ API.DB.im
 
 // ══ NAV ════════════════════════════════════════════════════
 function goTab(tab){
+  uiViewTransition(()=>{
   curTab=tab;
   // Close profile panel if open
   if(document.getElementById('profileView').classList.contains('open')) closeStudentProfile();
@@ -2002,6 +2028,7 @@ function goTab(tab){
   if(tab==='exams')  { renderQuizList(); goExamTab('list'); }
   if(tab==='docs')   { renderDocsGrouped(); }
   if(tab==='tasks')  { if(_amalTab==='overview') renderAmalOverview(); else if(_amalTab==='students') renderAmalLeaderboard(); else renderTaskList(); }
+  });
 }
 function fabClick(){
   if(curTab==='students') openModal('addStudentModal');

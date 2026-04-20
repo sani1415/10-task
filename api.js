@@ -510,13 +510,13 @@ const API = (() => {
     send(threadId,text,type='text',extra={}) {
       const db=DB.get(); if(!db.chats[threadId]) db.chats[threadId]=[];
       // read:false = student hasn't seen it yet (shows single tick; double tick after student opens chat)
-      const m={id:uid('m'),role:'out',text,type,time:nowTime(),read:false,...extra};
+      const m={id:uid('m'),role:'out',text,type,time:nowTime(),read:false,_ts:Date.now(),...extra};
       db.chats[threadId].push(m); stampNotify(db); DB.save(db); return m;
     },
     sendFromStudent(sid,text,type='text',extra={}) {
       const db=DB.get(); if(!db.chats[sid]) db.chats[sid]=[];
       // read:false = teacher hasn't seen it yet (single tick on student side)
-      const m={id:uid('m'),role:'in',text,type,time:nowTime(),read:false,...extra};
+      const m={id:uid('m'),role:'in',text,type,time:nowTime(),read:false,_ts:Date.now(),...extra};
       db.chats[sid].push(m); stampNotify(db); DB.save(db); return m;
     },
     // Send a file directly from chat (student → teacher)
@@ -626,7 +626,7 @@ const API = (() => {
       });
     },
     broadcast(text) {
-      const db=DB.get(); const m={id:uid('m'),role:'out',text,type:'text',time:nowTime(),read:false,isBroadcast:true};
+      const db=DB.get(); const m={id:uid('m'),role:'out',text,type:'text',time:nowTime(),read:false,isBroadcast:true,_ts:Date.now()};
       if(!db.chats['_bc']) db.chats['_bc']=[];
       db.chats['_bc'].push({...m});
       // Student copies are local-only — _bc row in Supabase is the single notification source.
@@ -707,6 +707,54 @@ const API = (() => {
       });
       out.sort((a, b) => (b._ts || 0) - (a._ts || 0));
       return out.slice(0, limit).map(({ _ts, ...rest }) => rest);
+    },
+    /** টেক্সট মেসেজ সম্পাদনা/মোছার সময় (মিলি সেকেন্ড) — WhatsApp-সদৃশ ১৫ মিনিট */
+    MSG_TEXT_WINDOW_MS: 15 * 60 * 1000,
+    _msgSentTs(m) {
+      if (!m) return 0;
+      if (m._ts) return m._ts;
+      const x = /^m(\d{13})/.exec(m.id || '');
+      return x ? parseInt(x[1], 10) : 0;
+    },
+    /** asTeacher=true: শিক্ষকের নিজের (out); false: ছাত্রের নিজের (in) — উভয় পক্ষ টেক্সট সম্পাদনা/মোছা (সময়সীমার মধ্যে) */
+    canModifyOwnMessage(m, asTeacher) {
+      if (!m || m._skipRemote) return false;
+      if (m.type && m.type !== 'text') return false;
+      if (m.isBroadcast && m.role === 'in') return false;
+      const own = asTeacher ? m.role === 'out' : m.role === 'in';
+      if (!own) return false;
+      const ts = this._msgSentTs(m);
+      if (!ts) return false;
+      return (Date.now() - ts) <= this.MSG_TEXT_WINDOW_MS;
+    },
+    updateOwnText(threadId, msgId, newText, asTeacher) {
+      const t = String(newText || '').trim();
+      if (!t) return { ok: false, err: 'empty' };
+      const db = DB.get();
+      const arr = db.chats[threadId];
+      const m = arr && arr.find((x) => x.id === msgId);
+      if (!m) return { ok: false, err: 'nf' };
+      if (!this.canModifyOwnMessage(m, !!asTeacher)) return { ok: false, err: 'forbidden' };
+      m.text = t;
+      m.editedAt = new Date().toISOString();
+      stampNotify(db);
+      DB.save(db);
+      if (_useRemote && RS.updateMessageTextRemote) RS.updateMessageTextRemote(msgId, t);
+      return { ok: true };
+    },
+    deleteOwn(threadId, msgId, asTeacher) {
+      const db = DB.get();
+      const arr = db.chats[threadId];
+      const m = arr && arr.find((x) => x.id === msgId);
+      if (!m) return { ok: false, err: 'nf' };
+      if (!this.canModifyOwnMessage(m, !!asTeacher)) return { ok: false, err: 'forbidden' };
+      const ix = arr.findIndex((x) => x.id === msgId);
+      if (ix < 0) return { ok: false };
+      arr.splice(ix, 1);
+      stampNotify(db);
+      DB.save(db);
+      if (_useRemote && RS.deleteOwnMessageRemote) RS.deleteOwnMessageRemote(msgId);
+      return { ok: true };
     },
   };
 
@@ -1196,7 +1244,46 @@ if (typeof window !== 'undefined') window.API = API;
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g,'<br>'); }
 function autoResize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
 function showToast(msg,duration=2800){ const t=document.getElementById('toast'); if(!t) return; t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),duration); }
-function openModal(id){ document.getElementById(id)?.classList.add('open'); }
-function closeModal(id){ document.getElementById(id)?.classList.remove('open'); }
+function uiViewTransition(run){
+  if(typeof document==='undefined'||typeof run!=='function') return;
+  if(document.startViewTransition&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches) document.startViewTransition(run);
+  else run();
+}
+function openModal(id){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.classList.remove('modal-closing');
+  el.classList.add('open');
+  const sh=el.querySelector('.modal-sheet');
+  if(sh&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    sh.style.transform='translateY(100%)';
+    requestAnimationFrame(()=>{ requestAnimationFrame(()=>{ sh.style.transform=''; }); });
+  }
+}
+function closeModal(id){
+  const el=document.getElementById(id);
+  if(!el||!el.classList.contains('open')) return;
+  const sheet=el.querySelector('.modal-sheet');
+  if(!sheet||window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    el.classList.remove('open','modal-closing');
+    return;
+  }
+  if(el.classList.contains('modal-closing')) return;
+  el.classList.add('modal-closing');
+  let fin=false;
+  const done=()=>{
+    if(fin) return;
+    fin=true;
+    el.classList.remove('open','modal-closing');
+    sheet.removeEventListener('transitionend',onEnd);
+    clearTimeout(tid);
+  };
+  const onEnd=e=>{
+    if(e.target!==sheet||e.propertyName!=='transform') return;
+    done();
+  };
+  sheet.addEventListener('transitionend',onEnd);
+  const tid=setTimeout(done,420);
+}
 function formatBytes(b){ if(!b) return ''; if(b<1024) return b+' B'; if(b<1048576) return (b/1024).toFixed(1)+' KB'; return (b/1048576).toFixed(1)+' MB'; }
 function formatDate(iso){ if(!iso) return ''; return new Date(iso).toLocaleDateString('bn-BD',{year:'numeric',month:'short',day:'numeric'}); }

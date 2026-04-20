@@ -143,9 +143,9 @@
 .exam-done-chip{background:#E8F5E9;color:#2E7D32;padding:5px 12px;border-radius:12px;font-size:12px;font-weight:600}
 .exam-fail-chip{background:#FFEBEE;color:#C62828;padding:5px 12px;border-radius:12px;font-size:12px;font-weight:600}
 
-/* ── Quiz taking view ── */
-.quiz-view{display:none;flex-direction:column;flex:1;overflow:hidden}
-.quiz-view.open{display:flex}
+/* ── Quiz taking view (full-screen slide, diary-style) ── */
+.quiz-view{position:fixed;inset:0;z-index:108;display:flex;flex-direction:column;overflow:hidden;background:#fff;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);pointer-events:none;visibility:hidden}
+.quiz-view.open{transform:translateX(0);pointer-events:auto;visibility:visible}
 .quiz-header{background:#2E7D32;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px}
 .quiz-timer{background:rgba(255,255,255,.2);border-radius:12px;padding:4px 12px;font-size:13px;font-weight:700;margin-left:auto}
 .quiz-timer.warning{background:#F44336;animation:pulse .8s infinite alternate}
@@ -561,7 +561,7 @@ function init(){
   Promise.resolve(API.DB.init()).then(()=>{
     void API.Pwa.registerServiceWorker();
     API.Tasks.resetDailyForToday();
-    document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); }));
+    document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{ if(e.target===el) closeModal(el.id); }));
     renderPendingSection();
     updateNotifBtn();
     // Remote bootstrap শেষে lock hints refresh করো
@@ -821,21 +821,42 @@ function renderChat(){
       const ic=fileIcon(m.fileType);
       const viewBtn=m.docId?`<button type="button" class="chat-doc-view-btn" onclick="previewStudentChatDoc('${m.docId}')">👁 দেখুন</button>`:'';
       if(m.role==='in'){
-        h+=`<div class="msg-wrap out" data-mid="${m.id}">${swiIcon}<div class="msg-doc-bubble">${replyRef}<div class="msg-doc-icon">${ic}</div><div class="msg-doc-info"><div class="msg-doc-name">${esc(m.fileName)}</div><div class="msg-doc-size">${m.fileSize?formatBytes(m.fileSize):''}</div>${viewBtn}</div></div><div class="msg-meta" style="position:static;display:flex;gap:3px;justify-content:flex-end;margin-top:3px;padding-right:4px"><span class="msg-time">${m.time}</span>${tickHtml(m)}</div></div>`;
+        h+=`<div class="msg-wrap out" data-mid="${m.id}">${swiIcon}<div class="msg-doc-bubble">${replyRef}<div class="msg-doc-icon">${ic}</div><div class="msg-doc-info"><div class="msg-doc-name">${esc(m.fileName)}</div><div class="msg-doc-size">${m.fileSize?formatBytes(m.fileSize):''}</div>${viewBtn}</div></div><div class="msg-meta"><span class="msg-time">${m.time}</span>${tickHtml(m)}</div></div>`;
       } else {
         h+=`<div class="msg-wrap in" data-mid="${m.id}">${swiIcon}<div class="msg-doc-bubble">${replyRef}<div class="msg-doc-icon">${ic}</div><div class="msg-doc-info"><div class="msg-doc-name">${esc(m.fileName)}</div><div class="msg-doc-size">${m.fileSize?formatBytes(m.fileSize):''}</div>${viewBtn}</div></div><div style="font-size:11px;color:var(--gray-400);margin-top:2px;padding-left:4px">${m.time}</div></div>`;
       }
     } else {
       const _bodyHtml=_stuIcsHighlight(m.text,_stuIcsQuery);
       const _bcTag=m.isBroadcast?`<div style="font-size:10px;font-weight:700;color:#7B1FA2;background:#F3E5F5;border-radius:6px;padding:1px 7px;margin-bottom:4px;display:inline-block">📢 সবার উদ্দেশ্যে</div>`:'';
+      const _edTag=m.editedAt?'<span style="font-size:10px;opacity:.75"> · সম্পাদিত</span>':'';
+      const _ow=API.Messages.canModifyOwnMessage(m,false)
+        ?`<span class="msg-ow-bar"><button type="button" class="msg-ow-tool" onclick="event.stopPropagation();openStudentMsgEdit('${m.id}')" title="সম্পাদনা (১৫ মিনিটের মধ্যে)">✏️</button><button type="button" class="msg-ow-tool" onclick="event.stopPropagation();openStudentMsgDelete('${m.id}')" title="সবার কাছ থেকে মুছুন">🗑</button></span>`:'';
       if(m.role==='in'){
-        h+=`<div class="msg-wrap out" data-mid="${m.id}">${swiIcon}<div class="msg-bubble out">${replyRef}${_bcTag}${_bodyHtml}<div class="msg-meta"><span class="msg-time">${m.time}</span>${tickHtml(m)}</div></div></div>`;
+        h+=`<div class="msg-wrap out" data-mid="${m.id}">${swiIcon}<div class="msg-bubble out">${replyRef}${_bcTag}${_bodyHtml}<div class="msg-meta"><span class="msg-time">${m.time}${_edTag}</span>${tickHtml(m)}${_ow}</div></div></div>`;
       } else {
-        h+=`<div class="msg-wrap in" data-mid="${m.id}">${swiIcon}<div class="msg-bubble in">${replyRef}${_bcTag}${_bodyHtml}<div class="msg-meta"><span class="msg-time">${m.time}</span></div></div></div>`;
+        h+=`<div class="msg-wrap in" data-mid="${m.id}">${swiIcon}<div class="msg-bubble in">${replyRef}${_bcTag}${_bodyHtml}<div class="msg-meta"><span class="msg-time">${m.time}${_edTag}</span></div></div></div>`;
       }
     }
   });
   el.innerHTML=h; setTimeout(()=>el.scrollTop=9e9,50);
+}
+function openStudentMsgEdit(mid){
+  if(!me) return;
+  const msgs=API.Messages.getThread(me.id);
+  const m=msgs.find(x=>x.id===mid); if(!m||!API.Messages.canModifyOwnMessage(m,false)) return;
+  const nv=prompt('মেসেজ সম্পাদনা করুন:',m.text||'');
+  if(nv===null) return;
+  const t=nv.trim(); if(!t){ showToast('খালি রাখা যাবে না'); return; }
+  const r=API.Messages.updateOwnText(me.id,mid,t,false);
+  if(r.ok){ renderChat(); showToast('✅ সম্পাদিত হয়েছে'); }
+  else showToast('❌ সম্পাদনা সম্ভব হয়নি');
+}
+function openStudentMsgDelete(mid){
+  if(!me) return;
+  if(!confirm('এই মেসেজ উস্তাদসহ সবার কাছ থেকে চিরতরে মুছে যাবে (শুধু আপনার নয়)। চালিয়ে যাবেন?')) return;
+  const r=API.Messages.deleteOwn(me.id,mid,false);
+  if(r.ok){ renderChat(); updateBadges(); showToast('✅ সবার কাছ থেকে মুছে গেছে'); }
+  else showToast('❌ মোছা হয়নি');
 }
 function sendMsg(){
   if(!me) return;
@@ -1185,12 +1206,31 @@ function submitQuiz(){
 }
 function exitQuiz(){
   clearInterval(quizTimerInterval); activeQuizId=null;
-  document.getElementById('quizView').classList.remove('open');
-  var _sbn2=document.getElementById('stuBottomNav'); if(_sbn2) _sbn2.style.display='block';
-  document.querySelector('.header').style.display='flex';
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById('screen-exams').classList.add('active');
-  document.getElementById('tab-exams').click();
+  const qv=document.getElementById('quizView');
+  let finished=false;
+  let tid;
+  function restoreAfterQuiz(){
+    if(finished) return;
+    finished=true;
+    clearTimeout(tid);
+    qv.removeEventListener('transitionend', onQte);
+    var _sbn2=document.getElementById('stuBottomNav'); if(_sbn2) _sbn2.style.display='block';
+    document.querySelector('.header').style.display='flex';
+    goTab('exams');
+  }
+  function onQte(e){
+    if(e.propertyName!=='transform') return;
+    restoreAfterQuiz();
+  }
+  if(!qv.classList.contains('open')){ restoreAfterQuiz(); return; }
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    qv.classList.remove('open');
+    restoreAfterQuiz();
+    return;
+  }
+  qv.addEventListener('transitionend', onQte);
+  tid=setTimeout(restoreAfterQuiz,420);
+  qv.classList.remove('open');
 }
 
 function updateExamBadge(){
@@ -1415,6 +1455,7 @@ function updateBadges(){
 
 // ══ NAV ════════════════════════════════════════════════════
 function goTab(tab){
+  uiViewTransition(()=>{
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -1426,6 +1467,7 @@ function goTab(tab){
   if(tab==='exams') renderExamList();
   if(tab==='tasks' && me){ renderAmalDashboard(); renderTaskList(); }
   if(tab==='docs'){ renderSentDocs(); renderReceivedDocs(); }
+  });
 }
 
 // Hide bottom nav when keyboard is open (interactive-widget=resizes-content handles the rest)

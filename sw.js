@@ -1,5 +1,5 @@
 /* Waqful Madinah — full-app shell cache + Web Push display */
-var CACHE = 'waqful-full-v56';
+var CACHE = 'waqful-full-v60';
 
 var CDN_ASSETS = [
   'https://unpkg.com/@supabase/supabase-js@2.49.8/dist/umd/supabase.js',
