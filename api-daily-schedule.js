@@ -110,6 +110,30 @@
           RS.mem.dailySchedule = { rows: [], pending: null };
       }
     },
+
+    /** শিক্ষক: এই ছাত্র সময়সূচি অনুমোদনের জন্য পাঠিয়েছে কি না */
+    hasPendingApproval(sid) {
+      const ds = this.getForStudent(sid);
+      return !!(ds.pending && ds.pending.status === 'pending');
+    },
+
+    /** শিক্ষক: কতজনের সময়সূচি অনুমোদনের অপেক্ষায় */
+    pendingApprovalCount() {
+      if (_role() !== 'teacher') return 0;
+      const RS = _RS();
+      if (RS && _isRemote() && RS.mem && RS.mem.dailyScheduleByStudent) {
+        const by = RS.mem.dailyScheduleByStudent;
+        return Object.keys(by).filter(k => {
+          const d = by[k];
+          return d && d.pending && d.pending.status === 'pending';
+        }).length;
+      }
+      const map = _readLS();
+      return Object.keys(map).filter(k => {
+        const d = map[k];
+        return d && d.pending && d.pending.status === 'pending';
+      }).length;
+    },
   };
 
   w.DailyScheduleAPI = DailySchedule;

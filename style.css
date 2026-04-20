@@ -74,6 +74,18 @@ body{font-family:var(--font);background:var(--gray-200);height:100vh;height:100d
 /* Chat view */
 .chat-view{display:none;flex-direction:column;flex:1;overflow:hidden;min-height:0}.chat-view.open{display:flex}
 .chat-messages{flex:1;overflow-y:auto;padding:8px 12px;display:flex;flex-direction:column;gap:4px;min-height:0}
+/* Pending daily schedule card above composer (teacher chat) */
+.chat-sched-pending-strip{flex-shrink:0;border-top:1px solid var(--gray-200);background:linear-gradient(180deg,#FFF8E1 0%,#FFFBF0 100%);padding:8px 10px;max-height:38vh;overflow-y:auto}
+.tea-chat-sched-card{border-radius:10px;border:1px solid #FFB74D;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);overflow:hidden}
+.tea-chat-sched-hd{font-size:12px;font-weight:700;color:#E65100;padding:8px 10px;background:#FFF3E0;border-bottom:1px solid #FFE0B2}
+.tea-chat-sched-body{padding:8px 10px}
+.tea-chat-sched-tbl{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px}
+.tea-chat-sched-tbl th,.tea-chat-sched-tbl td{padding:4px 6px;text-align:left;border-bottom:1px solid var(--gray-100)}
+.tea-chat-sched-tbl th{color:var(--gray-500);font-weight:600;font-size:11px}
+.tea-chat-sched-actions{display:flex;gap:8px;flex-wrap:wrap}
+.tea-chat-sched-btn{border-radius:8px;padding:8px 14px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;border:none}
+.tea-chat-sched-btn--ok{background:#2E7D32;color:#fff}
+.tea-chat-sched-btn--no{background:#fff;color:#E65100;border:1.5px solid #E65100!important}
 .msg-date-sep{text-align:center;margin:8px 0}.msg-date-sep span{background:rgba(225,245,254,.95);color:var(--gray-600);font-size:12px;padding:3px 10px;border-radius:10px;box-shadow:var(--shadow-sm)}
 .msg-wrap{display:flex;flex-direction:column;max-width:78%;position:relative}.msg-wrap.out{align-self:flex-end}.msg-wrap.in{align-self:flex-start}
 .msg-sender{font-size:11px;font-weight:600;margin-bottom:2px;padding-left:4px}
