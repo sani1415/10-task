@@ -633,6 +633,18 @@
     } catch (e) { console.warn('updateMessageTextRemote:', e); }
   }
 
+  async function updateStudentPinRemote(newPin) {
+    if (!usesSecureKv() || role() !== 'student' || !_studentWaqf || !_studentPin) return;
+    const sb = getClient(); if (!sb) return;
+    const { error } = await sb.rpc('madrasa_rel_student_update_pin', {
+      p_waqf: normalizeWaqfForRpc(_studentWaqf),
+      p_old_pin: String(_studentPin),
+      p_new_pin: String(newPin),
+    });
+    if (error) throw error;
+    _studentPin = String(newPin);
+  }
+
   async function deleteOwnMessageRemote(mid) {
     if (!usesSecureKv() || !mid) return;
     const sb = getClient(); if (!sb) return;
@@ -746,7 +758,7 @@
     upsertCompletionRemote, deleteCompletionRemote,
     fetchGroupsRemote, upsertGroupRemote, deleteGroupRemote,
     fetchDiaryRemote, upsertDiaryRemote, deleteDiaryRemote,
-    saveTaskRemote, saveStudentRemote,
+    saveTaskRemote, saveStudentRemote, updateStudentPinRemote,
     submitDailyScheduleProposalRemote, setDailyScheduleTeacherRemote, resolveDailyScheduleProposalRemote,
     uploadFile, getSignedUrlForPath, consumeUploadResult,
     BUCKET, startRealtimeSync, pullRemoteSnapshot,

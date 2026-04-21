@@ -1487,9 +1487,13 @@ function onStudentPhotoChange(inp){
   reader.readAsDataURL(file);
   inp.value='';
 }
-function saveStudentPin(){
+async function saveStudentPin(){
   const pinVal=(document.getElementById('spNewPin').value||'').trim();
   if(!/^\d{4}$/.test(pinVal)){ showToast('❌ ৪ সংখ্যার পিন দিন'); return; }
+  if(window.RemoteSync && RemoteSync.updateStudentPinRemote){
+    try{ await RemoteSync.updateStudentPinRemote(pinVal); }
+    catch(e){ showToast('❌ পিন পরিবর্তন ব্যর্থ হয়েছে'); return; }
+  }
   API.Students.updatePin(me.id, pinVal);
   me=API.Students.getById(me.id);
   closeModal('studentProfileModal');
