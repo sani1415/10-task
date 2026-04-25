@@ -1155,7 +1155,7 @@ function renderChatNotes(){
   el.innerHTML=(notes.length?notes.slice().reverse().map(n=>`
     <div class="csp-note-item">
       <div class="csp-note-body">${esc(n.text)}</div>
-      <div class="csp-note-time">${n.createdAt?n.createdAt.slice(0,10):''}</div>
+      <div class="csp-note-time">${n.date||''} ${n.time||''}</div>
     </div>`).join(''):'<div class="csp-empty" style="padding:20px 0">🗒️ কোনো নোট নেই।</div>')
   +`<div class="csp-note-add">
       <textarea id="chatNoteInput" placeholder="নতুন নোট লিখুন..." rows="2"></textarea>
@@ -1181,8 +1181,9 @@ function renderChatScheduleStrip(){
   const rows=(ds.pending&&ds.pending.rows)||[];
   // Must NOT use JSON.stringify(sid) inside onclick="..." — it injects '"' and breaks the attribute (and can cause SyntaxError).
   const sidJs=String(curChat).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  const curRows=ds.rows||[];
   const tableRows=rows.length
-    ? rows.map(r=>`<tr><td>${esc(r.task)}</td><td>${esc(r.time)}</td></tr>`).join('')
+    ? rows.map((r,i)=>{const ch=(i>=curRows.length||curRows[i].task!==r.task||curRows[i].time!==r.time);const bg=ch?' style="background:#FFF9C4"':'';return `<tr${bg}><td>${esc(r.task)}</td><td>${esc(r.time)}</td></tr>`;}).join('')
     : `<tr><td colspan="2" style="color:var(--gray-400);font-size:12px;padding:8px">কোনো সারি নেই</td></tr>`;
   strip.style.display='block';
   strip.innerHTML=`<div class="tea-chat-sched-card">
@@ -2332,7 +2333,7 @@ function renderSchedulePane(s){
       <div class="profile-v2-sec">অনুমোদনের অপেক্ষায় · ছাত্রের প্রস্তাব</div>
       <table style="width:100%;font-size:13px;border-collapse:collapse">
       <thead><tr><th style="text-align:left;padding:6px">কাজ</th><th style="text-align:right;padding:6px">সময়</th></tr></thead>
-      <tbody>${pend.rows.map(r=>`<tr><td style="padding:6px;border-bottom:1px solid var(--gray-100)">${esc(r.task)}</td><td style="text-align:right;padding:6px;border-bottom:1px solid var(--gray-100)">${esc(r.time)}</td></tr>`).join('')}</tbody></table>
+      <tbody>${pend.rows.map((r,i)=>{const ch=(i>=rows.length||rows[i].task!==r.task||rows[i].time!==r.time);const bg=ch?'background:#FFF9C4;':'';return `<tr><td style="${bg}padding:6px;border-bottom:1px solid var(--gray-100)">${esc(r.task)}</td><td style="${bg}text-align:right;padding:6px;border-bottom:1px solid var(--gray-100)">${esc(r.time)}</td></tr>`;}).join('')}</tbody></table>
       <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
         <button type="button" style="background:#2E7D32;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-family:var(--font);font-weight:600;cursor:pointer" onclick="teacherApproveSchedule('${s.id}')">✅ অনুমোদন</button>
         <button type="button" style="background:#fff;color:#E65100;border:1.5px solid #E65100;border-radius:8px;padding:8px 14px;font-family:var(--font);font-weight:600;cursor:pointer" onclick="teacherRejectSchedulePrompt('${s.id}')">✕ প্রত্যাখ্যান</button>

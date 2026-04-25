@@ -493,16 +493,21 @@ const API = (() => {
     add(sid,text){
       const all=this._read(); if(!all[sid]) all[sid]=[];
       const note={id:uid('tn'),text,date:today(),time:nowTime()};
-      all[sid].unshift(note); this._write(all); return note;
+      all[sid].unshift(note); this._write(all);
+      if (_useRemote && RS.upsertTeacherNoteRemote) RS.upsertTeacherNoteRemote(note, sid);
+      return note;
     },
     update(sid,nid,text){
       const all=this._read(); const n=(all[sid]||[]).find(x=>x.id===nid);
-      if(n){ n.text=text; n.edited=today(); this._write(all); } return n;
+      if(n){ n.text=text; n.edited=today(); this._write(all);
+        if (_useRemote && RS.upsertTeacherNoteRemote) RS.upsertTeacherNoteRemote(n, sid);
+      } return n;
     },
     delete(sid,nid){
       const all=this._read();
       if(all[sid]) all[sid]=all[sid].filter(n=>n.id!==nid);
       this._write(all);
+      if (_useRemote && RS.deleteTeacherNoteRemote) RS.deleteTeacherNoteRemote(nid);
     },
   };
 

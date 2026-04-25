@@ -725,7 +725,7 @@ function onLogin(){
   localStorage.setItem('madrasa_lastPanel','student');
   document.getElementById('hAvatar').textContent=me.name.charAt(0); document.getElementById('hAvatar').style.background=me.color||'#2E7D32';
   document.getElementById('hTitle').textContent=me.name;
-  { const p=[]; if(me.waqfId) p.push(API.Students.getShortId(me)); if(me.cls) p.push(me.cls); document.getElementById('hSub').textContent=p.length?p.join(' · '):'ওয়াকিফ'; }
+  { const p=[]; if(me.waqfId) p.push(API.Students.getShortId(me)); if(me.responsibility) p.push(me.responsibility); if(me.cls) p.push(me.cls); document.getElementById('hSub').textContent=p.length?p.join(' · '):'ওয়াকিফ'; }
   const sb=document.getElementById('stuInChatSearchBtn'); if(sb) sb.style.display='flex';
   var _nav=document.getElementById('stuBottomNav'); if(_nav) _nav.style.display='block';
   renderAll();

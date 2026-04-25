@@ -733,6 +733,30 @@
     } catch (e) { console.warn('setDailyScheduleTeacherRemote:', e); throw e; }
   }
 
+  async function upsertTeacherNoteRemote(note, sid) {
+    if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
+    const sb = getClient(); if (!sb) return;
+    try {
+      await sb.rpc('madrasa_rel_upsert_teacher_note', {
+        p_teacher_pin: _teacherPin,
+        p_id: note.id,
+        p_student_id: sid,
+        p_text: note.text || '',
+        p_date: note.date || null,
+        p_time: note.time || '',
+        p_edited_at: note.edited || null,
+      });
+    } catch (e) { console.warn('upsertTeacherNoteRemote:', e); }
+  }
+
+  async function deleteTeacherNoteRemote(nid) {
+    if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
+    const sb = getClient(); if (!sb || !nid) return;
+    try {
+      await sb.rpc('madrasa_rel_delete_teacher_note', { p_teacher_pin: _teacherPin, p_id: nid });
+    } catch (e) { console.warn('deleteTeacherNoteRemote:', e); }
+  }
+
   async function resolveDailyScheduleProposalRemote(sid, approve, note) {
     if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
     const sb = getClient(); if (!sb) return;
@@ -758,6 +782,7 @@
     upsertCompletionRemote, deleteCompletionRemote,
     fetchGroupsRemote, upsertGroupRemote, deleteGroupRemote,
     fetchDiaryRemote, upsertDiaryRemote, deleteDiaryRemote,
+    upsertTeacherNoteRemote, deleteTeacherNoteRemote,
     saveTaskRemote, saveStudentRemote, updateStudentPinRemote,
     submitDailyScheduleProposalRemote, setDailyScheduleTeacherRemote, resolveDailyScheduleProposalRemote,
     uploadFile, getSignedUrlForPath, consumeUploadResult,

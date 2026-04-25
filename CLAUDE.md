@@ -21,7 +21,7 @@
 
 ## Service Worker Cache Rule
 - **`sw.js` এর `CACHE` version (`waqful-full-vN`) প্রতিবার যেকোনো file edit করলে N বাড়াতে হবে।**
-- Current version: **v64** (last bumped: teacher schedule pending indicators)
+- Current version: **v69** (last bumped: schedule re-approval diff highlight, responsibility badge on student side, teacher notes remote sync)
 - যেকোনো `.html`, `.css`, `.js` file বদলালে → `sw.js` খুলে `waqful-full-vN` → `vN+1` করো।
 - নতুন file তৈরি হলে `LOCAL_SHELL` array-তেও যোগ করো।
 
