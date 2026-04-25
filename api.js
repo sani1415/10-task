@@ -518,13 +518,17 @@ const API = (() => {
       const db=DB.get(); if(!db.chats[threadId]) db.chats[threadId]=[];
       // read:false = student hasn't seen it yet (shows single tick; double tick after student opens chat)
       const m={id:uid('m'),role:'out',text,type,time:nowTime(),read:false,_ts:Date.now(),...extra};
-      db.chats[threadId].push(m); stampNotify(db); DB.save(db); return m;
+      db.chats[threadId].push(m); stampNotify(db); DB.save(db);
+      if (_useRemote && RS.sendMessageRemote) RS.sendMessageRemote(threadId, m);
+      return m;
     },
     sendFromStudent(sid,text,type='text',extra={}) {
       const db=DB.get(); if(!db.chats[sid]) db.chats[sid]=[];
       // read:false = teacher hasn't seen it yet (single tick on student side)
       const m={id:uid('m'),role:'in',text,type,time:nowTime(),read:false,_ts:Date.now(),...extra};
-      db.chats[sid].push(m); stampNotify(db); DB.save(db); return m;
+      db.chats[sid].push(m); stampNotify(db); DB.save(db);
+      if (_useRemote && RS.sendMessageRemote) RS.sendMessageRemote(sid, m);
+      return m;
     },
     // Send a file directly from chat (student → teacher)
     sendFileFromStudent(sid, file, { category='general', note='', replyTo=null, displayName=null } = {}) {
@@ -553,6 +557,7 @@ const API = (() => {
                      fileName:dispName, fileType:file.type, fileSize:file.size, docId, fileUrl, storage_path: storagePath || path,
                      ...(replyTo?{replyTo}:{})};
             db.chats[sid].push(m); stampNotify(db); DB.save(db);
+            if (RS.sendMessageRemote) RS.sendMessageRemote(sid, m);
             resolve({ meta, msg: m });
           }).catch(err=>reject(err));
           return;
@@ -605,6 +610,7 @@ const API = (() => {
                      fileName:dispName, fileType:file.type, fileSize:file.size, docId, fileUrl, storage_path: storagePath || path,
                      ...(replyTo?{replyTo}:{})};
             db.chats[sid].push(m); stampNotify(db); DB.save(db);
+            if (RS.sendMessageRemote) RS.sendMessageRemote(sid, m);
             resolve({ msg: m });
           }).catch(err=>reject(err));
           return;
@@ -638,12 +644,16 @@ const API = (() => {
       db.chats['_bc'].push({...m});
       // Student copies are local-only — _bc row in Supabase is the single notification source.
       db.students.forEach(s=>{ if(!db.chats[s.id]) db.chats[s.id]=[]; db.chats[s.id].push({...m,id:uid('m'),_skipRemote:true}); });
-      stampNotify(db); DB.save(db); return m;
+      stampNotify(db); DB.save(db);
+      if (_useRemote && RS.sendMessageRemote) RS.sendMessageRemote('_bc', m);
+      return m;
     },
     sendTask(sid,task) {
       const db=DB.get(); if(!db.chats[sid]) db.chats[sid]=[];
       const m={id:uid('m'),role:'out',type:'task',text:task.title,task:{title:task.title,desc:task.desc,deadline:task.deadline,taskType:task.type},time:nowTime(),read:true};
-      db.chats[sid].push(m); stampNotify(db); DB.save(db); return m;
+      db.chats[sid].push(m); stampNotify(db); DB.save(db);
+      if (_useRemote && RS.sendMessageRemote) RS.sendMessageRemote(sid, m);
+      return m;
     },
     markRead(threadId,role='in') {
       const db=DB.get(); (db.chats[threadId]||[]).forEach(m=>{ if(m.role===role) m.read=true; }); DB.save(db);

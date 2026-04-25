@@ -645,6 +645,26 @@
     _studentPin = String(newPin);
   }
 
+  async function sendMessageRemote(threadId, msg) {
+    if (!usesSecureKv()) return;
+    const sb = getClient(); if (!sb) return;
+    const r = role();
+    const pin = r === 'teacher' ? _teacherPin : _studentPin;
+    if (!pin || !msg || !msg.id) return;
+    if (msg._skipRemote) return;
+    const { id, role: msgRole, type, text, read, time, ...extra } = msg;
+    const p_message = { id, thread_id: threadId,
+      role: msgRole || (r === 'teacher' ? 'out' : 'in'),
+      type: type || 'text', text: text || '',
+      extra, is_read: read || false, sent_at: null,
+      ...(r === 'student' ? { thread_id_waqf: _studentWaqf } : {}),
+    };
+    try {
+      await sb.rpc('madrasa_rel_insert_message', { p_pin: pin, p_role: r, p_message });
+      _savedMsgIds.add(id);
+    } catch (e) { console.warn('sendMessageRemote:', e); }
+  }
+
   async function deleteOwnMessageRemote(mid) {
     if (!usesSecureKv() || !mid) return;
     const sb = getClient(); if (!sb) return;
@@ -778,6 +798,7 @@
     unlockTeacherWithPin, unlockStudentWithWaqfPin,
     refreshStudentLockHints,
     schedule, flushKey, flushAllFromMem,
+    sendMessageRemote,
     markDocReviewedRemote, markMessagesReadRemote, clearStudentDataRemote, deleteStudentRemote, deleteQuizRemote, deleteTaskRemote, deleteMessageRemote, updateMessageTextRemote, deleteOwnMessageRemote, getBroadcastReadCounts,
     upsertCompletionRemote, deleteCompletionRemote,
     fetchGroupsRemote, upsertGroupRemote, deleteGroupRemote,
