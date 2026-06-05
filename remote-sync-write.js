@@ -36,6 +36,7 @@
       for (const [threadId, msgs] of Object.entries(core.chats || {})) {
         for (const msg of (msgs || [])) {
           if (ctx.savedMsgIds.has(msg.id)) continue;
+          if (msg._skipRemote) { ctx.savedMsgIds.add(msg.id); continue; }
           const { id, role: r, type, text, read, time, ...extra } = msg;
           const p_message = { id, thread_id: threadId, role: r || (isTeacher ? 'out' : 'in'),
             type: type || 'text', text: text || '', extra, is_read: read || false, sent_at: null,
@@ -103,7 +104,7 @@
       if (key === 'goals') return saveGoals(sb, value);
       if (key === 'exams') return saveExams(sb, value);
       if (key === 'docs_meta') return saveDocs(sb, value);
-      if (key === 'academic' || key === 'tnotes') return; // direct RPCs in Phase 5
+      if (key === 'academic' || key === 'tnotes') return; // tnotes: written per-note via upsertTeacherNoteRemote
       if (key === 'teacher_pin') {
         const newPin = value?.pin ? String(value.pin) : String(value || '');
         const oldPin = ctx.getPin();

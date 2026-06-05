@@ -645,6 +645,26 @@
     _studentPin = String(newPin);
   }
 
+  async function sendMessageRemote(threadId, msg) {
+    if (!usesSecureKv()) return;
+    const sb = getClient(); if (!sb) return;
+    const r = role();
+    const pin = r === 'teacher' ? _teacherPin : _studentPin;
+    if (!pin || !msg || !msg.id) return;
+    if (msg._skipRemote) return;
+    const { id, role: msgRole, type, text, read, time, ...extra } = msg;
+    const p_message = { id, thread_id: threadId,
+      role: msgRole || (r === 'teacher' ? 'out' : 'in'),
+      type: type || 'text', text: text || '',
+      extra, is_read: read || false, sent_at: null,
+      ...(r === 'student' ? { thread_id_waqf: _studentWaqf } : {}),
+    };
+    try {
+      await sb.rpc('madrasa_rel_insert_message', { p_pin: pin, p_role: r, p_message });
+      _savedMsgIds.add(id);
+    } catch (e) { console.warn('sendMessageRemote:', e); }
+  }
+
   async function deleteOwnMessageRemote(mid) {
     if (!usesSecureKv() || !mid) return;
     const sb = getClient(); if (!sb) return;
@@ -733,6 +753,30 @@
     } catch (e) { console.warn('setDailyScheduleTeacherRemote:', e); throw e; }
   }
 
+  async function upsertTeacherNoteRemote(note, sid) {
+    if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
+    const sb = getClient(); if (!sb) return;
+    try {
+      await sb.rpc('madrasa_rel_upsert_teacher_note', {
+        p_teacher_pin: _teacherPin,
+        p_id: note.id,
+        p_student_id: sid,
+        p_text: note.text || '',
+        p_date: note.date || null,
+        p_time: note.time || '',
+        p_edited_at: note.edited || null,
+      });
+    } catch (e) { console.warn('upsertTeacherNoteRemote:', e); }
+  }
+
+  async function deleteTeacherNoteRemote(nid) {
+    if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
+    const sb = getClient(); if (!sb || !nid) return;
+    try {
+      await sb.rpc('madrasa_rel_delete_teacher_note', { p_teacher_pin: _teacherPin, p_id: nid });
+    } catch (e) { console.warn('deleteTeacherNoteRemote:', e); }
+  }
+
   async function resolveDailyScheduleProposalRemote(sid, approve, note) {
     if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
     const sb = getClient(); if (!sb) return;
@@ -754,10 +798,12 @@
     unlockTeacherWithPin, unlockStudentWithWaqfPin,
     refreshStudentLockHints,
     schedule, flushKey, flushAllFromMem,
+    sendMessageRemote,
     markDocReviewedRemote, markMessagesReadRemote, clearStudentDataRemote, deleteStudentRemote, deleteQuizRemote, deleteTaskRemote, deleteMessageRemote, updateMessageTextRemote, deleteOwnMessageRemote, getBroadcastReadCounts,
     upsertCompletionRemote, deleteCompletionRemote,
     fetchGroupsRemote, upsertGroupRemote, deleteGroupRemote,
     fetchDiaryRemote, upsertDiaryRemote, deleteDiaryRemote,
+    upsertTeacherNoteRemote, deleteTeacherNoteRemote,
     saveTaskRemote, saveStudentRemote, updateStudentPinRemote,
     submitDailyScheduleProposalRemote, setDailyScheduleTeacherRemote, resolveDailyScheduleProposalRemote,
     uploadFile, getSignedUrlForPath, consumeUploadResult,
