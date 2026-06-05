@@ -736,7 +736,14 @@ function init(){
 }
 window.addEventListener('madrasa-remote-sync',()=>{
   void API.Pwa.refreshPushSubscription('teacher').then(updateTeacherNotifBtn);
-  try{ if(document.getElementById('lockScreen').style.display==='none') renderAll(); }catch(e){ console.error(e); }
+  try{
+    if(document.getElementById('lockScreen').style.display==='none'){
+      if(curChat&&curChat!=='_broadcast'&&curChatTab==='msg'&&API.Messages.unreadCount(curChat,'in')>0){
+        API.Messages.markRead(curChat,'in');
+      }
+      renderAll();
+    }
+  }catch(e){ console.error(e); }
 });
 
 // ══ NOTIFICATION (lock screen) ═════════════════════════════
