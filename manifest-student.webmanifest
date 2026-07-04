@@ -8,8 +8,8 @@
   "scope": "/student/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#2E7D32",
-  "theme_color": "#2E7D32",
+  "background_color": "#4CAF50",
+  "theme_color": "#4CAF50",
   "lang": "bn",
   "dir": "rtl",
   "icons": [

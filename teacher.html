@@ -719,6 +719,7 @@ function showUploadPrepError(e){
 
 // ══ Init ═══════════════════════════════════════════════════
 function init(){
+  if(window.MadrasaPwa) MadrasaPwa.markPushSlot('teacher');
   Promise.resolve(API.DB.init()).then(()=>{
     void API.Pwa.registerServiceWorker();
     API.Tasks.resetDailyForToday();

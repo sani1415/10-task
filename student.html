@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <base href="/">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,interactive-widget=resizes-content">
-<meta name="theme-color" content="#2E7D32">
+<meta name="theme-color" content="#4CAF50">
 <meta name="description" content="وقف المدينة">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -18,14 +18,23 @@
 <link rel="stylesheet" href="tablet-desktop.css">
 <link rel="stylesheet" href="amal.css">
 <style>
-/* ── Student theme ── */
+/* ── Student theme — হালকা সবুজ (শিক্ষকের #075E54 গাঢ় টিল-সবুজের চেয়ে নরম) ── */
+:root{
+  --stu-main:#4CAF50;
+  --stu-dark:#43A047;
+  --stu-deeper:#388E3C;
+  --stu-light:#66BB6A;
+  --stu-pale:#E8F5E9;
+  --stu-main-rgb:76,175,80;
+  --stu-dark-rgb:67,160,71;
+}
 /* লগইন: সফট লাইট — শিক্ষার্থী: নরম সেজ/মিন্ট */
 #lockScreen.lock-screen-soft{background:linear-gradient(180deg,#e8f8ef 0%,#f7fef9 48%,#d8f3e0 100%)}
 .lock-screen-soft .lock-sticky-header{
   display:flex;align-items:center;justify-content:center;
   background:rgba(255,255,255,.92);color:#0f172a;
   border-bottom:1px solid #c8e6c9;
-  box-shadow:0 1px 3px rgba(27,94,32,.06);
+  box-shadow:0 1px 3px rgba(67,160,71,.06);
   padding:12px 16px max(10px,env(safe-area-inset-top));
 }
 .lock-soft-head-cluster{
@@ -43,7 +52,7 @@
   flex-shrink:0;width:42px;height:42px;padding:0;
   display:inline-flex;align-items:center;justify-content:center;
   background:none;border:none;cursor:pointer;border-radius:12px;
-  color:#2E7D32;
+  color:#4CAF50;
 }
 .lock-soft-notif-btn:active{background:#E8F5E9}
 .lock-soft-notif-btn.is-muted{opacity:.48}
@@ -61,7 +70,7 @@
   -webkit-backdrop-filter:blur(14px);
   border-top:1px solid #b2dfbc;
   border-radius:28px 28px 0 0;
-  box-shadow:0 -16px 48px rgba(27,94,32,.1);
+  box-shadow:0 -16px 48px rgba(67,160,71,.1);
   padding:18px 16px max(20px,env(safe-area-inset-bottom));
 }
 .lock-screen-soft .pending-sec-label{color:#64748b}
@@ -78,51 +87,51 @@
   background:#f8fafc;border:1px solid #e2e8f0;color:#0f172a;
 }
 .lock-screen-soft .stu-pin-dots .pin-dot{border-color:#cbd5e1;background:transparent}
-.lock-screen-soft .stu-pin-dots .pin-dot.filled{background:#2E7D32;border-color:#2E7D32}
+.lock-screen-soft .stu-pin-dots .pin-dot.filled{background:#4CAF50;border-color:#4CAF50}
 .lock-screen-soft #lockScreen .pin-key,.lock-screen-soft .pin-key{
   background:#fff;color:#0f172a;border:1px solid #e2e8f0;
   box-shadow:0 1px 2px rgba(15,23,42,.04);
 }
 .lock-screen-soft .pin-key:active{background:#f1f5f9}
 .lock-screen-soft .pin-key .sub{color:#64748b;opacity:.9}
-.lock-screen-soft .login-btn{background:#2E7D32;color:#fff;box-shadow:0 4px 14px rgba(46,125,50,.25)}
+.lock-screen-soft .login-btn{background:#4CAF50;color:#fff;box-shadow:0 4px 14px rgba(76,175,80,.25)}
 .lock-screen-soft .login-btn-ghost{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
 .lock-screen-soft .login-err{color:#b91c1c}
-.header{background:#2E7D32}
+.header{background:#4CAF50}
 /* ফ্লোটিং নিচের ট্যাব — উপরের ট্যাব বার সরানো */
 .stu-main-shell{flex:1;display:flex;flex-direction:column;min-height:0;padding-bottom:var(--shell-pb,calc(12px + 68px + env(safe-area-inset-bottom)))}#stuBottomNav.stu-float-nav-wrap{display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:100;width:100%;max-width:430px;box-sizing:border-box;padding:0 12px calc(10px + env(safe-area-inset-bottom));pointer-events:none}
 .stu-float-nav-inner{pointer-events:auto;display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:18px;padding:6px 4px;border:1px solid #f1f5f9;box-shadow:0 -4px 24px rgba(0,0,0,.06),0 8px 32px rgba(15,118,110,.08)}
 .stu-float-nav-inner .tab-btn{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 1px;font-family:var(--font);font-size:9px;font-weight:700;color:#64748b;background:none;border:none;border-radius:12px;cursor:pointer;transition:color .2s,background .2s;position:relative;line-height:1.15}
-.stu-float-nav-inner .tab-btn.active{color:#2E7D32;background:rgba(46,125,50,.1)}
+.stu-float-nav-inner .tab-btn.active{color:#4CAF50;background:rgba(76,175,80,.1)}
 .stu-float-nav-inner .tab-ic{line-height:0;display:flex;align-items:center;justify-content:center}
 .stu-float-nav-inner .tab-ic svg{width:22px;height:22px;display:block;stroke:currentColor;fill:none;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round;opacity:.88}
 .stu-float-nav-inner .tab-btn.active .tab-ic svg{stroke-width:2;opacity:1}
 .stu-float-nav-inner .tab-lbl{display:block;text-align:center}
 .stu-float-nav-inner .tab-badge{top:2px;right:4px}
-.tab-badge{background:#66BB6A;color:#1B5E20}
-.filter-chip.active{background:#2E7D32}.progress-fill{background:#66BB6A}
-.send-btn{background:#2E7D32}.goal-add-btn{background:#2E7D32}.goal-check{border-color:#2E7D32}
-.goal-check.done{background:#2E7D32;border-color:#2E7D32}.btn-primary{background:#2E7D32}
-.form-input:focus{border-color:#2E7D32}.sec-link{color:#2E7D32}
-.goal-progress-wrap{background:#E8F5E9}.goal-progress-label{color:#2E7D32}.goal-progress-fill{background:#2E7D32}
-.at-done-btn{background:#2E7D32}.at-done-btn.done{background:#4CAF50}.at-done-btn.late{background:#F44336}
-.msg-bubble.out{background:#C8E6C9;border-bottom-right-radius:4px}.msg-tick{color:#2E7D32}.msg-sender{color:#2E7D32}
-.task-bubble-hd{background:#1B5E20}
+.tab-badge{background:#66BB6A;color:#43A047}
+.filter-chip.active{background:#4CAF50}.progress-fill{background:#66BB6A}
+.send-btn{background:#4CAF50}.goal-add-btn{background:#4CAF50}.goal-check{border-color:#4CAF50}
+.goal-check.done{background:#4CAF50;border-color:#4CAF50}.btn-primary{background:#4CAF50}
+.form-input:focus{border-color:#4CAF50}.sec-link{color:#4CAF50}
+.goal-progress-wrap{background:#E8F5E9}.goal-progress-label{color:#4CAF50}.goal-progress-fill{background:#4CAF50}
+.at-done-btn{background:#4CAF50}.at-done-btn.done{background:#66BB6A}.at-done-btn.late{background:#F44336}
+.msg-bubble.out{background:#C8E6C9;border-bottom-right-radius:4px}.msg-tick{color:#4CAF50}.msg-sender{color:#4CAF50}
+.task-bubble-hd{background:#43A047}
 .reply-preview-bar{background:#F1F8F1;border-top-color:#66BB6A}
-.reply-preview-content{border-left-color:#2E7D32}.reply-preview-sender{color:#2E7D32}
-.chat-file-title-in:focus{border-color:#2E7D32}
-.doc-tab-btn.active{color:#2E7D32;border-bottom-color:#2E7D32}
-.welcome-card{background:linear-gradient(135deg,#2E7D32,#00897B)}
-.chat-messages{background-color:#EDF4ED;background-image:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%232E7D32' fill-opacity='0.04'%3E%3Cpath d='M20 20.5V18H0v5h5v5H0v5h20v-5h15v-5H20v-.5z'/%3E%3C/g%3E%3C/svg%3E")}
+.reply-preview-content{border-left-color:#4CAF50}.reply-preview-sender{color:#4CAF50}
+.chat-file-title-in:focus{border-color:#4CAF50}
+.doc-tab-btn.active{color:#4CAF50;border-bottom-color:#4CAF50}
+.welcome-card{background:linear-gradient(135deg,#4CAF50,#26A69A)}
+.chat-messages{background-color:#EDF4ED;background-image:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%234CAF50' fill-opacity='0.04'%3E%3Cpath d='M20 20.5V18H0v5h5v5H0v5h20v-5h15v-5H20v-.5z'/%3E%3C/g%3E%3C/svg%3E")}
 
 /* ── Task type badge ── */
 .type-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:6px}
-.type-badge.daily{background:#E8F5E9;color:#2E7D32}.type-badge.onetime{background:#FFF3E0;color:#E65100}
-.daily-reset-notice{font-size:12px;color:#2E7D32;background:#E8F5E9;border-radius:8px;padding:6px 10px;margin:8px 12px;display:flex;align-items:center;gap:6px}
+.type-badge.daily{background:#E8F5E9;color:#4CAF50}.type-badge.onetime{background:#FFF3E0;color:#E65100}
+.daily-reset-notice{font-size:12px;color:#4CAF50;background:#E8F5E9;border-radius:8px;padding:6px 10px;margin:8px 12px;display:flex;align-items:center;gap:6px}
 /* আমল ট্যাব — prototype-aligned accents */
 #screen-tasks{background:#f3f4f6}
-.stu-filter-pill.active{background:#2E7D32!important;color:#fff!important;border-color:#2E7D32!important;box-shadow:0 8px 20px rgba(46,125,50,.2)}
-.stu-amal-live{background:#E8F5E9;color:#2E7D32}
+.stu-filter-pill.active{background:#4CAF50!important;color:#fff!important;border-color:#4CAF50!important;box-shadow:0 8px 20px rgba(76,175,80,.2)}
+.stu-amal-live{background:#E8F5E9;color:#4CAF50}
 #stuMainShell #screen-tasks .amal-panel>.list-scroll{padding-bottom:16px}
 
 /* ── ছাত্র হোম ড্যাশবোর্ড ── */
@@ -133,23 +142,23 @@
 .stu-home-alert:active{transform:scale(.98)}
 .stu-home-alert--msg{background:#e8f1fb;color:#1565c0}
 .stu-home-alert--exam{background:#fef3e8;color:#c2410c}
-.stu-home-alert--amal{background:#ecf6ee;color:#2e7d32}
+.stu-home-alert--amal{background:#ecf6ee;color:#43a047}
 .stu-home-all-clear{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:14px;padding:13px 16px;font-size:13px;font-weight:500;color:#64748b;text-align:center;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.03)}
 .stu-home-card{background:#fff;border-radius:16px;border:1px solid rgba(0,0,0,.06);box-shadow:0 2px 12px rgba(15,23,42,.04);margin-bottom:12px;overflow:hidden}
 .stu-home-card-hd{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px 0}
 .stu-home-card-title{font-size:15px;font-weight:700;color:#1e293b;letter-spacing:-.01em}
-.stu-home-card-link{font-size:12px;font-weight:600;color:#2e7d32;background:none;border:none;cursor:pointer;padding:4px 0;font-family:var(--font);flex-shrink:0}
+.stu-home-card-link{font-size:12px;font-weight:600;color:#43a047;background:none;border:none;cursor:pointer;padding:4px 0;font-family:var(--font);flex-shrink:0}
 .stu-home-card-body{padding:12px 16px 16px}
 .stu-home-card--click{cursor:pointer;transition:box-shadow .15s}
 .stu-home-card--click:active{box-shadow:0 1px 6px rgba(15,23,42,.06)}
 .stu-home-prog-bar{height:7px;background:#eef2f0;border-radius:99px;overflow:hidden;margin:10px 0 8px}
-.stu-home-prog-fill{height:100%;background:linear-gradient(90deg,#43a047,#2e7d32);border-radius:99px;transition:width .35s ease}
+.stu-home-prog-fill{height:100%;background:linear-gradient(90deg,#66BB6A,#4CAF50);border-radius:99px;transition:width .35s ease}
 .stu-home-prog-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12px;color:#64748b}
 .stu-home-prog-row strong{font-size:14px;font-weight:800;color:#1e293b}
 .stu-home-prog-sub{margin-top:4px;font-size:12px;color:#94a3b8;line-height:1.4}
 .stu-home-mini-stats{display:flex;gap:8px;margin-top:12px}
 .stu-home-stat{flex:1;background:#f8faf9;border-radius:10px;padding:10px 8px;text-align:center;border:1px solid #eef2f0}
-.stu-home-stat-val{font-size:15px;font-weight:800;color:#2e7d32;line-height:1.2}
+.stu-home-stat-val{font-size:15px;font-weight:800;color:#43a047;line-height:1.2}
 .stu-home-stat-lbl{font-size:10px;font-weight:600;color:#94a3b8;margin-top:3px;letter-spacing:.2px}
 .stu-home-empty{font-size:13px;color:#94a3b8;line-height:1.5;margin:0}
 .stu-home-notice{font-size:12px;font-weight:600;padding:8px 12px;border-radius:10px;margin-bottom:10px;line-height:1.4}
@@ -159,7 +168,7 @@
 .stu-home-sched-table th{text-align:left;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.45px;padding:0 0 8px;border-bottom:1px solid #eef2f0}
 .stu-home-sched-table th:last-child{text-align:right;width:34%}
 .stu-home-sched-table td{padding:9px 0;border-bottom:1px solid #f1f5f9;color:#334155;vertical-align:top;line-height:1.4}
-.stu-home-sched-table td:last-child{text-align:right;font-weight:600;color:#2e7d32;white-space:nowrap;font-variant-numeric:tabular-nums}
+.stu-home-sched-table td:last-child{text-align:right;font-weight:600;color:#43a047;white-space:nowrap;font-variant-numeric:tabular-nums}
 .stu-home-sched-table tr:last-child td{border-bottom:none}
 .stu-home-sched-more{font-size:12px;color:#64748b;margin-top:8px}
 
@@ -170,13 +179,13 @@
 .stu-sched-banner.pending{background:#FFF8E1;color:#E65100;border-bottom:1px solid #FFE082}
 .stu-sched-banner.rejected{background:#FFEBEE;color:#B71C1C;border-bottom:1px solid #FFCDD2}
 .stu-sched-table{width:100%;border-collapse:collapse;font-size:13px}
-.stu-sched-table th{text-align:left;background:#2E7D32;color:#fff;padding:8px 10px;font-weight:600}
+.stu-sched-table th{text-align:left;background:#4CAF50;color:#fff;padding:8px 10px;font-weight:600}
 .stu-sched-table th:last-child{text-align:right;width:36%}
 .stu-sched-table td{padding:8px 10px;border-bottom:1px solid var(--gray-100);vertical-align:top}
-.stu-sched-table td:last-child{text-align:right;font-weight:600;color:#1B5E20;white-space:pre-wrap;word-break:break-word}
+.stu-sched-table td:last-child{text-align:right;font-weight:600;color:#43A047;white-space:pre-wrap;word-break:break-word}
 .stu-sched-table tr:nth-child(even) td{background:var(--gray-50)}
 .stu-sched-foot{padding:10px 12px;display:flex;gap:8px;flex-wrap:wrap}
-.stu-sched-btn{flex:1;min-width:120px;background:#2E7D32;color:#fff;border:none;border-radius:10px;padding:9px 12px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer}
+.stu-sched-btn{flex:1;min-width:120px;background:#4CAF50;color:#fff;border:none;border-radius:10px;padding:9px 12px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer}
 .stu-sched-btn.secondary{background:var(--gray-200);color:var(--gray-700)}
 .schedule-edit-row{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start}
 .schedule-edit-row input{flex:1;font-family:var(--font);font-size:14px;padding:8px 10px;border:1.5px solid var(--gray-300);border-radius:8px}
@@ -190,14 +199,14 @@
 .exam-card-title{font-size:15px;font-weight:700;color:var(--gray-700)}
 .exam-card-meta{font-size:12px;color:var(--gray-400);margin-top:3px}
 .exam-card-ft{padding:8px 14px;background:var(--gray-50);border-top:1px solid var(--gray-100);display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap}
-.exam-start-btn{background:#2E7D32;color:#fff;border:none;border-radius:20px;padding:7px 20px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer}
-.exam-done-chip{background:#E8F5E9;color:#2E7D32;padding:5px 12px;border-radius:12px;font-size:12px;font-weight:600}
+.exam-start-btn{background:#4CAF50;color:#fff;border:none;border-radius:20px;padding:7px 20px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer}
+.exam-done-chip{background:#E8F5E9;color:#4CAF50;padding:5px 12px;border-radius:12px;font-size:12px;font-weight:600}
 .exam-fail-chip{background:#FFEBEE;color:#C62828;padding:5px 12px;border-radius:12px;font-size:12px;font-weight:600}
 
 /* ── Quiz taking view (full-screen slide, diary-style) ── */
 .quiz-view{position:fixed;inset:0;z-index:108;display:flex;flex-direction:column;overflow:hidden;background:#fff;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);pointer-events:none;visibility:hidden}
 .quiz-view.open{transform:translateX(0);pointer-events:auto;visibility:visible}
-.quiz-header{background:#2E7D32;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px}
+.quiz-header{background:#4CAF50;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px}
 .quiz-timer{background:rgba(255,255,255,.2);border-radius:12px;padding:4px 12px;font-size:13px;font-weight:700;margin-left:auto}
 .quiz-timer.warning{background:#F44336;animation:pulse .8s infinite alternate}
 @keyframes pulse{from{opacity:1}to{opacity:.6}}
@@ -207,15 +216,15 @@
 .quiz-q-text{font-size:15px;font-weight:600;color:var(--gray-700);margin-bottom:12px;line-height:1.5}
 .quiz-option{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:all .2s}
 .quiz-option:active{background:var(--gray-100)}
-.quiz-option.selected{border-color:#2E7D32;background:#E8F5E9}
-.quiz-option input[type=radio]{accent-color:#2E7D32}
+.quiz-option.selected{border-color:#4CAF50;background:#E8F5E9}
+.quiz-option input[type=radio]{accent-color:#4CAF50}
 .quiz-answer-input{width:100%;border:1.5px solid var(--gray-300);border-radius:var(--radius);padding:10px 12px;font-family:var(--font);font-size:14px;outline:none}
-.quiz-answer-input:focus{border-color:#2E7D32}
+.quiz-answer-input:focus{border-color:#4CAF50}
 .quiz-footer{padding:12px 16px;border-top:1px solid var(--gray-200);background:#fff}
 
 /* ── Documents ── */
 .doc-upload-area{border:2px dashed var(--gray-300);border-radius:var(--radius);padding:24px;text-align:center;margin:12px;cursor:pointer;transition:border-color .2s}
-.doc-upload-area:hover{border-color:#2E7D32}
+.doc-upload-area:hover{border-color:#4CAF50}
 .doc-upload-icon{font-size:40px;margin-bottom:8px}
 .doc-upload-label{font-size:14px;font-weight:600;color:var(--gray-600);margin-bottom:4px}
 .doc-upload-hint{font-size:12px;color:var(--gray-400)}
@@ -226,7 +235,7 @@
 .doc-sent-meta{font-size:11px;color:var(--gray-400);margin-top:2px}
 .doc-cat-badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:8px;background:var(--gray-200);color:var(--gray-600);margin-right:4px}
 .upload-progress{height:4px;background:var(--gray-200);border-radius:2px;margin:4px 0;overflow:hidden}
-.upload-progress-fill{height:100%;background:#2E7D32;border-radius:2px;transition:width .3s}
+.upload-progress-fill{height:100%;background:#4CAF50;border-radius:2px;transition:width .3s}
 
 /* ── Sticky lock screen header (ডিফল্ট — লক স্ক্রিনে .lock-screen-soft ওভাররাইড করে) ── */
 .lock-sticky-header{flex-shrink:0;width:100%;text-align:center;color:#fff;font-size:15px;font-weight:700;padding:10px 16px 8px;background:rgba(0,0,0,.2);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,.1)}
@@ -238,7 +247,7 @@
 .pending-name{flex:1;font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pending-waqf{display:inline;font-size:11px;font-weight:400;color:rgba(255,255,255,.65);margin-left:5px}
 .pending-badge{font-size:11px;font-weight:700;padding:1px 7px;border-radius:8px;flex-shrink:0}
-.pending-badge.msg{background:#66BB6A;color:#1B5E20}
+.pending-badge.msg{background:#66BB6A;color:#43A047}
 .pending-badge.task{background:#FFE082;color:#E65100}
 
 /* ── Lock screen layout ── */
@@ -256,7 +265,7 @@
 .login-lbl-c{font-size:11px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.6px;text-transform:uppercase;text-align:center;margin-bottom:4px}
 .login-lbl-name{font-size:13px;font-weight:600;color:rgba(255,255,255,.9);text-align:center;min-height:18px;margin-bottom:6px}
 /* action button — same width as pin-pad */
-.login-btn{width:234px;background:#fff;color:#2E7D32;border:none;border-radius:14px;padding:0;height:50px;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s;margin-top:10px;display:flex;align-items:center;justify-content:center}
+.login-btn{width:234px;background:#fff;color:#4CAF50;border:none;border-radius:14px;padding:0;height:50px;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s;margin-top:10px;display:flex;align-items:center;justify-content:center}
 .login-btn:active{opacity:.85}
 .login-btn-ghost{background:rgba(255,255,255,.15);color:rgba(255,255,255,.85)}
 .login-err{color:#FF8A80;font-size:13px;min-height:18px;margin-top:6px;text-align:center;width:234px}
@@ -624,6 +633,7 @@ function showUploadSaveError(e){
 
 // ══ Init ═══════════════════════════════════════════════════
 function init(){
+  if(window.MadrasaPwa) MadrasaPwa.markPushSlot('student');
   Promise.resolve(API.DB.init()).then(()=>{
     void API.Pwa.registerServiceWorker();
     API.Tasks.resetDailyForToday();
@@ -695,7 +705,7 @@ function renderPendingSection(){
     const msgCnt=s.unreadCount!=null?s.unreadCount:API.Messages.unreadCount(s.id,'out');
     const waqf=API.Students.getShortId(s)||'---';
     return `<button class="pending-item" onclick="prefillId('${esc(waqf)}')">
-      <div class="pending-avatar" style="background:${s.color||'#2E7D32'}">${(s.name||'?').charAt(0)}</div>
+      <div class="pending-avatar" style="background:${s.color||'#4CAF50'}">${(s.name||'?').charAt(0)}</div>
       <div class="pending-name">${esc(s.name||'')}<span class="pending-waqf">${esc(API.Students.getShortId(s)||'')}</span></div>
       ${msgCnt>0?`<span class="pending-badge msg">💬${msgCnt}</span>`:''}
       ${s.taskCount>0?`<span class="pending-badge task">📋${s.taskCount}</span>`:''}
@@ -769,7 +779,8 @@ function showLoginErr(msg){
 }
 function onLogin(){
   localStorage.setItem('madrasa_lastPanel','student');
-  document.getElementById('hAvatar').textContent=me.name.charAt(0); document.getElementById('hAvatar').style.background=me.color||'#2E7D32';
+  if(me && me.waqfId) try{ localStorage.setItem('madrasa_last_student_waqf', String(me.waqfId)); }catch(e){}
+  document.getElementById('hAvatar').textContent=me.name.charAt(0); document.getElementById('hAvatar').style.background=me.color||'#4CAF50';
   document.getElementById('hTitle').textContent=me.name;
   { const p=[]; if(me.waqfId) p.push(API.Students.getShortId(me)); if(me.responsibility) p.push(me.responsibility); if(me.cls) p.push(me.cls); document.getElementById('hSub').textContent=p.length?p.join(' · '):'ওয়াকিফ'; }
   const sb=document.getElementById('stuInChatSearchBtn'); if(sb) sb.style.display='flex';
@@ -1236,7 +1247,7 @@ function renderAmalDashboard(){
         </div>
         <span class="stu-amal-live">Live</span>
       </div>
-      <div class="stu-amal-rings">${ringCol(prog.today.percent,'#2E7D32','আজ',prog.today.done,prog.today.total)}${ringCol(prog.week.percent,'#43A047','সপ্তাহ',prog.week.done,prog.week.total)}${ringCol(prog.month.percent,'#42A5F5','মাস',prog.month.done,prog.month.total)}</div>
+      <div class="stu-amal-rings">${ringCol(prog.today.percent,'#4CAF50','আজ',prog.today.done,prog.today.total)}${ringCol(prog.week.percent,'#43A047','সপ্তাহ',prog.week.done,prog.week.total)}${ringCol(prog.month.percent,'#42A5F5','মাস',prog.month.done,prog.month.total)}</div>
     </div>
   </div>`;
 }
@@ -1466,7 +1477,7 @@ function renderSentDocs(){
       <div class="doc-sent-icon">${icon}</div>
       <div class="doc-sent-info">
         <div class="doc-sent-name">${esc(d.fileName)}</div>
-        <div class="doc-sent-meta"><span class="doc-cat-badge">${catLabel[d.category]||d.category||'সাধারণ'}</span>${formatBytes(d.fileSize)} · ${formatDate(d.uploadedAt)} · ${d.reviewStatus==='pending'?'<span style="color:#E65100;font-weight:700">🔍 পর্যালোচনা চলছে</span>':'<span style="color:#2E7D32;font-weight:700">✅ দেখা হয়েছে</span>'}</div>
+        <div class="doc-sent-meta"><span class="doc-cat-badge">${catLabel[d.category]||d.category||'সাধারণ'}</span>${formatBytes(d.fileSize)} · ${formatDate(d.uploadedAt)} · ${d.reviewStatus==='pending'?'<span style="color:#E65100;font-weight:700">🔍 পর্যালোচনা চলছে</span>':'<span style="color:#4CAF50;font-weight:700">✅ দেখা হয়েছে</span>'}</div>
       </div>
     </div>`;
   }).join('');
@@ -1492,7 +1503,7 @@ function renderReceivedDocs(){
       <div class="doc-sent-name">${esc(d.fileName)}</div>
       <div class="doc-sent-meta">${formatBytes(d.fileSize)} · ${formatDate(d.uploadedAt)}</div>
     </div>
-    <button class="doc-btn view" onclick="previewStudentChatDoc('${d.id}')" style="width:32px;height:32px;border:none;border-radius:8px;background:#E8F5E9;color:#2E7D32;cursor:pointer;font-size:15px">👁</button>
+    <button class="doc-btn view" onclick="previewStudentChatDoc('${d.id}')" style="width:32px;height:32px;border:none;border-radius:8px;background:#E8F5E9;color:#4CAF50;cursor:pointer;font-size:15px">👁</button>
   </div>`).join('');
 }
 
@@ -1575,7 +1586,7 @@ function _stuIcsHighlight(text,query){
 function openStudentSelfProfile(){
   if(!me) return;
   const avatarEl=document.getElementById('spAvatar');
-  avatarEl.style.background=me.color||'#2E7D32';
+  avatarEl.style.background=me.color||'#4CAF50';
   const letterEl=document.getElementById('spAvatarLetter');
   if(me.photoDataUrl){
     avatarEl.style.backgroundImage=`url(${JSON.stringify(me.photoDataUrl)})`;

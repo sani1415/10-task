@@ -137,7 +137,7 @@
         p_subscription: subJson,
       });
       if (res.error) { console.warn('MadrasaPwa shared sub save:', res.error); return false; }
-      console.log('MadrasaPwa: shared device subscribed as', idOverride);
+      console.log('MadrasaPwa: push saved as', idOverride);
       return true;
     } catch (e) {
       console.warn('MadrasaPwa shared sub save exception:', e);
@@ -145,43 +145,99 @@
     }
   }
 
+  // একই origin-এ teacher + student PWA = একটাই push endpoint (এক SW)।
+  // দুটো অ্যাপ এক ডিভাইসে থাকলে subscription সব স্লটে mirror করতে হয়।
+  var SLOT_TEACHER = 'madrasa_push_slot_teacher';
+  var SLOT_STUDENT = 'madrasa_push_slot_student';
+  var LAST_STUDENT_WAQF = 'madrasa_last_student_waqf';
+
+  function markPushSlot(role) {
+    try {
+      if (role === 'teacher') localStorage.setItem(SLOT_TEACHER, '1');
+      if (role === 'student') localStorage.setItem(SLOT_STUDENT, '1');
+    } catch (e) {}
+  }
+
+  function getDevicePushTargets(role, opts) {
+    opts = opts || {};
+    var targets = [];
+    var seen = {};
+    function add(r, id) {
+      if (!id || seen[id]) return;
+      seen[id] = 1;
+      targets.push({ role: r, id: String(id) });
+    }
+    if (role === 'teacher') add('teacher', 'teacher');
+    else if (role === 'student') {
+      if (opts.waqfId) add('student', opts.waqfId);
+      if (opts.idOverride) add('student', opts.idOverride);
+      else if (!opts.waqfId) add('student', getOrCreateSharedDeviceId());
+    }
+    try {
+      if (localStorage.getItem(SLOT_TEACHER) === '1') add('teacher', 'teacher');
+      if (localStorage.getItem(SLOT_STUDENT) === '1') {
+        add('student', getOrCreateSharedDeviceId());
+        var wq = opts.waqfId || localStorage.getItem(LAST_STUDENT_WAQF);
+        if (wq) add('student', wq);
+      }
+    } catch (e) {}
+    return targets;
+  }
+
+  async function persistPushTargets(subJson, targets) {
+    var ok = true;
+    for (var i = 0; i < targets.length; i++) {
+      var t = targets[i];
+      var saved = await saveSharedSubscription(subJson, t.role, t.id);
+      if (!saved) ok = false;
+    }
+    return ok;
+  }
+
+  async function persistPushTargetsWithRetry(subJson, targets) {
+    var saved = await persistPushTargets(subJson, targets);
+    if (saved) return true;
+    var _retried = false;
+    async function _retrySave() {
+      if (_retried) return;
+      _retried = true;
+      w.removeEventListener('madrasa-remote-sync', _retrySave);
+      await persistPushTargets(subJson, targets);
+    }
+    w.addEventListener('madrasa-remote-sync', _retrySave);
+    setTimeout(function () { if (!_retried) _retrySave(); }, 8000);
+    return false;
+  }
+
+  async function getOrCreatePushSubscription(reg) {
+    var vapid = w.__PWA_VAPID_PUBLIC_KEY__;
+    if (!vapid || typeof vapid !== 'string' || !vapid.trim()) return null;
+    var key = urlB64ToUint8Array(vapid.trim());
+    var subOpts = { userVisibleOnly: true, applicationServerKey: key };
+    var existing = await reg.pushManager.getSubscription();
+    if (existing) return existing;
+    try {
+      return await reg.pushManager.subscribe(subOpts);
+    } catch (e1) {
+      await dropExistingPushSubscription(reg);
+      return await reg.pushManager.subscribe(subOpts);
+    }
+  }
+
   async function subscribeToPush(role, idOverride) {
     if (!('Notification' in w)) return;
+    markPushSlot(role);
     await register();
     var reg = await navigator.serviceWorker.ready;
     var perm = Notification.permission;
     if (perm === 'default') perm = await Notification.requestPermission();
     if (perm !== 'granted') return;
 
-    var vapid = w.__PWA_VAPID_PUBLIC_KEY__;
-    if (!vapid || typeof vapid !== 'string' || !vapid.trim()) return;
-
     try {
-      await dropExistingPushSubscription(reg);
-      var sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlB64ToUint8Array(vapid.trim()),
-      });
+      var sub = await getOrCreatePushSubscription(reg);
+      if (!sub) return;
       var subJson = sub.toJSON();
-      if (idOverride) {
-        var saved = await saveSharedSubscription(subJson, role, idOverride);
-        if (!saved) {
-          // RemoteSync not ready yet — retry on first sync event OR after 8s
-          var _retried = false;
-          async function _retrySave() {
-            if (_retried) return;
-            _retried = true;
-            w.removeEventListener('madrasa-remote-sync', _retrySave);
-            await saveSharedSubscription(subJson, role, idOverride);
-          }
-          w.addEventListener('madrasa-remote-sync', _retrySave);
-          setTimeout(async function() {
-            if (!_retried) await _retrySave();
-          }, 8000);
-        }
-      } else {
-        await saveSubscriptionToRemote(role, null, subJson);
-      }
+      await persistPushTargetsWithRetry(subJson, getDevicePushTargets(role, { idOverride: idOverride }));
     } catch (err) {
       console.warn('MadrasaPwa push subscribe:', err);
     }
@@ -199,35 +255,23 @@
   async function subscribeAndSave(role, opts, requestPermission) {
     opts = opts || {};
     if (!('Notification' in w)) return false;
+    markPushSlot(role);
     await register();
     var perm = Notification.permission;
     if (perm === 'default' && requestPermission) perm = await Notification.requestPermission();
     if (perm !== 'granted') return false;
 
-    var vapid = w.__PWA_VAPID_PUBLIC_KEY__;
-    if (!vapid || typeof vapid !== 'string' || !vapid.trim()) return false;
+    if (!w.__PWA_VAPID_PUBLIC_KEY__ || typeof w.__PWA_VAPID_PUBLIC_KEY__ !== 'string' || !w.__PWA_VAPID_PUBLIC_KEY__.trim()) return false;
 
     try {
       var reg = await navigator.serviceWorker.ready;
-      // VAPID rotation: stale FCM subscription must be dropped before re-subscribe
-      await dropExistingPushSubscription(reg);
-      var sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlB64ToUint8Array(vapid.trim()),
-      });
+      var sub = await getOrCreatePushSubscription(reg);
+      if (!sub) return false;
       var subJson = sub.toJSON();
-      var saved = await saveSubscriptionToRemote(role, opts.waqfId, subJson);
-      if (!saved) {
-        var _retried = false;
-        async function _retrySave() {
-          if (_retried) return;
-          _retried = true;
-          w.removeEventListener('madrasa-remote-sync', _retrySave);
-          await saveSubscriptionToRemote(role, opts.waqfId, subJson);
-        }
-        w.addEventListener('madrasa-remote-sync', _retrySave);
-        setTimeout(function () { if (!_retried) _retrySave(); }, 8000);
+      if (role === 'student' && opts.waqfId) {
+        try { localStorage.setItem(LAST_STUDENT_WAQF, String(opts.waqfId)); } catch (e) {}
       }
+      await persistPushTargetsWithRetry(subJson, getDevicePushTargets(role, opts));
       return true;
     } catch (err) {
       console.warn('MadrasaPwa push subscribe:', err);
@@ -270,6 +314,7 @@
 
   w.MadrasaPwa = {
     register: register,
+    markPushSlot: markPushSlot,
     enableAfterAuth: enableAfterAuth,
     refreshPushSubscription: refreshPushSubscription,
     enableSharedStudentDevice: enableSharedStudentDevice,
