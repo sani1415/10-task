@@ -16,6 +16,6 @@
   },
   "devDependencies": {
     "pg": "^8.20.0",
-    "vercel": "^41.4.0"
+    "vercel": "^54.20.1"
   }
 }

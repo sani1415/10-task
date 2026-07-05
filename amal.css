@@ -137,7 +137,8 @@
 .stu-task-row-btn{background:#4CAF50;color:#fff;border:none;border-radius:10px;padding:7px 10px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;line-height:1.2}
 .stu-task-row-btn:active{transform:scale(.97)}
 .stu-task-row-btn.late{background:#F44336}
-.stu-task-row-done{font-size:11px;font-weight:700;color:#43A047;background:#E8F5E9;padding:6px 8px;border-radius:10px;white-space:nowrap;line-height:1.2}
+.stu-task-row-done{font-size:11px;font-weight:700;color:#43A047;background:#E8F5E9;padding:6px 8px;border-radius:10px;white-space:nowrap;line-height:1.2;border:none;font-family:var(--font);cursor:pointer}
+.stu-task-row-done:active{background:#c8e6c9}
 
 /* শিক্ষক আমল তালিকা — ছাত্রের আমল ট্যাবের সাথে মিল রেখে (কমপ্যাক্ট সারি) */
 #amal-panel-list.amal-panel{background:#f3f4f6}

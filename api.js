@@ -882,6 +882,27 @@ const API = (() => {
     isDailyDoneToday(task,sid) {
       return this.isCompleted(task.id,sid,today())||task.completedBy?.[sid]?.date===today();
     },
+    // Undo — reverses markDailyDone/markDone for the student (self-correction of an accidental tap)
+    async unmarkDailyDone(tid,sid) {
+      const db=DB.get(); const t=db.tasks.find(x=>x.id===tid); if(!t) return null;
+      const AA=window.ApiAmal;
+      if (AA) await AA.unmarkCompleted(tid,sid,today());
+      if (t.completedBy?.[sid]?.date===today()) delete t.completedBy[sid];
+      t.assignees[sid]='pending';
+      DB.save(db);
+      return t;
+    },
+    async unmarkOnce(tid,sid) {
+      const db=DB.get(); const t=db.tasks.find(x=>x.id===tid); if(!t) return null;
+      const date=t.completedBy?.[sid]?.date||today();
+      const AA=window.ApiAmal;
+      if (AA) await AA.unmarkCompleted(tid,sid,date);
+      if (_useRemote && RS.updateTaskStatusRemote) await RS.updateTaskStatusRemote(tid,sid,'pending',null);
+      t.assignees[sid]='pending';
+      if (t.completedBy) delete t.completedBy[sid];
+      DB.save(db);
+      return t;
+    },
     async toggleStatus(tid,sid) {
       const db=DB.get(); const t=db.tasks.find(x=>x.id===tid); if(!t) return null;
       if (t.type==='daily') {

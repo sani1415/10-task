@@ -187,9 +187,11 @@
 .stu-sched-foot{padding:10px 12px;display:flex;gap:8px;flex-wrap:wrap}
 .stu-sched-btn{flex:1;min-width:120px;background:#4CAF50;color:#fff;border:none;border-radius:10px;padding:9px 12px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer}
 .stu-sched-btn.secondary{background:var(--gray-200);color:var(--gray-700)}
-.schedule-edit-row{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start}
+.schedule-edit-row{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start;border-left:3px solid transparent;padding-left:6px;transition:border-color .15s,background .15s;border-radius:6px}
 .schedule-edit-row input{flex:1;font-family:var(--font);font-size:14px;padding:8px 10px;border:1.5px solid var(--gray-300);border-radius:8px}
 .schedule-edit-del{background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:4px}
+.schedule-edit-row.changed{border-left-color:#F9A825;background:#FFF8E1}
+.schedule-edit-row.changed input{border-color:#FFD54F}
 
 /* ── Exams ── */
 .exam-card{background:#fff;margin:10px 12px;border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden}
@@ -236,6 +238,8 @@
 .doc-cat-badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:8px;background:var(--gray-200);color:var(--gray-600);margin-right:4px}
 .upload-progress{height:4px;background:var(--gray-200);border-radius:2px;margin:4px 0;overflow:hidden}
 .upload-progress-fill{height:100%;background:#4CAF50;border-radius:2px;transition:width .3s}
+.upload-progress-fill.indeterminate{width:40%!important;animation:uploadSweep 1.1s ease-in-out infinite}
+@keyframes uploadSweep{0%{margin-left:-40%}100%{margin-left:100%}}
 
 /* ── Sticky lock screen header (ডিফল্ট — লক স্ক্রিনে .lock-screen-soft ওভাররাইড করে) ── */
 .lock-sticky-header{flex-shrink:0;width:100%;text-align:center;color:#fff;font-size:15px;font-weight:700;padding:10px 16px 8px;background:rgba(0,0,0,.2);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,.1)}
@@ -578,7 +582,7 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
 <div class="modal-overlay" id="scheduleEditModal"><div class="modal-sheet" style="max-height:85vh;overflow:auto">
   <div class="modal-handle"></div>
   <div class="modal-title">📅 সময়সূচি সম্পাদনা</div>
-  <p style="font-size:12px;color:var(--gray-500);margin:0 0 10px;line-height:1.45">পরিবর্তন শিক্ষক অনুমোদনের পর প্রযোজ্য হবে। অনুমোদন পর্যন্ত নিচের টেবিলে আগের সময়সূচি দেখা যাবে।</p>
+  <p style="font-size:12px;color:var(--gray-500);margin:0 0 10px;line-height:1.45">পরিবর্তন শিক্ষক অনুমোদনের পর প্রযোজ্য হবে। অনুমোদন পর্যন্ত নিচের টেবিলে আগের সময়সূচি দেখা যাবে। <span style="color:#E65100;font-weight:600">হলুদ চিহ্নিত সারি</span> যেখানে পরিবর্তন করা হয়েছে।</p>
   <div id="scheduleEditRows"></div>
   <button type="button" class="btn-secondary" style="width:100%;margin-bottom:8px" onclick="scheduleEditAddRow()">＋ সারি যোগ</button>
   <button class="btn-primary" style="width:100%" onclick="scheduleSubmitForApproval()">📤 অনুমোদনের জন্য পাঠান</button>
@@ -591,6 +595,22 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
   <div id="chatDocPreviewBody" style="margin-top:8px;min-height:60px"></div>
   <button class="btn-primary" id="chatDocPreviewDl" style="margin-top:12px;width:100%;display:none" onclick="downloadStudentChatDoc()">⬇️ ডাউনলোড</button>
   <button class="btn-secondary" style="width:100%;margin-top:8px" onclick="closeModal('chatDocPreviewModal')">বন্ধ করুন</button>
+</div></div>
+
+<div class="modal-overlay" id="confirmModal"><div class="modal-sheet" style="max-width:340px">
+  <div class="modal-handle"></div>
+  <div class="modal-title" id="confirmModalTitle">নিশ্চিত করুন</div>
+  <p id="confirmModalMsg" style="font-size:14px;color:var(--gray-600);line-height:1.6;margin:-6px 0 18px"></p>
+  <button class="btn-primary" id="confirmModalOkBtn" onclick="_confirmModalResolve(true)">নিশ্চিত</button>
+  <button class="btn-secondary" onclick="_confirmModalResolve(false)">বাতিল</button>
+</div></div>
+
+<div class="modal-overlay" id="promptModal"><div class="modal-sheet" style="max-width:360px">
+  <div class="modal-handle"></div>
+  <div class="modal-title" id="promptModalTitle">সম্পাদনা করুন</div>
+  <textarea id="promptModalInput" class="quiz-answer-input" rows="3" style="width:100%;resize:vertical;margin-bottom:14px;box-sizing:border-box"></textarea>
+  <button class="btn-primary" onclick="_promptModalResolve(true)">সংরক্ষণ করুন</button>
+  <button class="btn-secondary" onclick="_promptModalResolve(false)">বাতিল</button>
 </div></div>
 
 <div class="toast" id="toast"></div>
@@ -907,20 +927,34 @@ function renderTaskSchedulePanel(){
     : '';
   el.innerHTML=`<div class="stu-sched-card"><div class="stu-sched-card-hd">বিসমিল্লাহির রহমানির রহিম</div>${banner}${body}<div class="stu-sched-foot"><button type="button" class="stu-sched-btn" onclick="openScheduleEditModal()">✏️ সম্পাদনা</button></div></div><div style="height:16px"></div>`;
 }
+let _scheduleBaselineRows=[];
+function scheduleRowCheckChanged(el){
+  const row=el.closest('.schedule-edit-row'); if(!row) return;
+  const i=Number(row.dataset.i);
+  const t=row.querySelector('.sched-in-task')?.value.trim()||'';
+  const tm=row.querySelector('.sched-in-time')?.value.trim()||'';
+  const base=_scheduleBaselineRows[i];
+  const changed=!base||base.task!==t||base.time!==tm;
+  row.classList.toggle('changed',changed);
+}
 function openScheduleEditModal(){
   if(!me||!API.DailySchedule) return;
   const ds=API.DailySchedule.getForStudent(me.id);
   const editRows=(ds.pending&&ds.pending.status==='pending'&&ds.pending.rows&&ds.pending.rows.length)?ds.pending.rows:(ds.rows&&ds.rows.length?ds.rows:[{id:'',task:'',time:''}]);
+  _scheduleBaselineRows=(ds.rows||[]).map(r=>({task:r.task,time:r.time}));
   const wrap=document.getElementById('scheduleEditRows');
-  wrap.innerHTML=editRows.map((r,i)=>`<div class="schedule-edit-row" data-i="${i}"><input type="text" placeholder="কাজ" class="sched-in-task" value="${esc(r.task)}"><input type="text" placeholder="সময়" class="sched-in-time" value="${esc(r.time)}"><button type="button" class="schedule-edit-del" onclick="this.parentNode.remove()" aria-label="সারি মুছুন">✕</button></div>`).join('');
-  if(!wrap.querySelector('.schedule-edit-row')) wrap.innerHTML='<div class="schedule-edit-row"><input type="text" class="sched-in-task" placeholder="কাজ"><input type="text" class="sched-in-time" placeholder="সময়"><button type="button" class="schedule-edit-del" onclick="this.parentNode.remove()">✕</button></div>';
+  wrap.innerHTML=editRows.map((r,i)=>`<div class="schedule-edit-row" data-i="${i}"><input type="text" placeholder="কাজ" class="sched-in-task" value="${esc(r.task)}" oninput="scheduleRowCheckChanged(this)"><input type="text" placeholder="সময়" class="sched-in-time" value="${esc(r.time)}" oninput="scheduleRowCheckChanged(this)"><button type="button" class="schedule-edit-del" onclick="this.parentNode.remove()" aria-label="সারি মুছুন">✕</button></div>`).join('');
+  if(!wrap.querySelector('.schedule-edit-row')) wrap.innerHTML=`<div class="schedule-edit-row" data-i="0"><input type="text" class="sched-in-task" placeholder="কাজ" oninput="scheduleRowCheckChanged(this)"><input type="text" class="sched-in-time" placeholder="সময়" oninput="scheduleRowCheckChanged(this)"><button type="button" class="schedule-edit-del" onclick="this.parentNode.remove()">✕</button></div>`;
+  wrap.querySelectorAll('.sched-in-task').forEach(scheduleRowCheckChanged);
   openModal('scheduleEditModal');
 }
 function scheduleEditAddRow(){
   const wrap=document.getElementById('scheduleEditRows');
+  const i=wrap.querySelectorAll('.schedule-edit-row').length;
   const d=document.createElement('div');
-  d.className='schedule-edit-row';
-  d.innerHTML='<input type="text" class="sched-in-task" placeholder="কাজ"><input type="text" class="sched-in-time" placeholder="সময়"><button type="button" class="schedule-edit-del" onclick="this.parentNode.remove()">✕</button>';
+  d.className='schedule-edit-row changed';
+  d.dataset.i=i;
+  d.innerHTML='<input type="text" class="sched-in-task" placeholder="কাজ" oninput="scheduleRowCheckChanged(this)"><input type="text" class="sched-in-time" placeholder="সময়" oninput="scheduleRowCheckChanged(this)"><button type="button" class="schedule-edit-del" onclick="this.parentNode.remove()">✕</button>';
   wrap.appendChild(d);
 }
 function scheduleCollectRows(){
@@ -1023,7 +1057,7 @@ async function openStudentMsgEdit(mid){
   if(!me) return;
   const msgs=API.Messages.getThread(me.id);
   const m=msgs.find(x=>x.id===mid); if(!m||!API.Messages.canModifyOwnMessage(m,false)) return;
-  const nv=prompt('মেসেজ সম্পাদনা করুন:',m.text||'');
+  const nv=await showPrompt('মেসেজ সম্পাদনা করুন',m.text||'');
   if(nv===null) return;
   const t=nv.trim(); if(!t){ showToast('খালি রাখা যাবে না'); return; }
   try{
@@ -1034,7 +1068,8 @@ async function openStudentMsgEdit(mid){
 }
 async function openStudentMsgDelete(mid){
   if(!me) return;
-  if(!confirm('এই মেসেজ উস্তাদসহ সবার কাছ থেকে চিরতরে মুছে যাবে (শুধু আপনার নয়)। চালিয়ে যাবেন?')) return;
+  const ok=await showConfirm('এই মেসেজ উস্তাদসহ সবার কাছ থেকে চিরতরে মুছে যাবে (শুধু আপনার নয়)। চালিয়ে যাবেন?',{title:'মেসেজ মুছুন',okText:'মুছে ফেলুন',danger:true});
+  if(!ok) return;
   try{
     const r=await API.Messages.deleteOwn(me.id,mid,false);
     if(r.ok){ renderChat(); updateBadges(); showToast('✅ সবার কাছ থেকে মুছে গেছে'); }
@@ -1156,6 +1191,41 @@ function scrollToMsg(mid){
   });
 })();
 
+// ══ Custom confirm/prompt modals (replace native confirm()/prompt()) ══
+let _confirmModalCb=null;
+function showConfirm(msg,{title='নিশ্চিত করুন',okText='নিশ্চিত',danger=false}={}){
+  return new Promise(resolve=>{
+    _confirmModalCb=resolve;
+    document.getElementById('confirmModalTitle').textContent=title;
+    document.getElementById('confirmModalMsg').textContent=msg;
+    const ok=document.getElementById('confirmModalOkBtn');
+    ok.textContent=okText;
+    ok.style.background=danger?'#dc2626':'';
+    openModal('confirmModal');
+  });
+}
+function _confirmModalResolve(v){
+  closeModal('confirmModal');
+  if(_confirmModalCb){ const cb=_confirmModalCb; _confirmModalCb=null; cb(v); }
+}
+let _promptModalCb=null;
+function showPrompt(title,defVal=''){
+  return new Promise(resolve=>{
+    _promptModalCb=resolve;
+    document.getElementById('promptModalTitle').textContent=title;
+    const inp=document.getElementById('promptModalInput');
+    inp.value=defVal;
+    openModal('promptModal');
+    setTimeout(()=>{ inp.focus(); inp.setSelectionRange(inp.value.length,inp.value.length); },300);
+  });
+}
+function _promptModalResolve(ok){
+  const inp=document.getElementById('promptModalInput');
+  const val=inp.value;
+  closeModal('promptModal');
+  if(_promptModalCb){ const cb=_promptModalCb; _promptModalCb=null; cb(ok?val:null); }
+}
+
 // ══ TASKS ══════════════════════════════════════════════════
 function atCardHtml(task){
   const isDaily=task.type==='daily';
@@ -1165,11 +1235,11 @@ function atCardHtml(task){
   const cl={done:'done',late:'late',pending:''};
   const badge=isDaily?'দৈনিক':'এককালীন';
   const btnDaily=isDoneToday
-    ? `<span class="stu-task-row-done">আজ ✓</span>`
+    ? `<button type="button" class="stu-task-row-done" onclick="undoDailyDone('${task.id}')" title="পূর্বাবস্থায় ফিরুন">আজ ✓ ↩</button>`
     : `<button type="button" class="stu-task-row-btn" onclick="markDailyDone('${task.id}')">আজ সম্পন্ন</button>`;
   const btnOnce=st!=='done'
     ? `<button type="button" class="stu-task-row-btn ${st==='late'?'late':''}" onclick="markDone('${task.id}')">সম্পন্ন</button>`
-    : `<span class="stu-task-row-done">✓</span>`;
+    : `<button type="button" class="stu-task-row-done" onclick="undoTaskDone('${task.id}')" title="পূর্বাবস্থায় ফিরুন">✓ ↩</button>`;
   const sub=isDaily?'':(task.deadline?(' · '+esc(task.deadline)):'');
 
   return `<div class="stu-task-row ${cl[st]||''}">
@@ -1208,6 +1278,18 @@ function renderTaskList(f){
 function fTask(f,btn){ document.querySelectorAll('#amal-panel-today .stu-filter-pill').forEach(c=>c.classList.remove('active')); btn.classList.add('active'); renderTaskList(f); }
 async function markDailyDone(tid){ try{ await API.Tasks.markDailyDone(tid,me.id); renderAll(); showToast('مَا شَاءَ اللّٰه! আজকের আমল সম্পন্ন ✅'); }catch(e){ console.error(e); showToast('❌ আমল সেভ হয়নি'); } }
 async function markDone(tid){ try{ await API.Tasks.markDone(tid,me.id); renderAll(); showToast('مَا شَاءَ اللّٰه! আমল সম্পন্ন ✅'); }catch(e){ console.error(e); showToast('❌ আমল সেভ হয়নি'); } }
+async function undoDailyDone(tid){
+  const ok=await showConfirm('আজকের এই আমলটি "সম্পন্ন" থেকে পূর্বাবস্থায় ফিরিয়ে নেবেন?',{title:'আমল আনডু',okText:'পূর্বাবস্থায় ফিরুন'});
+  if(!ok) return;
+  try{ await API.Tasks.unmarkDailyDone(tid,me.id); renderAll(); showToast('↩ পূর্বাবস্থায় ফেরানো হয়েছে'); }
+  catch(e){ console.error(e); showToast('❌ পূর্বাবস্থায় ফেরানো যায়নি'); }
+}
+async function undoTaskDone(tid){
+  const ok=await showConfirm('এই আমলটি "সম্পন্ন" থেকে পূর্বাবস্থায় ফিরিয়ে নেবেন?',{title:'আমল আনডু',okText:'পূর্বাবস্থায় ফিরুন'});
+  if(!ok) return;
+  try{ await API.Tasks.unmarkOnce(tid,me.id); renderAll(); showToast('↩ পূর্বাবস্থায় ফেরানো হয়েছে'); }
+  catch(e){ console.error(e); showToast('❌ পূর্বাবস্থায় ফেরানো যায়নি'); }
+}
 
 // ── আমল sub-tabs (ছাত্র) ─────────────────────────────────────
 let _amalTab='today';
@@ -1369,19 +1451,22 @@ function startQuizTimer(seconds){
     const el=document.getElementById('quizTimer');
     el.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
     el.classList.toggle('warning',quizSecondsLeft<=60);
-    if(quizSecondsLeft<=0){ clearInterval(quizTimerInterval); submitQuiz(); }
+    if(quizSecondsLeft<=0){ clearInterval(quizTimerInterval); submitQuiz(true); }
   },1000);
 }
-async function submitQuiz(){
+async function submitQuiz(auto=false){
   clearInterval(quizTimerInterval);
   if(!activeQuizId) return;
   const answered=Object.keys(quizAnswers).length;
   const quiz=API.Exams.getQuizById(activeQuizId);
   const total=quiz?.questions?.length||0;
-  const confirmMsg = answered<total
-    ? `${answered}/${total}টি প্রশ্নের উত্তর দিয়েছেন। এখনই জমা দেবেন?`
-    : 'পরীক্ষা জমা দেবেন?';
-  if(!confirm(confirmMsg)) return;
+  if(!auto){
+    const confirmMsg = answered<total
+      ? `${answered}/${total}টি প্রশ্নের উত্তর দিয়েছেন। এখনই জমা দেবেন?`
+      : 'পরীক্ষা জমা দেবেন?';
+    const ok=await showConfirm(confirmMsg,{title:'পরীক্ষা জমা দিন',okText:'জমা দিন'});
+    if(!ok) return;
+  }
   let sub;
   try{ sub=await API.Exams.submitQuiz(activeQuizId,me.id,quizAnswers); }
   catch(e){ console.error(e); showToast('❌ পরীক্ষা জমা হয়নি'); return; }
@@ -1451,17 +1536,18 @@ async function confirmUpload(){
   const note=document.getElementById('uploadNote').value.trim();
   const progWrap=document.getElementById('uploadProgressWrap');
   const progFill=document.getElementById('uploadProgressFill');
-  progWrap.style.display='block'; progFill.style.width='30%';
+  progWrap.style.display='block'; progFill.classList.add('indeterminate');
   try {
     const meta=await API.Docs.upload(me.id, pendingFile, { category:cat, note });
-    progFill.style.width='100%';
     // Also add a doc message in chat
     await API.Messages.sendFromStudent(me.id, `📎 ${meta.fileName}`, 'doc', { fileName:meta.fileName, fileSize:meta.fileSize, docId:meta.id });
+    progFill.classList.remove('indeterminate'); progFill.style.width='100%';
     setTimeout(()=>{ progWrap.style.display='none'; progFill.style.width='0%'; },500);
     cancelUpload();
     renderSentDocs(); renderChat(); renderHome();
     showToast('✅ ডকুমেন্ট পাঠানো হয়েছে!');
   } catch(e){
+    progFill.classList.remove('indeterminate'); progFill.style.width='0%';
     progWrap.style.display='none';
     showUploadSaveError(e);
   }
@@ -1523,10 +1609,13 @@ function renderGoals(){
 }
 function gItem(g){ return `<div class="goal-item"><div class="goal-check ${g.done?'done':''}" onclick="toggleGoal('${g.id}')"></div><div style="flex:1"><div class="goal-text ${g.done?'done':''}">${esc(g.title)}</div><div class="goal-meta">${catIc(g.cat)} ${g.cat||''} ${g.deadline?'· 📅 '+g.deadline:''} ${g.note?'· '+esc(g.note):''}</div></div><button class="goal-del" onclick="delGoal('${g.id}')">🗑</button></div>`; }
 function fGoal(f,btn){ document.querySelectorAll('#screen-goals .filter-chip').forEach(c=>c.classList.remove('active')); btn.classList.add('active'); gFilter=f; renderGoals(); }
-async function quickGoal(){ const t=document.getElementById('goalIn').value.trim(); if(!t) return; try{ await API.Goals.add(me.id,{title:t,cat:'other'}); document.getElementById('goalIn').value=''; renderGoals(); renderHome(); showToast('🎯 লক্ষ্য যোগ হয়েছে!'); }catch(e){ console.error(e); showToast('❌ লক্ষ্য সেভ হয়নি'); } }
 async function addGoalModal(){ const t=document.getElementById('gm_title').value.trim(); if(!t){ showToast('লক্ষ্যের বিবরণ লিখুন!'); return; } try{ await API.Goals.add(me.id,{title:t,cat:document.getElementById('gm_cat').value,deadline:document.getElementById('gm_dl').value,note:document.getElementById('gm_note').value.trim()}); closeModal('addGoalModal'); ['gm_title','gm_note'].forEach(id=>document.getElementById(id).value=''); document.getElementById('gm_dl').value=''; renderGoals(); renderHome(); showToast('🎯 লক্ষ্য যোগ হয়েছে!'); }catch(e){ console.error(e); showToast('❌ লক্ষ্য সেভ হয়নি'); } }
 async function toggleGoal(id){ try{ const g=await API.Goals.toggle(me.id,id); renderGoals(); renderHome(); if(g?.done) showToast('مَا شَاءَ اللّٰه! লক্ষ্য সম্পন্ন ✅'); }catch(e){ console.error(e); showToast('❌ লক্ষ্য আপডেট হয়নি'); } }
-async function delGoal(id){ try{ await API.Goals.delete(me.id,id); renderGoals(); renderHome(); }catch(e){ console.error(e); showToast('❌ লক্ষ্য মোছা যায়নি'); } }
+async function delGoal(id){
+  const ok=await showConfirm('এই লক্ষ্যটি মুছে ফেলবেন?',{title:'লক্ষ্য মুছুন',okText:'মুছে ফেলুন',danger:true});
+  if(!ok) return;
+  try{ await API.Goals.delete(me.id,id); renderGoals(); renderHome(); showToast('🗑 লক্ষ্য মুছে ফেলা হয়েছে'); }catch(e){ console.error(e); showToast('❌ লক্ষ্য মোছা যায়নি'); }
+}
 
 // ══ IN-CHAT SEARCH (student) ════════════════════════════════
 let _stuIcsMatches=[], _stuIcsIdx=-1, _stuIcsQuery='';
