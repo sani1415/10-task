@@ -33,7 +33,8 @@ body{font-family:var(--font);background:var(--gray-200);height:100vh;height:100d
 .header-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:#fff;flex-shrink:0}
 .header-info{flex:1;min-width:0}.header-title{font-size:17px;font-weight:600;line-height:1.2}.header-sub{font-size:12px;opacity:.85;margin-top:1px}
 .header-actions{display:flex;gap:4px}
-.header-btn{background:none;border:none;color:#fff;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;transition:background .2s}
+.header-btn{background:none;border:none;color:#fff;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;transition:background .2s;padding:0}
+.header-btn svg{display:block;width:20px;height:20px;flex-shrink:0}
 .header-btn:active{background:rgba(255,255,255,.2)}.logout-btn{background:rgba(255,255,255,.15);border:none;color:#fff;padding:6px 12px;border-radius:16px;font-family:var(--font);font-size:12px;cursor:pointer}
 /* Tabs */
 .tab-bar{display:flex;flex-shrink:0}
@@ -213,24 +214,28 @@ body{font-family:var(--font);background:var(--gray-200);height:100vh;height:100d
 /* Goals */
 .goal-add-bar{padding:10px 12px;background:var(--gray-100);border-bottom:1px solid var(--gray-200);display:flex;gap:8px}
 .goal-add-bar input{flex:1;border:1.5px solid var(--gray-300);border-radius:24px;padding:9px 16px;font-family:var(--font);font-size:14px;outline:none;background:#fff}
-.goal-add-btn{color:#fff;border:none;border-radius:24px;padding:9px 18px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+.goal-add-btn{color:#fff;border:none;border-radius:24px;padding:9px 18px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.goal-btn-ic,.goal-meta-ic,.goal-empty-ic{display:inline-flex;line-height:0;align-items:center;justify-content:center}
+.goal-btn-ic svg,.goal-meta-ic svg,.goal-del svg,.goal-empty-ic svg{stroke:currentColor;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.goal-btn-ic svg{width:18px;height:18px;stroke-width:2}
 .goal-section{padding:10px 16px 4px;font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px}
 .goal-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--gray-100)}
 .goal-check{width:24px;height:24px;border-radius:50%;border:2.5px solid;background:transparent;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s}
 .goal-check.done::after{content:'✓';color:#fff;font-size:13px;font-weight:700}
 .goal-text{flex:1;font-size:14px;color:var(--gray-700);line-height:1.4}.goal-text.done{text-decoration:line-through;color:var(--gray-400)}
-.goal-meta{font-size:11px;color:var(--gray-400);margin-top:1px}
-.goal-del{background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:18px;padding:4px;border-radius:50%}
-.goal-del:active{background:var(--gray-100)}
+.goal-meta{font-size:11px;color:var(--gray-400);margin-top:1px;display:flex;flex-wrap:wrap;align-items:center;gap:3px}
+.goal-meta-ic svg{width:12px;height:12px;stroke-width:1.7;opacity:.75}
+.goal-prog-title{display:inline-flex;align-items:center;gap:5px}.goal-prog-title .goal-meta-ic svg{width:14px;height:14px;opacity:.9}
+.goal-del{background:none;border:none;color:var(--gray-400);cursor:pointer;padding:6px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;line-height:0}
+.goal-del svg{width:18px;height:18px;stroke-width:1.7}.goal-del:active{background:var(--gray-100)}
+.goal-empty-ic svg{width:40px;height:40px;stroke-width:1.5;opacity:.45}
 .goal-progress-wrap{padding:12px 16px;border-radius:var(--radius);margin:12px}
 .goal-progress-label{display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:6px}
 .goal-progress-bar{height:6px;border-radius:3px;overflow:hidden;background:rgba(0,0,0,.1)}
 .goal-progress-fill{height:100%;border-radius:3px;transition:width .5s}
-/* Stats */
 .stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:12px 12px 4px}
 .stat-card{background:#fff;border-radius:var(--radius);padding:12px;text-align:center;box-shadow:var(--shadow-sm)}
 .stat-num{font-size:24px;font-weight:700}.stat-label{font-size:11px;color:var(--gray-500);margin-top:2px}
-/* Welcome */
 .welcome-card{padding:18px 20px;color:#fff;display:flex;align-items:center;gap:14px}
 .welcome-avatar{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;flex-shrink:0}
 .welcome-text h2{font-size:16px;font-weight:700;margin-bottom:2px}.welcome-text p{font-size:13px;opacity:.85}
@@ -246,15 +251,14 @@ body{font-family:var(--font);background:var(--gray-200);height:100vh;height:100d
 /* FAB */
 .fab{position:absolute;bottom:20px;right:20px;width:56px;height:56px;border-radius:50%;border:none;font-size:26px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-lg);cursor:pointer;z-index:50;transition:transform .2s}
 .fab:active{transform:scale(.9)}
-/* Modal */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-end;justify-content:center}
+/* Modal — সেন্টার ফ্লোটিং (নিচ থেকে স্লাইড নয়) */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:200;display:none;align-items:center;justify-content:center;padding:20px 16px}
 .modal-overlay.open{display:flex}
-.modal-overlay .modal-sheet{background:#fff;width:100%;max-width:430px;border-radius:20px 20px 0 0;padding:20px 16px 32px;max-height:90vh;overflow-y:auto;transform:translateY(100%);transition:transform var(--motion-dur) var(--motion-ease)}
-.modal-overlay.open .modal-sheet{transform:translateY(0)}
-.modal-overlay.open.modal-closing .modal-sheet{transform:translateY(100%)}
-@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-overlay .modal-sheet{background:#fff;width:100%;max-width:min(400px,100%);border-radius:18px;padding:20px 16px 20px;max-height:min(85vh,640px);overflow-y:auto;transform:none;box-shadow:0 20px 50px rgba(15,23,42,.22)}
+.modal-overlay.open .modal-sheet,.modal-overlay.open.modal-closing .modal-sheet{transform:none}
+@keyframes slideUp{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
-.modal-handle{width:40px;height:4px;background:var(--gray-300);border-radius:2px;margin:0 auto 20px}
+.modal-handle{display:none}
 .modal-title{font-size:18px;font-weight:700;color:var(--gray-700);margin-bottom:16px}
 /* Form */
 .form-group{margin-bottom:14px}

@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="tablet-desktop.css">
 <link rel="stylesheet" href="amal.css">
 <style>
-/* ── Student theme — হালকা সবুজ (শিক্ষকের #075E54 গাঢ় টিল-সবুজের চেয়ে নরম) ── */
+/* ── Student theme — হালকা সবুজ (জিম্মাদারের #075E54 গাঢ় টিল-সবুজের চেয়ে নরম) ── */
 :root{
   --stu-main:#4CAF50;
   --stu-dark:#43A047;
@@ -98,6 +98,7 @@
 .lock-screen-soft .login-btn-ghost{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
 .lock-screen-soft .login-err{color:#b91c1c}
 .header{background:#4CAF50}
+#stuMainShell .header.stu-h-wrap{background:linear-gradient(180deg,#43A047 0%,#4CAF50 100%);box-shadow:0 2px 8px rgba(76,175,80,.25)}
 /* ফ্লোটিং নিচের ট্যাব — উপরের ট্যাব বার সরানো */
 .stu-main-shell{flex:1;display:flex;flex-direction:column;min-height:0;padding-bottom:var(--shell-pb,calc(12px + 68px + env(safe-area-inset-bottom)))}#stuBottomNav.stu-float-nav-wrap{display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:100;width:100%;max-width:430px;box-sizing:border-box;padding:0 12px calc(10px + env(safe-area-inset-bottom));pointer-events:none}
 .stu-float-nav-inner{pointer-events:auto;display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:18px;padding:6px 4px;border:1px solid #f1f5f9;box-shadow:0 -4px 24px rgba(0,0,0,.06),0 8px 32px rgba(15,118,110,.08)}
@@ -110,6 +111,14 @@
 .stu-float-nav-inner .tab-badge{top:2px;right:4px}
 .tab-badge{background:#66BB6A;color:#43A047}
 .filter-chip.active{background:#4CAF50}.progress-fill{background:#66BB6A}
+#screen-goals .goal-chip-ilm{background:#E3F2FD;border-color:#BBDEFB;color:#1565C0}
+#screen-goals .goal-chip-amal{background:#E8F5E9;border-color:#C8E6C9;color:#2E7D32}
+#screen-goals .goal-chip-akhlaq{background:#FCE4EC;border-color:#F8BBD0;color:#C2185B}
+#screen-goals .goal-chip-afkar{background:#FFF8E1;border-color:#FFE082;color:#F57F17}
+#screen-goals .goal-chip-ilm.active{background:#1565C0;border-color:#1565C0;color:#fff}
+#screen-goals .goal-chip-amal.active{background:#2E7D32;border-color:#2E7D32;color:#fff}
+#screen-goals .goal-chip-akhlaq.active{background:#C2185B;border-color:#C2185B;color:#fff}
+#screen-goals .goal-chip-afkar.active{background:#F9A825;border-color:#F9A825;color:#fff}
 .send-btn{background:#4CAF50}.goal-add-btn{background:#4CAF50}.goal-check{border-color:#4CAF50}
 .goal-check.done{background:#4CAF50;border-color:#4CAF50}.btn-primary{background:#4CAF50}
 .form-input:focus{border-color:#4CAF50}.sec-link{color:#4CAF50}
@@ -120,9 +129,27 @@
 .reply-preview-bar{background:#F1F8F1;border-top-color:#66BB6A}
 .reply-preview-content{border-left-color:#4CAF50}.reply-preview-sender{color:#4CAF50}
 .chat-file-title-in:focus{border-color:#4CAF50}
-.doc-tab-btn.active{color:#4CAF50;border-bottom-color:#4CAF50}
 .welcome-card{background:linear-gradient(135deg,#4CAF50,#26A69A)}
 .chat-messages{background-color:#EDF4ED;background-image:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%234CAF50' fill-opacity='0.04'%3E%3Cpath d='M20 20.5V18H0v5h5v5H0v5h20v-5h15v-5H20v-.5z'/%3E%3C/g%3E%3C/svg%3E")}
+
+/* ── ছাত্র হেডার: দুই-লেয়ার (কমপ্যাক্ট) ── */
+#stuMainShell .header.stu-h-wrap{flex-direction:column;align-items:stretch;gap:0;padding:0;min-height:auto}
+.stu-h-top{display:flex;align-items:center;justify-content:center;padding:4px 12px 3px;color:#fff}
+.stu-h-card{display:flex;align-items:center;gap:8px;padding:7px 12px;background:#fff;margin:0;border-radius:12px 12px 0 0;box-shadow:none;border-bottom:1px solid #e8ecef}
+.stu-h-card .header-info{flex:1;min-width:0}
+.stu-h-card .header-title{color:#0f172a;font-size:15px;font-weight:700;line-height:1.15}
+.stu-h-card .header-sub{color:#64748b;opacity:1;margin-top:1px;font-size:11px}
+.stu-h-card .header-btn{color:#64748b;width:32px;height:32px;font-size:18px}
+.stu-h-card .header-btn svg{width:18px;height:18px}
+.stu-h-card .header-btn:active{background:#f1f5f9}
+.stu-h-actions{display:flex;align-items:center;gap:2px;flex-shrink:0;margin-left:auto}
+.stu-h-avatar{position:relative;width:40px;height:40px;flex-shrink:0;cursor:pointer;border:none;background:none;padding:0;border-radius:50%;font:inherit;color:inherit}
+.stu-h-avatar:active{opacity:.9}
+.stu-h-ring{position:absolute;inset:0;width:40px;height:40px;display:block}
+.stu-h-pct{position:absolute;inset:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#2E7D32;letter-spacing:-.02em;pointer-events:none;background:#E8F5E9;border-radius:50%}
+.stu-h-days-row{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;line-height:1}
+.stu-h-days-lbl,.stu-h-days-unit{font-size:11px;font-weight:700;opacity:.92;letter-spacing:.02em}
+.stu-h-days-num{display:inline-flex;align-items:center;justify-content:center;min-width:24px;padding:1px 5px;border:1.5px solid #fff;border-radius:4px;background:rgba(255,255,255,.95);color:#C62828;font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.2;box-shadow:0 1px 2px rgba(0,0,0,.08)}
 
 /* ── Task type badge ── */
 .type-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:6px}
@@ -131,50 +158,11 @@
 /* আমল ট্যাব — prototype-aligned accents */
 #screen-tasks{background:#f3f4f6}
 .stu-filter-pill.active{background:#4CAF50!important;color:#fff!important;border-color:#4CAF50!important;box-shadow:0 8px 20px rgba(76,175,80,.2)}
-.stu-amal-live{background:#E8F5E9;color:#4CAF50}
 #stuMainShell #screen-tasks .amal-panel>.list-scroll{padding-bottom:16px}
-
-/* ── ছাত্র হোম ড্যাশবোর্ড ── */
-#screen-home{background:#f8faf9}
-.stu-home-scroll{padding:14px 12px 20px}
-.stu-home-alerts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
-.stu-home-alert{border:none;border-radius:12px;padding:10px 14px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:transform .12s,box-shadow .12s;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-.stu-home-alert:active{transform:scale(.98)}
-.stu-home-alert--msg{background:#e8f1fb;color:#1565c0}
-.stu-home-alert--exam{background:#fef3e8;color:#c2410c}
-.stu-home-alert--amal{background:#ecf6ee;color:#43a047}
-.stu-home-all-clear{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:14px;padding:13px 16px;font-size:13px;font-weight:500;color:#64748b;text-align:center;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.03)}
-.stu-home-card{background:#fff;border-radius:16px;border:1px solid rgba(0,0,0,.06);box-shadow:0 2px 12px rgba(15,23,42,.04);margin-bottom:12px;overflow:hidden}
-.stu-home-card-hd{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px 0}
-.stu-home-card-title{font-size:15px;font-weight:700;color:#1e293b;letter-spacing:-.01em}
-.stu-home-card-link{font-size:12px;font-weight:600;color:#43a047;background:none;border:none;cursor:pointer;padding:4px 0;font-family:var(--font);flex-shrink:0}
-.stu-home-card-body{padding:12px 16px 16px}
-.stu-home-card--click{cursor:pointer;transition:box-shadow .15s}
-.stu-home-card--click:active{box-shadow:0 1px 6px rgba(15,23,42,.06)}
-.stu-home-prog-bar{height:7px;background:#eef2f0;border-radius:99px;overflow:hidden;margin:10px 0 8px}
-.stu-home-prog-fill{height:100%;background:linear-gradient(90deg,#66BB6A,#4CAF50);border-radius:99px;transition:width .35s ease}
-.stu-home-prog-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12px;color:#64748b}
-.stu-home-prog-row strong{font-size:14px;font-weight:800;color:#1e293b}
-.stu-home-prog-sub{margin-top:4px;font-size:12px;color:#94a3b8;line-height:1.4}
-.stu-home-mini-stats{display:flex;gap:8px;margin-top:12px}
-.stu-home-stat{flex:1;background:#f8faf9;border-radius:10px;padding:10px 8px;text-align:center;border:1px solid #eef2f0}
-.stu-home-stat-val{font-size:15px;font-weight:800;color:#43a047;line-height:1.2}
-.stu-home-stat-lbl{font-size:10px;font-weight:600;color:#94a3b8;margin-top:3px;letter-spacing:.2px}
-.stu-home-empty{font-size:13px;color:#94a3b8;line-height:1.5;margin:0}
-.stu-home-notice{font-size:12px;font-weight:600;padding:8px 12px;border-radius:10px;margin-bottom:10px;line-height:1.4}
-.stu-home-notice--pending{background:#fff8e8;color:#b45309;border:1px solid #fde68a}
-.stu-home-notice--rejected{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca}
-.stu-home-sched-table{width:100%;border-collapse:collapse;font-size:13px}
-.stu-home-sched-table th{text-align:left;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.45px;padding:0 0 8px;border-bottom:1px solid #eef2f0}
-.stu-home-sched-table th:last-child{text-align:right;width:34%}
-.stu-home-sched-table td{padding:9px 0;border-bottom:1px solid #f1f5f9;color:#334155;vertical-align:top;line-height:1.4}
-.stu-home-sched-table td:last-child{text-align:right;font-weight:600;color:#43a047;white-space:nowrap;font-variant-numeric:tabular-nums}
-.stu-home-sched-table tr:last-child td{border-bottom:none}
-.stu-home-sched-more{font-size:12px;color:#64748b;margin-top:8px}
 
 /* ── দৈনিক সময়সূচি (আমল ট্যাব) ── */
 .stu-sched-card{background:#fff;margin:0 12px 14px;border-radius:14px;border:1px solid var(--gray-200);box-shadow:var(--shadow-sm);overflow:hidden}
-.stu-sched-card-hd{padding:10px 14px;background:var(--gray-50);font-size:13px;font-weight:700;color:var(--gray-700);border-bottom:1px solid var(--gray-200)}
+.stu-sched-card-hd{padding:10px 14px;background:var(--gray-50);font-size:13px;font-weight:700;color:var(--gray-700);border-bottom:1px solid var(--gray-200);text-align:center}
 .stu-sched-banner{font-size:12px;padding:8px 14px;line-height:1.45}
 .stu-sched-banner.pending{background:#FFF8E1;color:#E65100;border-bottom:1px solid #FFE082}
 .stu-sched-banner.rejected{background:#FFEBEE;color:#B71C1C;border-bottom:1px solid #FFCDD2}
@@ -187,11 +175,20 @@
 .stu-sched-foot{padding:10px 12px;display:flex;gap:8px;flex-wrap:wrap}
 .stu-sched-btn{flex:1;min-width:120px;background:#4CAF50;color:#fff;border:none;border-radius:10px;padding:9px 12px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer}
 .stu-sched-btn.secondary{background:var(--gray-200);color:var(--gray-700)}
-.schedule-edit-row{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start;border-left:3px solid transparent;padding-left:6px;transition:border-color .15s,background .15s;border-radius:6px}
-.schedule-edit-row input{flex:1;font-family:var(--font);font-size:14px;padding:8px 10px;border:1.5px solid var(--gray-300);border-radius:8px}
-.schedule-edit-del{background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:4px}
-.schedule-edit-row.changed{border-left-color:#F9A825;background:#FFF8E1}
-.schedule-edit-row.changed input{border-color:#FFD54F}
+.schedule-edit-row{display:flex;gap:8px;margin-bottom:8px;align-items:center}
+.schedule-edit-row input{flex:1;font-family:var(--font);font-size:14px;padding:8px 10px;border:1.5px solid var(--gray-300);border-radius:8px;min-width:0}
+.schedule-edit-del{background:#FFEBEE;border:none;color:#C62828;width:34px;height:34px;border-radius:9px;cursor:pointer;padding:0;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;line-height:0}
+.schedule-edit-del svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+/* সময়সূচি সম্পাদনা — শিরোনাম */
+#scheduleEditModal .modal-title{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px}
+#scheduleEditModal .modal-title-ic{display:inline-flex;line-height:0;color:#4CAF50}
+#scheduleEditModal .modal-title-ic svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.stu-sched-hint{font-size:12px;color:#64748b;margin:0 0 12px;line-height:1.45;text-align:center}
+.stu-sched-add{width:100%;margin-bottom:12px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.stu-sched-add svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.stu-sched-actions{display:flex;gap:8px;margin-top:4px}
+.stu-sched-actions .btn-primary,.stu-sched-actions .btn-secondary{flex:1;margin:0;width:auto;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 8px;font-size:13px}
+.stu-sched-actions svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 
 /* ── Exams ── */
 .exam-card{background:#fff;margin:10px 12px;border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden}
@@ -224,18 +221,42 @@
 .quiz-answer-input:focus{border-color:#4CAF50}
 .quiz-footer{padding:12px 16px;border-top:1px solid var(--gray-200);background:#fff}
 
-/* ── Documents ── */
-.doc-upload-area{border:2px dashed var(--gray-300);border-radius:var(--radius);padding:24px;text-align:center;margin:12px;cursor:pointer;transition:border-color .2s}
-.doc-upload-area:hover{border-color:#4CAF50}
-.doc-upload-icon{font-size:40px;margin-bottom:8px}
-.doc-upload-label{font-size:14px;font-weight:600;color:var(--gray-600);margin-bottom:4px}
-.doc-upload-hint{font-size:12px;color:var(--gray-400)}
-.doc-sent-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--gray-100)}
-.doc-sent-icon{width:40px;height:40px;border-radius:10px;background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-.doc-sent-info{flex:1;min-width:0}
-.doc-sent-name{font-size:14px;font-weight:600;color:var(--gray-700);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.doc-sent-meta{font-size:11px;color:var(--gray-400);margin-top:2px}
-.doc-cat-badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:8px;background:var(--gray-200);color:var(--gray-600);margin-right:4px}
+/* ── Documents (ছাত্র — কমপ্যাক্ট) ── */
+#screen-docs{background:#f3f4f6}
+#screen-docs .doc-tabs{display:flex;background:#fff;border-bottom:1px solid #e2e8f0;flex-shrink:0}
+#screen-docs .doc-tab-btn{flex:1;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:5px;background:none;border:none;padding:7px 10px 6px;font-family:var(--font);font-size:12px;font-weight:600;color:#64748b;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}
+#screen-docs .doc-tab-btn span:last-child{line-height:1.15;white-space:nowrap}
+#screen-docs .doc-tab-btn.active{color:#4CAF50;border-bottom-color:#4CAF50}
+#screen-docs .doc-tab-ic{line-height:0;display:flex}
+#screen-docs .doc-tab-ic svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round;opacity:.88}
+#screen-docs .doc-tab-btn.active .doc-tab-ic svg{stroke-width:2;opacity:1}
+.stu-doc-scroll{padding:12px 16px 24px;background:#f3f4f6}
+.stu-doc-upload{display:flex;align-items:center;gap:12px;width:100%;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:12px 14px;cursor:pointer;font-family:var(--font);text-align:left;box-shadow:0 1px 2px rgba(0,0,0,.04);margin-bottom:12px;transition:border-color .15s,background .15s}
+.stu-doc-upload:active{background:#f8fafc;border-color:#c8e6c9}
+.stu-doc-upload-ic{width:36px;height:36px;border-radius:10px;background:#E8F5E9;color:#43A047;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stu-doc-upload-ic svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.stu-doc-upload-txt{flex:1;min-width:0}
+.stu-doc-upload-lbl{font-size:14px;font-weight:700;color:#1e293b;line-height:1.2}
+.stu-doc-upload-hint{font-size:11px;font-weight:500;color:#94a3b8;margin-top:2px;line-height:1.3}
+.stu-doc-upload-arrow{color:#94a3b8;flex-shrink:0;line-height:0}
+.stu-doc-upload-arrow svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.stu-doc-preview{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:12px;margin-bottom:12px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.stu-doc-sec{font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:.04em;margin:4px 2px 8px}
+.stu-doc-list{display:flex;flex-direction:column;gap:6px}
+.stu-doc-row{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #f1f5f9;border-radius:12px;padding:10px 12px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.stu-doc-row-ic{width:34px;height:34px;border-radius:9px;background:#f1f5f9;color:#64748b;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stu-doc-row-ic svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}
+.stu-doc-row-ic.pdf{background:#FFEBEE;color:#C62828}
+.stu-doc-row-ic.img{background:#E3F2FD;color:#1565C0}
+.stu-doc-row-mid{flex:1;min-width:0}
+.stu-doc-row-name{font-size:13px;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25}
+.stu-doc-row-meta{font-size:11px;color:#94a3b8;margin-top:2px;display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.stu-doc-pill{font-size:9px;font-weight:700;padding:2px 6px;border-radius:6px;background:#f1f5f9;color:#64748b}
+.stu-doc-st{font-size:10px;font-weight:700}
+.stu-doc-st.ok{color:#43A047}.stu-doc-st.wait{color:#E65100}
+.stu-doc-view{width:32px;height:32px;border:none;border-radius:9px;background:#E8F5E9;color:#43A047;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0}
+.stu-doc-view svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.stu-doc-empty{padding:28px 12px;text-align:center;font-size:13px;color:#94a3b8;line-height:1.45}
 .upload-progress{height:4px;background:var(--gray-200);border-radius:2px;margin:4px 0;overflow:hidden}
 .upload-progress-fill{height:100%;background:#4CAF50;border-radius:2px;transition:width .3s}
 .upload-progress-fill.indeterminate{width:40%!important;animation:uploadSweep 1.1s ease-in-out infinite}
@@ -371,22 +392,20 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
 <!-- ══ MAIN (হেডার + স্ক্রিন — নিচে ফ্লোটিং ট্যাব) ═══════════════ -->
 <div id="stuMainShell" class="stu-main-shell">
 <!-- ══ HEADER ════════════════════════════════════════════ -->
-<div class="header">
-  <div class="header-avatar" id="hAvatar" style="background:rgba(255,255,255,.25);cursor:pointer" onclick="openStudentSelfProfile()">?</div>
-  <div class="header-info"><div class="header-title" id="hTitle">আসছে...</div><div class="header-sub" id="hSub">ওয়াকিফ</div></div>
-  <div style="display:flex;align-items:center;gap:4px">
-    <button class="header-btn" id="stuInChatSearchBtn" style="display:none" onclick="toggleStuInChatSearch()" title="রিসালা খুঁজুন">🔍</button>
-    <button class="logout-btn" onclick="logout()">লগআউট</button>
+<div class="header stu-h-wrap">
+  <div class="stu-h-top" id="hWaqfDays" aria-live="polite">
+    <div class="stu-h-days-row"><span class="stu-h-days-lbl">ওয়াকফের</span><span class="stu-h-days-num" id="hWaqfDaysNum">—</span><span class="stu-h-days-unit">দিন</span></div>
   </div>
-</div>
-
-<!-- ══ HOME ══════════════════════════════════════════════ -->
-<div class="screen active" id="screen-home">
-  <div class="list-scroll stu-home-scroll">
-    <div id="homeAlerts"></div>
-    <div id="homeAmalSummary"></div>
-    <div id="homeSchedulePreview"></div>
-    <div style="height:20px"></div>
+  <div class="stu-h-card">
+    <button type="button" class="stu-h-avatar" id="hAvatarBtn" onclick="openStudentSelfProfile()" title="প্রোফাইল" aria-label="প্রোফাইল">
+      <svg class="stu-h-ring" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="16" fill="none" stroke="#e8e8e8" stroke-width="3.5"/><circle id="hAvatarRing" cx="20" cy="20" r="16" fill="none" stroke="#4CAF50" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="100.5" stroke-dashoffset="100.5" transform="rotate(-90 20 20)"/></svg>
+      <span class="stu-h-pct" id="hAvatarPct">—</span>
+    </button>
+    <div class="header-info"><div class="header-title" id="hTitle">আসছে...</div><div class="header-sub" id="hSub">ওয়াকিফ</div></div>
+    <div class="stu-h-actions">
+      <button class="header-btn" id="stuInChatSearchBtn" style="display:none" onclick="toggleStuInChatSearch()" title="রিসালা খুঁজুন">🔍</button>
+      <button type="button" class="header-btn" onclick="logout()" title="লগআউট" aria-label="লগআউট"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+    </div>
   </div>
 </div>
 
@@ -429,11 +448,11 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
 </div>
 
 <!-- ══ TASKS ══════════════════════════════════════════════ -->
-<div class="screen" id="screen-tasks">
+<div class="screen active" id="screen-tasks">
   <div class="amal-sub-tabs">
-    <button class="amal-sub-tab active" onclick="goAmalTab('today',this)">📋 আজ</button>
-    <button class="amal-sub-tab"        onclick="goAmalTab('history',this)">📅 ইতিহাস</button>
-    <button class="amal-sub-tab"        onclick="goAmalTab('schedule',this)">🕐 সময়সূচি</button>
+    <button type="button" class="amal-sub-tab active" onclick="goAmalTab('today',this)"><span class="amal-sub-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12h6M9 16h6"/></svg></span><span class="amal-sub-lbl">আজ</span></button>
+    <button type="button" class="amal-sub-tab"        onclick="goAmalTab('history',this)"><span class="amal-sub-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span><span class="amal-sub-lbl">ইতিহাস</span></button>
+    <button type="button" class="amal-sub-tab"        onclick="goAmalTab('schedule',this)"><span class="amal-sub-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span class="amal-sub-lbl">নিজামুল আওকাত</span></button>
   </div>
   <div id="amal-panel-today" class="amal-panel">
     <div id="amalDashboard"></div>
@@ -474,19 +493,18 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
 <!-- ══ DOCUMENTS ══════════════════════════════════════════ -->
 <div class="screen" id="screen-docs">
   <div class="doc-tabs">
-    <button class="doc-tab-btn active" id="sdtab-sent"     onclick="goStudentDocTab('sent',this)">📤 প্রেরিত</button>
-    <button class="doc-tab-btn"        id="sdtab-received" onclick="goStudentDocTab('received',this)">📥 প্রাপ্ত</button>
+    <button type="button" class="doc-tab-btn active" id="sdtab-sent" onclick="goStudentDocTab('sent',this)"><span class="doc-tab-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 19V5M5 12l7-7 7 7"/></svg></span><span>প্রেরিত</span></button>
+    <button type="button" class="doc-tab-btn" id="sdtab-received" onclick="goStudentDocTab('received',this)"><span class="doc-tab-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14M5 12l7 7 7-7"/></svg></span><span>প্রাপ্ত</span></button>
   </div>
-  <div class="list-scroll">
-    <!-- Sent pane: upload + sent list -->
+  <div class="list-scroll stu-doc-scroll">
     <div id="sDocsSentPane">
-      <div class="doc-upload-area" onclick="document.getElementById('fileInput').click()">
-        <div class="doc-upload-icon">📎</div>
-        <div class="doc-upload-label">ফাইল পাঠান</div>
-        <div class="doc-upload-hint">ক্লিক করুন · একাধিক ছবি = একটি PDF · সর্বোচ্চ ১০ MB</div>
-      </div>
+      <button type="button" class="stu-doc-upload" onclick="document.getElementById('fileInput').click()">
+        <span class="stu-doc-upload-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg></span>
+        <span class="stu-doc-upload-txt"><span class="stu-doc-upload-lbl">ফাইল পাঠান</span><span class="stu-doc-upload-hint">ছবি / PDF · সর্বোচ্চ ১০ MB</span></span>
+        <span class="stu-doc-upload-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 18l6-6-6-6"/></svg></span>
+      </button>
       <input type="file" id="fileInput" style="display:none" multiple accept="image/*,.pdf,.doc,.docx,.txt" onchange="handleFileSelect(this)">
-      <div id="uploadPreview" style="display:none;margin:0 12px 12px">
+      <div id="uploadPreview" class="stu-doc-preview" style="display:none">
         <div class="form-group"><label class="form-label">বিভাগ</label>
           <select class="form-input" id="uploadCat">
             <option value="general">সাধারণ</option>
@@ -496,17 +514,14 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
         </div>
         <div class="form-group"><label class="form-label">তথ্য (ঐচ্ছিক)</label><input class="form-input" id="uploadNote" placeholder="উস্তাদের জন্য তথ্য..."></div>
         <div id="uploadProgressWrap" style="display:none"><div class="upload-progress"><div class="upload-progress-fill" id="uploadProgressFill" style="width:0%"></div></div></div>
-        <button class="btn-primary" onclick="confirmUpload()">📤 উস্তাদের কাছে পাঠান</button>
+        <button class="btn-primary" onclick="confirmUpload()">উস্তাদের কাছে পাঠান</button>
         <button class="btn-secondary" onclick="cancelUpload()">বাতিল</button>
       </div>
-      <div class="sec-hd">পাঠানো ফাইলসমূহ</div>
-      <div id="sentDocsList"></div>
-      <div style="height:20px"></div>
+      <div class="stu-doc-sec">পাঠানো ফাইল</div>
+      <div class="stu-doc-list" id="sentDocsList"></div>
     </div>
-    <!-- Received pane: teacher-sent docs -->
     <div id="sDocsReceivedPane" style="display:none">
-      <div id="receivedDocsList"></div>
-      <div style="height:20px"></div>
+      <div class="stu-doc-list" id="receivedDocsList"></div>
     </div>
   </div>
 </div>
@@ -514,16 +529,16 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
 <!-- ══ GOALS ══════════════════════════════════════════════ -->
 <div class="screen" id="screen-goals">
   <div class="goal-add-bar">
-    <button class="goal-add-btn" style="width:100%" onclick="openModal('addGoalModal')">＋ নতুন লক্ষ্য যোগ করুন</button>
+    <button type="button" class="goal-add-btn" style="width:100%" onclick="openModal('addGoalModal')"><span class="goal-btn-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14M5 12h14"/></svg></span>নতুন লক্ষ্য যোগ করুন</button>
   </div>
   <div class="list-scroll">
     <div id="goalProgress"></div>
     <div class="filter-bar">
-      <button class="filter-chip active" onclick="fGoal('all',this)">সব</button>
-      <button class="filter-chip"        onclick="fGoal('ilm',this)">📚 ইলম</button>
-      <button class="filter-chip"        onclick="fGoal('amal',this)">🕌 আমল</button>
-      <button class="filter-chip"        onclick="fGoal('akhlaq',this)">🌿 আখলাক</button>
-      <button class="filter-chip"        onclick="fGoal('afkar',this)">💡 আফকার</button>
+      <button type="button" class="filter-chip active" onclick="fGoal('all',this)">সব</button>
+      <button type="button" class="filter-chip goal-chip-ilm" onclick="fGoal('ilm',this)">ইলম</button>
+      <button type="button" class="filter-chip goal-chip-amal" onclick="fGoal('amal',this)">আমল</button>
+      <button type="button" class="filter-chip goal-chip-akhlaq" onclick="fGoal('akhlaq',this)">আখলাক</button>
+      <button type="button" class="filter-chip goal-chip-afkar" onclick="fGoal('afkar',this)">আফকার</button>
     </div>
     <div id="goalList"></div>
     <div style="height:20px"></div>
@@ -536,8 +551,7 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
 <nav id="stuBottomNav" class="stu-float-nav-wrap" aria-label="প্রধান মেনু">
   <div class="stu-float-nav-inner">
     <button type="button" class="tab-btn"        onclick="goTab('chat')"  id="tab-chat"><span class="tab-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 11.5a8.5 8.5 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.5 8.5 0 01-3.8-.9L3 21l1.9-5.7a8.5 8.5 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.5 8.5 0 013.8-.9h.5a8.5 8.5 0 018 8v.5z"/></svg></span><span class="tab-lbl">রিসালা</span><span class="tab-badge" id="urBadge"></span></button>
-    <button type="button" class="tab-btn active" onclick="goTab('home')"  id="tab-home"><span class="tab-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span><span class="tab-lbl">হোম</span></button>
-    <button type="button" class="tab-btn"        onclick="goTab('tasks')" id="tab-tasks"><span class="tab-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12h6M9 16h6"/></svg></span><span class="tab-lbl">আমল</span><span class="tab-badge" id="tBadge"></span></button>
+    <button type="button" class="tab-btn active" onclick="goTab('tasks')" id="tab-tasks"><span class="tab-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12h6M9 16h6"/></svg></span><span class="tab-lbl">আমল</span><span class="tab-badge" id="tBadge"></span></button>
     <button type="button" class="tab-btn"        onclick="goTab('exams')" id="tab-exams"><span class="tab-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="11" x2="15" y2="11"/></svg></span><span class="tab-lbl">পরীক্ষা</span><span class="tab-badge" id="examBadge"></span></button>
     <button type="button" class="tab-btn"        onclick="goTab('goals')" id="tab-goals"><span class="tab-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span><span class="tab-lbl">লক্ষ্য</span></button>
     <button type="button" class="tab-btn"        onclick="goTab('docs')"  id="tab-docs"><span class="tab-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg></span><span class="tab-lbl">ফাইল</span></button>
@@ -546,14 +560,14 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
 
 <!-- ══ MODALS ══════════════════════════════════════════════ -->
 <div class="modal-overlay" id="addGoalModal"><div class="modal-sheet">
-  <div class="modal-handle"></div><div class="modal-title">🎯 নতুন লক্ষ্য</div>
+  <div class="modal-handle"></div><div class="modal-title">নতুন লক্ষ্য</div>
   <div class="form-group"><label class="form-label">লক্ষ্যের বিবরণ *</label><input class="form-input" id="gm_title" placeholder="যেমন: প্রতিদিন ১ পারা তেলাওয়াত"></div>
   <div class="form-group"><label class="form-label">বিভাগ</label>
-    <select class="form-input" id="gm_cat"><option value="ilm">📚 ইলম</option><option value="amal">🕌 আমল</option><option value="akhlaq">🌿 আখলাক</option><option value="afkar">💡 আফকার</option></select>
+    <select class="form-input" id="gm_cat"><option value="ilm">ইলম</option><option value="amal">আমল</option><option value="akhlaq">আখলাক</option><option value="afkar">আফকার</option></select>
   </div>
   <div class="form-group"><label class="form-label">শেষ তারিখ (ঐচ্ছিক)</label><input class="form-input" type="date" id="gm_dl"></div>
   <div class="form-group"><label class="form-label">নোট</label><textarea class="form-input" id="gm_note" rows="2" placeholder="কোনো পরিকল্পনা..."></textarea></div>
-  <button class="btn-primary" onclick="addGoalModal()">✅ লক্ষ্য যোগ করুন</button>
+  <button class="btn-primary" onclick="addGoalModal()">লক্ষ্য যোগ করুন</button>
   <button class="btn-secondary" onclick="closeModal('addGoalModal')">বাতিল</button>
 </div></div>
 
@@ -579,14 +593,16 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
   <button class="btn-secondary" onclick="closeModal('studentProfileModal')">বন্ধ করুন</button>
 </div></div>
 
-<div class="modal-overlay" id="scheduleEditModal"><div class="modal-sheet" style="max-height:85vh;overflow:auto">
+<div class="modal-overlay" id="scheduleEditModal"><div class="modal-sheet">
   <div class="modal-handle"></div>
-  <div class="modal-title">📅 সময়সূচি সম্পাদনা</div>
-  <p style="font-size:12px;color:var(--gray-500);margin:0 0 10px;line-height:1.45">পরিবর্তন শিক্ষক অনুমোদনের পর প্রযোজ্য হবে। অনুমোদন পর্যন্ত নিচের টেবিলে আগের সময়সূচি দেখা যাবে। <span style="color:#E65100;font-weight:600">হলুদ চিহ্নিত সারি</span> যেখানে পরিবর্তন করা হয়েছে।</p>
+  <div class="modal-title"><span class="modal-title-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>সম্পাদনা</div>
+  <p class="stu-sched-hint">পরিবর্তন জিম্মাদার অনুমোদনের পর প্রযোজ্য হবে।</p>
   <div id="scheduleEditRows"></div>
-  <button type="button" class="btn-secondary" style="width:100%;margin-bottom:8px" onclick="scheduleEditAddRow()">＋ সারি যোগ</button>
-  <button class="btn-primary" style="width:100%" onclick="scheduleSubmitForApproval()">📤 অনুমোদনের জন্য পাঠান</button>
-  <button class="btn-secondary" style="width:100%;margin-top:8px" onclick="closeModal('scheduleEditModal')">বাতিল</button>
+  <button type="button" class="btn-secondary stu-sched-add" onclick="scheduleEditAddRow()"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>সারি যোগ</button>
+  <div class="stu-sched-actions">
+    <button type="button" class="btn-secondary" onclick="closeModal('scheduleEditModal')"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>বাতিল</button>
+    <button type="button" class="btn-primary" onclick="scheduleSubmitForApproval()"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>অনুমোদনে পাঠান</button>
+  </div>
 </div></div>
 
 <div class="modal-overlay" id="chatDocPreviewModal"><div class="modal-sheet" style="max-width:min(100%,380px)">
@@ -800,14 +816,37 @@ function showLoginErr(msg){
 function onLogin(){
   localStorage.setItem('madrasa_lastPanel','student');
   if(me && me.waqfId) try{ localStorage.setItem('madrasa_last_student_waqf', String(me.waqfId)); }catch(e){}
-  document.getElementById('hAvatar').textContent=me.name.charAt(0); document.getElementById('hAvatar').style.background=me.color||'#4CAF50';
   document.getElementById('hTitle').textContent=me.name;
   { const p=[]; if(me.waqfId) p.push(API.Students.getShortId(me)); if(me.responsibility) p.push(me.responsibility); if(me.cls) p.push(me.cls); document.getElementById('hSub').textContent=p.length?p.join(' · '):'ওয়াকিফ'; }
   const sb=document.getElementById('stuInChatSearchBtn'); if(sb) sb.style.display='flex';
   var _nav=document.getElementById('stuBottomNav'); if(_nav) _nav.style.display='block';
   renderAll();
-  goTab('home');
+  goTab('tasks');
   void API.Pwa.enableNotificationsAfterAuth('student', { waqfId: me && me.waqfId });
+}
+function waqfDaysSinceEnrollment(student){
+  const en=student&&student.enrollmentDate;
+  if(!en||!/^\d{4}-\d{2}-\d{2}/.test(String(en))) return null;
+  const from=String(en).slice(0,10);
+  const today=API.today();
+  if(from>today) return 0;
+  return Math.round((new Date(today+'T12:00:00')-new Date(from+'T12:00:00'))/86400000)+1;
+}
+function updateHeaderStats(){
+  if(!me) return;
+  const pctEl=document.getElementById('hAvatarPct');
+  const ring=document.getElementById('hAvatarRing');
+  const daysNumEl=document.getElementById('hWaqfDaysNum');
+  const prog=API.Tasks.getProgressSummary(me.id);
+  const pct=Math.round(Math.min(100,Math.max(0,Number(prog.all&&prog.all.percent)||0)));
+  if(pctEl) pctEl.textContent=pct+'%';
+  if(ring){
+    const C=2*Math.PI*16;
+    ring.setAttribute('stroke-dasharray', String(C));
+    ring.setAttribute('stroke-dashoffset', String(C*(1-pct/100)));
+  }
+  const days=waqfDaysSinceEnrollment(me);
+  if(daysNumEl) daysNumEl.textContent=days==null?'—':String(days);
 }
 function logout(){
   me=null;
@@ -822,94 +861,9 @@ function logout(){
   if(_lnEl) _lnEl.style.display='none';
   document.getElementById('lockScreen').style.display='flex';
   Promise.resolve(API.refreshStudentLockHints()).then(()=>renderPendingSection());
-  goTab('home');
-}
-function renderAll(){ renderHome(); renderTaskSchedulePanel(); renderChat(); renderTaskList(); renderAmalDashboard(); renderExamList(); renderSentDocs(); renderReceivedDocs(); renderGoals(); updateBadges(); }
-
-// ══ HOME ═══════════════════════════════════════════════════
-function homeAlertGo(type){
-  if(type==='msg') goTab('chat');
-  else if(type==='exam') goTab('exams');
-  else goTab('tasks');
-}
-function homeGoAmal(){ goTab('tasks'); }
-function homeGoSchedule(){
   goTab('tasks');
-  const btn=document.querySelector('.amal-sub-tab[onclick*="schedule"]');
-  goAmalTab('schedule',btn);
 }
-function renderHomeAlerts(){
-  const el=document.getElementById('homeAlerts'); if(!el||!me) return;
-  const items=[];
-  const unread=API.Messages.unreadCount(me.id,'out');
-  const pendingAmal=API.Tasks.pendingCount(me.id);
-  const pendingExams=API.Exams.getQuizzesForStudent(me.id).filter(q=>!API.Exams.getSubmission(q.id,me.id)).length;
-  if(unread>0) items.push({type:'msg',label:unread+'টি নতুন রিসালা'});
-  if(pendingExams>0) items.push({type:'exam',label:pendingExams+'টি পরীক্ষা বাকি'});
-  if(pendingAmal>0) items.push({type:'amal',label:pendingAmal+'টি আমল বাকি'});
-  if(!items.length){ el.innerHTML='<div class="stu-home-all-clear">আজকের জন্য সব ঠিক আছে</div>'; return; }
-  el.innerHTML=`<div class="stu-home-alerts">${items.map(it=>`<button type="button" class="stu-home-alert stu-home-alert--${it.type}" onclick="homeAlertGo('${it.type}')">${esc(it.label)}</button>`).join('')}</div>`;
-}
-function renderHomeAmalSummary(){
-  const el=document.getElementById('homeAmalSummary'); if(!el||!me) return;
-  const dailyTasks=API.Tasks.getForStudent(me.id).filter(t=>t.type==='daily');
-  const todayDone=dailyTasks.filter(t=>API.Tasks.isDailyDoneToday(t,me.id)).length;
-  const streak=API.Tasks.getStreak(me.id);
-  const prog=API.Tasks.getProgressSummary(me.id);
-  const pct=Math.round(Math.min(100,Math.max(0,Number(prog.today.percent)||0)));
-  if(!dailyTasks.length){
-    el.innerHTML=`<div class="stu-home-card"><div class="stu-home-card-hd"><div class="stu-home-card-title">আজকের আমল</div></div><div class="stu-home-card-body"><p class="stu-home-empty">উস্তাদ দৈনিক আমল যোগ করলে এখানে অগ্রগতি দেখা যাবে।</p></div></div>`;
-    return;
-  }
-  const streakTxt=streak.current>1?` · ধারাবাহিক ${streak.current} দিন`:'';
-  el.innerHTML=`<div class="stu-home-card stu-home-card--click" onclick="homeGoAmal()" role="button" tabindex="0">
-    <div class="stu-home-card-hd">
-      <div class="stu-home-card-title">আজকের আমল</div>
-      <button type="button" class="stu-home-card-link" onclick="event.stopPropagation();homeGoAmal()">বিস্তারিত</button>
-    </div>
-    <div class="stu-home-card-body">
-      <div class="stu-home-prog-row"><span>আজ সম্পন্ন</span><strong>${todayDone}/${dailyTasks.length}</strong></div>
-      <div class="stu-home-prog-bar"><div class="stu-home-prog-fill" style="width:${pct}%"></div></div>
-      <div class="stu-home-prog-sub">${pct}% সম্পন্ন${streakTxt}</div>
-      <div class="stu-home-mini-stats">
-        <div class="stu-home-stat"><div class="stu-home-stat-val">${Math.round(prog.week.percent||0)}%</div><div class="stu-home-stat-lbl">সপ্তাহ</div></div>
-        <div class="stu-home-stat"><div class="stu-home-stat-val">${Math.round(prog.month.percent||0)}%</div><div class="stu-home-stat-lbl">মাস</div></div>
-        <div class="stu-home-stat"><div class="stu-home-stat-val">${prog.week.done||0}/${prog.week.total||0}</div><div class="stu-home-stat-lbl">৭ দিন</div></div>
-      </div>
-    </div>
-  </div>`;
-}
-function renderHomeSchedulePreview(){
-  const el=document.getElementById('homeSchedulePreview'); if(!el||!me) return;
-  if(!API.DailySchedule){
-    el.innerHTML=`<div class="stu-home-card"><div class="stu-home-card-hd"><div class="stu-home-card-title">দৈনিক সময়সূচি</div></div><div class="stu-home-card-body"><p class="stu-home-empty">সময়সূচি এখনো সেট করা হয়নি।</p></div></div>`;
-    return;
-  }
-  const ds=API.DailySchedule.getForStudent(me.id);
-  const rows=ds.rows||[];
-  const pend=ds.pending;
-  let notice='';
-  if(pend&&pend.status==='pending') notice='<div class="stu-home-notice stu-home-notice--pending">পরিবর্তনের অনুমোদনের অপেক্ষায় — নিচে বর্তমান সময়সূচি দেখানো হচ্ছে।</div>';
-  else if(pend&&pend.status==='rejected') notice='<div class="stu-home-notice stu-home-notice--rejected">শিক্ষক প্রত্যাখ্যান করেছেন'+(pend.teacherNote?(' · '+esc(pend.teacherNote)):'')+'</div>';
-  const preview=rows.slice(0,4);
-  const more=rows.length>4?`<div class="stu-home-sched-more">আরও ${rows.length-4}টি সারি</div>`:'';
-  const body=preview.length
-    ? `<table class="stu-home-sched-table"><thead><tr><th>কাজ</th><th>সময়</th></tr></thead><tbody>${preview.map(r=>`<tr><td>${esc(r.task)}</td><td>${esc(r.time)}</td></tr>`).join('')}</tbody></table>${more}`
-    : '<p class="stu-home-empty">সময়সূচি এখনো সেট করা হয়নি।</p>';
-  el.innerHTML=`<div class="stu-home-card">
-    <div class="stu-home-card-hd">
-      <div class="stu-home-card-title">দৈনিক সময়সূচি</div>
-      <button type="button" class="stu-home-card-link" onclick="homeGoSchedule()">সম্পূর্ণ</button>
-    </div>
-    <div class="stu-home-card-body">${notice}${body}</div>
-  </div>`;
-}
-function renderHome(){
-  if(!me) return;
-  renderHomeAlerts();
-  renderHomeAmalSummary();
-  renderHomeSchedulePreview();
-}
+function renderAll(){ updateHeaderStats(); renderTaskSchedulePanel(); renderChat(); renderTaskList(); renderAmalDashboard(); renderExamList(); renderSentDocs(); renderReceivedDocs(); renderGoals(); updateBadges(); }
 
 function renderTaskSchedulePanel(){
   const el=document.getElementById('taskSchedulePanel');
@@ -921,40 +875,29 @@ function renderTaskSchedulePanel(){
   if(pend&&pend.status==='pending')
     banner='<div class="stu-sched-banner pending">⏳ আপনার পরিবর্তনের অনুমোদনের অপেক্ষায়। নিচে বর্তমান সময়সূচি দেখা যাচ্ছে।</div>';
   else if(pend&&pend.status==='rejected')
-    banner='<div class="stu-sched-banner rejected">✕ শিক্ষক প্রত্যাখ্যান করেছেন'+(pend.teacherNote?(' · '+esc(pend.teacherNote)):'')+'। আবার সম্পাদনা করে পাঠাতে পারেন।</div>';
+    banner='<div class="stu-sched-banner rejected">✕ জিম্মাদার প্রত্যাখ্যান করেছেন'+(pend.teacherNote?(' · '+esc(pend.teacherNote)):'')+'। আবার সম্পাদনা করে পাঠাতে পারেন।</div>';
   const body=rows.length
     ? `<table class="stu-sched-table"><thead><tr><th>কাজ</th><th>সময়</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.task)}</td><td>${esc(r.time)}</td></tr>`).join('')}</tbody></table>`
     : '';
-  el.innerHTML=`<div class="stu-sched-card"><div class="stu-sched-card-hd">বিসমিল্লাহির রহমানির রহিম</div>${banner}${body}<div class="stu-sched-foot"><button type="button" class="stu-sched-btn" onclick="openScheduleEditModal()">✏️ সম্পাদনা</button></div></div><div style="height:16px"></div>`;
-}
-let _scheduleBaselineRows=[];
-function scheduleRowCheckChanged(el){
-  const row=el.closest('.schedule-edit-row'); if(!row) return;
-  const i=Number(row.dataset.i);
-  const t=row.querySelector('.sched-in-task')?.value.trim()||'';
-  const tm=row.querySelector('.sched-in-time')?.value.trim()||'';
-  const base=_scheduleBaselineRows[i];
-  const changed=!base||base.task!==t||base.time!==tm;
-  row.classList.toggle('changed',changed);
+  el.innerHTML=`<div class="stu-sched-card"><div class="stu-sched-card-hd">বিসমিল্লাহির রহমানির রহিম</div>${banner}${body}<div class="stu-sched-foot"><button type="button" class="stu-sched-btn" onclick="openScheduleEditModal()">তৈরি করো</button></div></div><div style="height:16px"></div>`;
 }
 function openScheduleEditModal(){
   if(!me||!API.DailySchedule) return;
   const ds=API.DailySchedule.getForStudent(me.id);
   const editRows=(ds.pending&&ds.pending.status==='pending'&&ds.pending.rows&&ds.pending.rows.length)?ds.pending.rows:(ds.rows&&ds.rows.length?ds.rows:[{id:'',task:'',time:''}]);
-  _scheduleBaselineRows=(ds.rows||[]).map(r=>({task:r.task,time:r.time}));
   const wrap=document.getElementById('scheduleEditRows');
-  wrap.innerHTML=editRows.map((r,i)=>`<div class="schedule-edit-row" data-i="${i}"><input type="text" placeholder="কাজ" class="sched-in-task" value="${esc(r.task)}" oninput="scheduleRowCheckChanged(this)"><input type="text" placeholder="সময়" class="sched-in-time" value="${esc(r.time)}" oninput="scheduleRowCheckChanged(this)"><button type="button" class="schedule-edit-del" onclick="this.parentNode.remove()" aria-label="সারি মুছুন">✕</button></div>`).join('');
-  if(!wrap.querySelector('.schedule-edit-row')) wrap.innerHTML=`<div class="schedule-edit-row" data-i="0"><input type="text" class="sched-in-task" placeholder="কাজ" oninput="scheduleRowCheckChanged(this)"><input type="text" class="sched-in-time" placeholder="সময়" oninput="scheduleRowCheckChanged(this)"><button type="button" class="schedule-edit-del" onclick="this.parentNode.remove()">✕</button></div>`;
-  wrap.querySelectorAll('.sched-in-task').forEach(scheduleRowCheckChanged);
+  const delIc='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg>';
+  wrap.innerHTML=editRows.map((r,i)=>`<div class="schedule-edit-row" data-i="${i}"><input type="text" placeholder="কাজ" class="sched-in-task" value="${esc(r.task)}"><input type="text" placeholder="সময়" class="sched-in-time" value="${esc(r.time)}"><button type="button" class="schedule-edit-del" onclick="this.parentNode.remove()" aria-label="সারি মুছুন">${delIc}</button></div>`).join('');
+  if(!wrap.querySelector('.schedule-edit-row')) wrap.innerHTML=`<div class="schedule-edit-row" data-i="0"><input type="text" class="sched-in-task" placeholder="কাজ"><input type="text" class="sched-in-time" placeholder="সময়"><button type="button" class="schedule-edit-del" onclick="this.parentNode.remove()" aria-label="সারি মুছুন">${delIc}</button></div>`;
   openModal('scheduleEditModal');
 }
 function scheduleEditAddRow(){
   const wrap=document.getElementById('scheduleEditRows');
   const i=wrap.querySelectorAll('.schedule-edit-row').length;
   const d=document.createElement('div');
-  d.className='schedule-edit-row changed';
+  d.className='schedule-edit-row';
   d.dataset.i=i;
-  d.innerHTML='<input type="text" class="sched-in-task" placeholder="কাজ" oninput="scheduleRowCheckChanged(this)"><input type="text" class="sched-in-time" placeholder="সময়" oninput="scheduleRowCheckChanged(this)"><button type="button" class="schedule-edit-del" onclick="this.parentNode.remove()">✕</button>';
+  d.innerHTML='<input type="text" class="sched-in-task" placeholder="কাজ"><input type="text" class="sched-in-time" placeholder="সময়"><button type="button" class="schedule-edit-del" onclick="this.parentNode.remove()" aria-label="সারি মুছুন"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg></button>';
   wrap.appendChild(d);
 }
 function scheduleCollectRows(){
@@ -974,7 +917,7 @@ async function scheduleSubmitForApproval(){
     await API.DailySchedule.submitProposal(me.id,rows);
     closeModal('scheduleEditModal');
     renderAll();
-    showToast('প্রস্তাব পাঠানো হয়েছে। শিক্ষক অনুমোদন দিলে কার্যকর হবে।');
+    showToast('প্রস্তাব পাঠানো হয়েছে। জিম্মাদার অনুমোদন দিলে কার্যকর হবে।');
   }catch(e){ console.error(e); showToast('পাঠানো যায়নি'); }
 }
 
@@ -1227,23 +1170,27 @@ function _promptModalResolve(ok){
 }
 
 // ══ TASKS ══════════════════════════════════════════════════
+const _svgIcDone='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>';
+const _svgIcPend='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 1.5"/></svg>';
+const _svgIcLate='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5h.01"/></svg>';
+const _svgChk='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 function atCardHtml(task){
   const isDaily=task.type==='daily';
   const isDoneToday=isDaily&&API.Tasks.isDailyDoneToday(task,me.id);
   const st=isDaily?(isDoneToday?'done':'pending'):task.assignees[me.id];
-  const ic={done:'✅',pending:'⏳',late:'❌'};
+  const ic={done:_svgIcDone,pending:_svgIcPend,late:_svgIcLate};
   const cl={done:'done',late:'late',pending:''};
   const badge=isDaily?'দৈনিক':'এককালীন';
   const btnDaily=isDoneToday
-    ? `<button type="button" class="stu-task-row-done" onclick="undoDailyDone('${task.id}')" title="পূর্বাবস্থায় ফিরুন">আজ ✓ ↩</button>`
-    : `<button type="button" class="stu-task-row-btn" onclick="markDailyDone('${task.id}')">আজ সম্পন্ন</button>`;
+    ? `<button type="button" class="stu-task-check done" onclick="undoDailyDone('${task.id}')" title="পূর্বাবস্থায় ফিরুন" aria-label="পূর্বাবস্থায় ফিরুন">${_svgChk}</button>`
+    : `<button type="button" class="stu-task-check empty" onclick="markDailyDone('${task.id}')" title="সম্পন্ন" aria-label="সম্পন্ন"></button>`;
   const btnOnce=st!=='done'
-    ? `<button type="button" class="stu-task-row-btn ${st==='late'?'late':''}" onclick="markDone('${task.id}')">সম্পন্ন</button>`
-    : `<button type="button" class="stu-task-row-done" onclick="undoTaskDone('${task.id}')" title="পূর্বাবস্থায় ফিরুন">✓ ↩</button>`;
+    ? `<button type="button" class="stu-task-check empty ${st==='late'?'late':''}" onclick="markDone('${task.id}')" title="সম্পন্ন" aria-label="সম্পন্ন"></button>`
+    : `<button type="button" class="stu-task-check done" onclick="undoTaskDone('${task.id}')" title="পূর্বাবস্থায় ফিরুন" aria-label="পূর্বাবস্থায় ফিরুন">${_svgChk}</button>`;
   const sub=isDaily?'':(task.deadline?(' · '+esc(task.deadline)):'');
 
   return `<div class="stu-task-row ${cl[st]||''}">
-    <span class="stu-task-row-ic" aria-hidden="true">${ic[st]||'⏳'}</span>
+    <span class="stu-task-row-ic ${st||'pending'}" aria-hidden="true">${ic[st]||_svgIcPend}</span>
     <div class="stu-task-row-mid">
       <span class="stu-task-row-title">${esc(task.title)}${sub}</span>
     </div>
@@ -1258,21 +1205,16 @@ function renderTaskList(f){
   const onetime=tasks.filter(t=>t.type!=='daily');
   let h='';
   if((tFilter==='all'||tFilter==='daily')&&daily.length){
-    const doneToday=daily.filter(t=>API.Tasks.isDailyDoneToday(t,me.id)).length;
-    h+=`<div class="stu-daily-notice"><span class="stu-daily-notice-ic" aria-hidden="true">🔄</span><span>দৈনিক আমল — আজ ${doneToday}/${daily.length} সম্পন্ন। প্রতিদিন নতুন হয়।</span></div>`;
     daily.forEach(t=>{ h+=atCardHtml(t); });
   } else if(tFilter==='done'&&daily.length){
     const doneDaily=daily.filter(t=>API.Tasks.isDailyDoneToday(t,me.id));
-    if(doneDaily.length){
-      h+=`<div class="stu-daily-notice"><span class="stu-daily-notice-ic" aria-hidden="true">✅</span><span>আজ সম্পন্ন দৈনিক আমল।</span></div>`;
-      doneDaily.forEach(t=>{ h+=atCardHtml(t); });
-    }
+    doneDaily.forEach(t=>{ h+=atCardHtml(t); });
   }
   if((tFilter==='all'||tFilter==='onetime'||tFilter==='done')&&onetime.length){
     const filtered=tFilter==='done'?onetime.filter(t=>t.assignees[me.id]==='done'):onetime;
     filtered.forEach(t=>{ h+=atCardHtml(t); });
   }
-  if(!h) h=`<div class="empty-state"><div class="icon">${tFilter==='all'?'📋':'🔍'}</div><p>${tFilter==='all'?'উস্তাদ এখনো কোনো আমল দেননি।':'এই ফিল্টারে কিছু নেই।'}</p></div>`;
+  if(!h) h=`<div class="empty-state"><div class="icon">📋</div><p>${tFilter==='all'?'উস্তাদ এখনো কোনো আমল দেননি।':'এই ফিল্টারে কিছু নেই।'}</p></div>`;
   el.innerHTML=h+'<div style="height:20px"></div>';
 }
 function fTask(f,btn){ document.querySelectorAll('#amal-panel-today .stu-filter-pill').forEach(c=>c.classList.remove('active')); btn.classList.add('active'); renderTaskList(f); }
@@ -1305,31 +1247,24 @@ function goAmalTab(tab,btn){
 }
 function renderAmalDashboard(){
   const el=document.getElementById('amalDashboard'); if(!el||!me) return;
-  const streak=API.Tasks.getStreak(me.id);
   const dailyTasks=API.Tasks.getForStudent(me.id).filter(t=>t.type==='daily');
-  const todayDone=dailyTasks.filter(t=>API.Tasks.isDailyDoneToday(t,me.id)).length;
   const prog=API.Tasks.getProgressSummary(me.id);
-  const R=28, C=2*Math.PI*R;
-  function ringCol(pct, stroke, lbl, done, tot){
+  const R=22, C=2*Math.PI*R;
+  function ringCol(pct, stroke, lbl){
     const p=Math.round(Math.min(100,Math.max(0,Number(pct)||0)));
     const off=C*(1-p/100);
-    const svg=`<svg class="stu-ring-svg" width="64" height="64" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="${R}" fill="none" stroke="#e8e8e8" stroke-width="6"/><circle cx="32" cy="32" r="${R}" fill="none" stroke="${stroke}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${off}" transform="rotate(-90 32 32)" style="transition:stroke-dashoffset .35s"/></svg>`;
-    return `<div class="stu-ring-col"><div class="stu-svg-ring-wrap">${svg}<span class="stu-ring-pct">${p}%</span></div><span class="stu-ring-lbl">${lbl}</span><span class="stu-ring-sub">${done}/${tot}</span></div>`;
+    const svg=`<svg class="stu-ring-svg" width="52" height="52" viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="${R}" fill="none" stroke="#e8e8e8" stroke-width="5"/><circle cx="26" cy="26" r="${R}" fill="none" stroke="${stroke}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${off}" transform="rotate(-90 26 26)" style="transition:stroke-dashoffset .35s"/></svg>`;
+    return `<div class="stu-ring-col"><div class="stu-svg-ring-wrap">${svg}<span class="stu-ring-pct">${p}%</span></div><span class="stu-ring-lbl">${lbl}</span></div>`;
   }
   if(!dailyTasks.length){
-    el.innerHTML=`<div class="stu-amal-dash-wrap"><div class="stu-amal-dash-card stu-amal-dash-card--empty"><div class="stu-amal-dash-hd"><div><div class="stu-amal-dash-title">আজকের আমল</div><div class="stu-amal-dash-sub">কোনো দৈনিক আমল নেই</div></div></div><p class="stu-amal-dash-hint">উস্তাদ দৈনিক আমল যোগ করলে এখানে অগ্রগতি দেখা যাবে।</p></div></div>`;
+    el.innerHTML=`<div class="stu-amal-dash-wrap"><div class="stu-amal-dash-card stu-amal-dash-card--empty"><div class="stu-amal-dash-hd"><div class="stu-amal-dash-title">আমলের বিবরণ</div></div><p class="stu-amal-dash-hint">উস্তাদ দৈনিক আমল যোগ করলে এখানে অগ্রগতি দেখা যাবে।</p></div></div>`;
     return;
   }
+  const all=prog.all||{percent:0};
   el.innerHTML=`<div class="stu-amal-dash-wrap">
     <div class="stu-amal-dash-card">
-      <div class="stu-amal-dash-hd">
-        <div>
-          <div class="stu-amal-dash-title">আজকের আমল</div>
-          <div class="stu-amal-dash-sub">${dailyTasks.length}টির মধ্যে ${todayDone}টি সম্পন্ন${streak.current>1?' · ধারাবাহিক '+streak.current+' দিন':''}</div>
-        </div>
-        <span class="stu-amal-live">Live</span>
-      </div>
-      <div class="stu-amal-rings">${ringCol(prog.today.percent,'#4CAF50','আজ',prog.today.done,prog.today.total)}${ringCol(prog.week.percent,'#43A047','সপ্তাহ',prog.week.done,prog.week.total)}${ringCol(prog.month.percent,'#42A5F5','মাস',prog.month.done,prog.month.total)}</div>
+      <div class="stu-amal-dash-hd"><div class="stu-amal-dash-title">আমলের বিবরণ</div></div>
+      <div class="stu-amal-rings">${ringCol(prog.today.percent,'#4CAF50','আজ')}${ringCol(prog.week.percent,'#43A047','সপ্তাহ')}${ringCol(prog.month.percent,'#42A5F5','মাস')}${ringCol(all.percent,'#8D6E63','শুরু থেকে')}</div>
     </div>
   </div>`;
 }
@@ -1341,9 +1276,6 @@ function renderAmalCalendar(){
   const dInM=new Date(y,m,0).getDate(),firstDay=new Date(y,m-1,1).getDay(),today=API.today();
   const pad=n=>String(n).padStart(2,'0');
   const mNames=['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
-  const doneN=Object.values(data).filter(v=>v==='done').length;
-  const partN=Object.values(data).filter(v=>v==='partial').length;
-  const missN=Object.values(data).filter(v=>v==='miss').length;
   let h=`<div class="cal-header">
     <button class="date-nav-btn" onclick="_calNav(-1)">◀</button>
     <span class="cal-month-title">${mNames[m-1]} ${y}</span>
@@ -1354,14 +1286,12 @@ function renderAmalCalendar(){
     <div class="s-cal-day-hd">বুধ</div><div class="s-cal-day-hd">বৃহঃ</div><div class="s-cal-day-hd">শুক্র</div><div class="s-cal-day-hd">শনি</div>`;
   for(let i=0;i<firstDay;i++) h+=`<div class="s-cal-cell empty"></div>`;
   for(let d=1;d<=dInM;d++){
-    const date=`${y}-${pad(m)}-${pad(d)}`,st=data[date]||'',isT=date===today;
-    h+=`<div class="s-cal-cell ${st}${isT?' cal-today':''}"><span class="s-cal-date">${d}</span></div>`;
+    const date=`${y}-${pad(m)}-${pad(d)}`, cell=data[date], isT=date===today;
+    if(!cell){ h+=`<div class="s-cal-cell${isT?' cal-today':''}"><span class="s-cal-date">${d}</span></div>`; continue; }
+    const st=cell.status||cell, pct=typeof cell.percent==='number'?cell.percent:(st==='done'?100:st==='partial'?50:0);
+    h+=`<div class="s-cal-cell ${st}${isT?' cal-today':''}"><span class="s-cal-date">${d}</span><span class="s-cal-pct">${pct}%</span></div>`;
   }
-  h+=`</div><div class="cal-legend">
-    <span class="leg-item done">✅ সম্পন্ন (${doneN})</span>
-    <span class="leg-item partial">🔵 আংশিক (${partN})</span>
-    <span class="leg-item miss">❌ বাদ (${missN})</span>
-  </div>`;
+  h+=`</div>`;
   el.innerHTML=h;
 }
 function _calNav(dir){let m=window._calMonth+dir,y=window._calYear;if(m>12){m=1;y++;}if(m<1){m=12;y--;}window._calMonth=m;window._calYear=y;renderAmalCalendar();}
@@ -1476,7 +1406,7 @@ async function submitQuiz(auto=false){
   } else {
     showToast(`${sub.passed?'✅ উত্তীর্ণ':'❌ অনুত্তীর্ণ'} · ${sub.score}/${sub.total} নম্বর`,4000);
   }
-  renderExamList(); renderHome(); updateBadges();
+  renderExamList(); updateBadges();
 }
 function exitQuiz(){
   clearInterval(quizTimerInterval); activeQuizId=null;
@@ -1544,7 +1474,7 @@ async function confirmUpload(){
     progFill.classList.remove('indeterminate'); progFill.style.width='100%';
     setTimeout(()=>{ progWrap.style.display='none'; progFill.style.width='0%'; },500);
     cancelUpload();
-    renderSentDocs(); renderChat(); renderHome();
+    renderSentDocs(); renderChat();
     showToast('✅ ডকুমেন্ট পাঠানো হয়েছে!');
   } catch(e){
     progFill.classList.remove('indeterminate'); progFill.style.width='0%';
@@ -1552,18 +1482,30 @@ async function confirmUpload(){
     showUploadSaveError(e);
   }
 }
+const _svgDocFile='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+const _svgDocImg='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>';
+const _svgDocEye='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+function _stuDocKind(ft){
+  const t=ft||'';
+  if(t==='image'||t.startsWith('image/')) return {cls:'img',svg:_svgDocImg};
+  if(t==='pdf'||t==='application/pdf') return {cls:'pdf',svg:_svgDocFile};
+  return {cls:'',svg:_svgDocFile};
+}
 function renderSentDocs(){
-  const docs=API.Docs.getForStudent(me.id);
+  const docs=API.Docs.getForStudent(me.id).filter(d=>d.sentBy!=='teacher');
   const el=document.getElementById('sentDocsList');
-  if(!docs.length){ el.innerHTML='<div style="padding:16px;text-align:center;font-size:13px;color:var(--gray-400)">এখনো কোনো ফাইল পাঠাননি।</div>'; return; }
+  if(!docs.length){ el.innerHTML='<div class="stu-doc-empty">এখনো কোনো ফাইল পাঠাননি।</div>'; return; }
   const catLabel={general:'সাধারণ',question:'রোযনামচা',report:'বিবরণ'};
   el.innerHTML=docs.map(d=>{
-    const _dt=d.fileType||''; const icon=(_dt==='image'||_dt.startsWith('image/'))?'🖼️':(_dt==='pdf'||_dt==='application/pdf')?'📕':'📄';
-    return `<div class="doc-sent-item">
-      <div class="doc-sent-icon">${icon}</div>
-      <div class="doc-sent-info">
-        <div class="doc-sent-name">${esc(d.fileName)}</div>
-        <div class="doc-sent-meta"><span class="doc-cat-badge">${catLabel[d.category]||d.category||'সাধারণ'}</span>${formatBytes(d.fileSize)} · ${formatDate(d.uploadedAt)} · ${d.reviewStatus==='pending'?'<span style="color:#E65100;font-weight:700">🔍 পর্যালোচনা চলছে</span>':'<span style="color:#4CAF50;font-weight:700">✅ দেখা হয়েছে</span>'}</div>
+    const k=_stuDocKind(d.fileType);
+    const st=d.reviewStatus==='pending'
+      ? '<span class="stu-doc-st wait">পর্যালোচনা চলছে</span>'
+      : '<span class="stu-doc-st ok">দেখা হয়েছে</span>';
+    return `<div class="stu-doc-row">
+      <span class="stu-doc-row-ic ${k.cls}" aria-hidden="true">${k.svg}</span>
+      <div class="stu-doc-row-mid">
+        <div class="stu-doc-row-name">${esc(d.fileName)}</div>
+        <div class="stu-doc-row-meta"><span class="stu-doc-pill">${esc(catLabel[d.category]||d.category||'সাধারণ')}</span><span>${formatBytes(d.fileSize)}</span><span>·</span><span>${formatDate(d.uploadedAt)}</span><span>·</span>${st}</div>
       </div>
     </div>`;
   }).join('');
@@ -1571,7 +1513,7 @@ function renderSentDocs(){
 
 function goStudentDocTab(tab, btn){
   studentDocTab=tab;
-  document.querySelectorAll('.doc-tab-btn').forEach(b=>b.classList.remove('active')); if(btn) btn.classList.add('active');
+  document.querySelectorAll('#screen-docs .doc-tab-btn').forEach(b=>b.classList.remove('active')); if(btn) btn.classList.add('active');
   document.getElementById('sDocsSentPane').style.display     = tab==='sent'?'block':'none';
   document.getElementById('sDocsReceivedPane').style.display = tab==='received'?'block':'none';
   if(tab==='sent') renderSentDocs();
@@ -1581,40 +1523,57 @@ function renderReceivedDocs(){
   if(!me) return;
   const docs=API.Docs.getForStudent(me.id).filter(d=>d.sentBy==='teacher');
   const el=document.getElementById('receivedDocsList');
-  if(!docs.length){ el.innerHTML='<div style="padding:30px;text-align:center;font-size:13px;color:var(--gray-400)">উস্তাদ এখনো কোনো ফাইল পাঠাননি।</div>'; return; }
-  const fileIc=t=>t?.startsWith('image/')?'🖼️':t==='application/pdf'?'📕':'📄';
-  el.innerHTML=docs.map(d=>`<div class="doc-sent-item">
-    <div class="doc-sent-icon">${fileIc(d.fileType)}</div>
-    <div class="doc-sent-info">
-      <div class="doc-sent-name">${esc(d.fileName)}</div>
-      <div class="doc-sent-meta">${formatBytes(d.fileSize)} · ${formatDate(d.uploadedAt)}</div>
-    </div>
-    <button class="doc-btn view" onclick="previewStudentChatDoc('${d.id}')" style="width:32px;height:32px;border:none;border-radius:8px;background:#E8F5E9;color:#4CAF50;cursor:pointer;font-size:15px">👁</button>
-  </div>`).join('');
+  if(!docs.length){ el.innerHTML='<div class="stu-doc-empty">উস্তাদ এখনো কোনো ফাইল পাঠাননি।</div>'; return; }
+  el.innerHTML=docs.map(d=>{
+    const k=_stuDocKind(d.fileType);
+    return `<div class="stu-doc-row">
+      <span class="stu-doc-row-ic ${k.cls}" aria-hidden="true">${k.svg}</span>
+      <div class="stu-doc-row-mid">
+        <div class="stu-doc-row-name">${esc(d.fileName)}</div>
+        <div class="stu-doc-row-meta"><span>${formatBytes(d.fileSize)}</span><span>·</span><span>${formatDate(d.uploadedAt)}</span></div>
+      </div>
+      <button type="button" class="stu-doc-view" onclick="previewStudentChatDoc('${d.id}')" title="দেখুন" aria-label="দেখুন">${_svgDocEye}</button>
+    </div>`;
+  }).join('');
 }
 
 // ══ GOALS ══════════════════════════════════════════════════
-function catIc(c){ return {ilm:'📚',amal:'🕌',akhlaq:'🌿',afkar:'💡',quran:'📖',study:'📚',ibadah:'🕌',other:'🌟'}[c]||'🌟'; }
+const _goalCatLbl={ilm:'ইলম',amal:'আমল',akhlaq:'আখলাক',afkar:'আফকার',quran:'কুরআন',study:'ইলম',ibadah:'আমল',other:'অন্যান্য'};
+const _svgGoalBook='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>';
+const _svgGoalClip='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12h6M9 16h6"/></svg>';
+const _svgGoalHeart='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>';
+const _svgGoalBulb='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 00-4 12.7V17h8v-2.3A7 7 0 0012 2z"/></svg>';
+const _svgGoalTarget='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>';
+const _svgGoalCal='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>';
+const _svgGoalTrash='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/><path d="M10 11v6M14 11v6"/></svg>';
+function catIc(c){
+  const map={ilm:_svgGoalBook,study:_svgGoalBook,amal:_svgGoalClip,ibadah:_svgGoalClip,akhlaq:_svgGoalHeart,afkar:_svgGoalBulb,quran:_svgGoalBook,other:_svgGoalTarget};
+  return `<span class="goal-meta-ic" aria-hidden="true">${map[c]||_svgGoalTarget}</span>`;
+}
 function renderGoals(){
   const goals=API.Goals.getAll(me.id); const el=document.getElementById('goalList'); const wp=document.getElementById('goalProgress');
   const total=goals.length; const done=goals.filter(g=>g.done).length; const pct=total?Math.round(done/total*100):0;
-  wp.innerHTML=total?`<div style="margin:12px 12px 0"><div class="goal-progress-wrap"><div class="goal-progress-label"><span>🎯 আমার লক্ষ্য</span><span>${done}/${total} (${pct}%)</span></div><div class="goal-progress-bar"><div class="goal-progress-fill" style="width:${pct}%"></div></div></div></div>`:'' ;
+  wp.innerHTML=total?`<div style="margin:12px 12px 0"><div class="goal-progress-wrap"><div class="goal-progress-label"><span class="goal-prog-title"><span class="goal-meta-ic" aria-hidden="true">${_svgGoalTarget}</span>আমার লক্ষ্য</span><span>${done}/${total} (${pct}%)</span></div><div class="goal-progress-bar"><div class="goal-progress-fill" style="width:${pct}%"></div></div></div></div>`:'' ;
   const filtered=gFilter==='all'?goals:goals.filter(g=>g.cat===gFilter);
-  if(!filtered.length){ el.innerHTML='<div class="empty-state"><div class="icon">🎯</div><p>কোনো লক্ষ্য নেই।<br>উপরে ＋ বোতামে যোগ করুন।</p></div>'; return; }
+  if(!filtered.length){ el.innerHTML=`<div class="empty-state"><div class="icon goal-empty-ic" aria-hidden="true">${_svgGoalTarget}</div><p>কোনো লক্ষ্য নেই।<br>উপরে বাটন দিয়ে যোগ করুন।</p></div>`; return; }
   const active=filtered.filter(g=>!g.done); const comp=filtered.filter(g=>g.done);
   let h='';
   if(active.length){ h+='<div class="goal-section">চলমান লক্ষ্য</div>'; h+=active.map(g=>gItem(g)).join(''); }
-  if(comp.length)  { h+='<div class="goal-section" style="margin-top:8px">সম্পন্ন লক্ষ্য ✅</div>'; h+=comp.map(g=>gItem(g)).join(''); }
+  if(comp.length)  { h+='<div class="goal-section" style="margin-top:8px">সম্পন্ন লক্ষ্য</div>'; h+=comp.map(g=>gItem(g)).join(''); }
   el.innerHTML=h;
 }
-function gItem(g){ return `<div class="goal-item"><div class="goal-check ${g.done?'done':''}" onclick="toggleGoal('${g.id}')"></div><div style="flex:1"><div class="goal-text ${g.done?'done':''}">${esc(g.title)}</div><div class="goal-meta">${catIc(g.cat)} ${g.cat||''} ${g.deadline?'· 📅 '+g.deadline:''} ${g.note?'· '+esc(g.note):''}</div></div><button class="goal-del" onclick="delGoal('${g.id}')">🗑</button></div>`; }
+function gItem(g){
+  const catLbl=_goalCatLbl[g.cat]||g.cat||'';
+  const dl=g.deadline?`<span class="goal-meta-ic" aria-hidden="true">${_svgGoalCal}</span>${esc(g.deadline)}`:'';
+  return `<div class="goal-item"><div class="goal-check ${g.done?'done':''}" onclick="toggleGoal('${g.id}')"></div><div style="flex:1"><div class="goal-text ${g.done?'done':''}">${esc(g.title)}</div><div class="goal-meta">${catIc(g.cat)} ${esc(catLbl)}${dl?' · '+dl:''}${g.note?' · '+esc(g.note):''}</div></div><button type="button" class="goal-del" onclick="delGoal('${g.id}')" title="মুছুন" aria-label="মুছুন">${_svgGoalTrash}</button></div>`;
+}
 function fGoal(f,btn){ document.querySelectorAll('#screen-goals .filter-chip').forEach(c=>c.classList.remove('active')); btn.classList.add('active'); gFilter=f; renderGoals(); }
-async function addGoalModal(){ const t=document.getElementById('gm_title').value.trim(); if(!t){ showToast('লক্ষ্যের বিবরণ লিখুন!'); return; } try{ await API.Goals.add(me.id,{title:t,cat:document.getElementById('gm_cat').value,deadline:document.getElementById('gm_dl').value,note:document.getElementById('gm_note').value.trim()}); closeModal('addGoalModal'); ['gm_title','gm_note'].forEach(id=>document.getElementById(id).value=''); document.getElementById('gm_dl').value=''; renderGoals(); renderHome(); showToast('🎯 লক্ষ্য যোগ হয়েছে!'); }catch(e){ console.error(e); showToast('❌ লক্ষ্য সেভ হয়নি'); } }
-async function toggleGoal(id){ try{ const g=await API.Goals.toggle(me.id,id); renderGoals(); renderHome(); if(g?.done) showToast('مَا شَاءَ اللّٰه! লক্ষ্য সম্পন্ন ✅'); }catch(e){ console.error(e); showToast('❌ লক্ষ্য আপডেট হয়নি'); } }
+async function addGoalModal(){ const t=document.getElementById('gm_title').value.trim(); if(!t){ showToast('লক্ষ্যের বিবরণ লিখুন!'); return; } try{ await API.Goals.add(me.id,{title:t,cat:document.getElementById('gm_cat').value,deadline:document.getElementById('gm_dl').value,note:document.getElementById('gm_note').value.trim()}); closeModal('addGoalModal'); ['gm_title','gm_note'].forEach(id=>document.getElementById(id).value=''); document.getElementById('gm_dl').value=''; renderGoals(); showToast('লক্ষ্য যোগ হয়েছে'); }catch(e){ console.error(e); showToast('লক্ষ্য সেভ হয়নি'); } }
+async function toggleGoal(id){ try{ const g=await API.Goals.toggle(me.id,id); renderGoals(); if(g?.done) showToast('مَا شَاءَ اللّٰه! লক্ষ্য সম্পন্ন'); }catch(e){ console.error(e); showToast('লক্ষ্য আপডেট হয়নি'); } }
 async function delGoal(id){
   const ok=await showConfirm('এই লক্ষ্যটি মুছে ফেলবেন?',{title:'লক্ষ্য মুছুন',okText:'মুছে ফেলুন',danger:true});
   if(!ok) return;
-  try{ await API.Goals.delete(me.id,id); renderGoals(); renderHome(); showToast('🗑 লক্ষ্য মুছে ফেলা হয়েছে'); }catch(e){ console.error(e); showToast('❌ লক্ষ্য মোছা যায়নি'); }
+  try{ await API.Goals.delete(me.id,id); renderGoals(); showToast('লক্ষ্য মুছে ফেলা হয়েছে'); }catch(e){ console.error(e); showToast('লক্ষ্য মোছা যায়নি'); }
 }
 
 // ══ IN-CHAT SEARCH (student) ════════════════════════════════
@@ -1703,10 +1662,6 @@ function onStudentPhotoChange(inp){
     avatarEl.style.backgroundSize='cover';
     avatarEl.style.backgroundPosition='center';
     const ltr=document.getElementById('spAvatarLetter'); if(ltr) ltr.textContent='';
-    document.getElementById('hAvatar').style.backgroundImage=`url(${JSON.stringify(dataUrl)})`;
-    document.getElementById('hAvatar').style.backgroundSize='cover';
-    document.getElementById('hAvatar').style.backgroundPosition='center';
-    document.getElementById('hAvatar').textContent='';
     showToast('✅ ছবি আপডেট হয়েছে');
   };
   reader.readAsDataURL(file);
@@ -1743,7 +1698,6 @@ function goTab(tab){
   const sb=document.getElementById('stuInChatSearchBtn');
   if(sb) sb.style.display=tab==='chat'&&me?'flex':'none';
   if(tab!=='chat') closeStuInChatSearch();
-  if(tab==='home' && me) renderHome();
   if(tab==='chat' && me){ API.Messages.markRead(me.id,'out'); renderChat(); updateBadges(); setTimeout(()=>document.getElementById('chatMsgs').scrollTop=9e9,50); }
   if(tab==='exams') renderExamList();
   if(tab==='tasks' && me){ renderAmalDashboard(); renderTaskList(); }

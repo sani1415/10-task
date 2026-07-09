@@ -130,17 +130,52 @@
   function getProgressSummary(sid) {
     const today=_today(), wS=_weekStart(), mS=_monthStart();
     const tasks=_dailyTasksFor(sid), total=tasks.length;
+    const empty={done:0,total:0,percent:0};
     const pct=(a,b)=>b>0?Math.round(a/b*100):0;
-    if (!total) return { today:{done:0,total:0,percent:0}, week:{done:0,total:0,percent:0}, month:{done:0,total:0,percent:0} };
-    const todayDone=Completions.getForDate(today).filter(c=>c.student_id===sid&&c.status==='done'&&tasks.find(t=>t.id===c.task_id)).length;
-    const wC=Completions.getForStudent(sid,wS,today).filter(c=>c.status==='done'&&tasks.find(t=>t.id===c.task_id));
-    const mC=Completions.getForStudent(sid,mS,today).filter(c=>c.status==='done'&&tasks.find(t=>t.id===c.task_id));
+    if (!total) return { today:empty, week:empty, month:empty, all:empty };
+    const isMine=c=>c.status==='done'&&tasks.find(t=>t.id===c.task_id);
+    const todayDone=Completions.getForDate(today).filter(c=>c.student_id===sid&&isMine(c)).length;
+    const wC=Completions.getForStudent(sid,wS,today).filter(isMine);
+    const mC=Completions.getForStudent(sid,mS,today).filter(isMine);
     const wD=_daysBetween(wS,today)+1, mD=_daysBetween(mS,today)+1;
+    // «শুরু থেকে» = ভর্তির তারিখ → আজ (enrollmentDate না থাকলে ০%)
+    const student=_allStudents().find(s=>s.id===sid)||null;
+    const en=student&&student.enrollmentDate;
+    const enrollFrom=en&&/^\d{4}-\d{2}-\d{2}/.test(String(en))?String(en).slice(0,10):null;
+    const all=enrollFrom?getRangeProgress(sid,enrollFrom,today):empty;
     return {
       today: { done:todayDone, total, percent:pct(todayDone,total) },
       week:  { done:wC.length, total:total*wD, percent:pct(wC.length,total*wD) },
       month: { done:mC.length, total:total*mD, percent:pct(mC.length,total*mD) },
+      all:   { done:all.done, total:all.total, percent:all.percent },
     };
+  }
+
+  /** from–to (YYYY-MM-DD) পর্যন্ত দৈনিক আমলের সামগ্রিক % */
+  function getRangeProgress(sid, from, to) {
+    const today=_today();
+    let start=from||today, end=to||today;
+    if (start>today) start=today;
+    if (end>today) end=today;
+    const z={ done:0, total:0, percent:0, from:start, to:end };
+    if (!start||start>end) return z;
+    const tasks=_dailyTasksFor(sid), n=tasks.length;
+    if (!n) return z;
+    const days=_daysBetween(start,end)+1;
+    if (days<1) return z;
+    const done=Completions.getForStudent(sid,start,end)
+      .filter(c=>c.status==='done'&&tasks.find(t=>t.id===c.task_id)).length;
+    const total=n*days;
+    return { done, total, percent:total>0?Math.round(done/total*100):0, from:start, to:end };
+  }
+
+  /** শিক্ষক তালিকা: সেটিংস অনুযায়ী শুরু → আজ */
+  function getListProgress(sid) {
+    const A=_api();
+    const student=_allStudents().find(s=>s.id===sid)||null;
+    const from=A?.ProgressSettings?.resolveFrom?.(student)||null;
+    if (!from) return { done:0, total:0, percent:0, from:null, to:_today() };
+    return getRangeProgress(sid, from, _today());
   }
 
   function getTodayOverview(dateStr) {
@@ -169,7 +204,7 @@
 
   function getCalendarData(sid, year, month) {
     const tasks=_dailyTasksFor(sid); if (!tasks.length) return {};
-    const today=_today();
+    const today=_today(), total=tasks.length;
     const from=`${year}-${_pad(month)}-01`;
     const dInM=new Date(year,month,0).getDate();
     const to=`${year}-${_pad(month)}-${_pad(dInM)}`;
@@ -180,13 +215,15 @@
       if (date>today) continue;
       const dayComps=comps.filter(c=>c.date===date);
       const doneN=dayComps.filter(c=>c.status==='done'&&tasks.find(t=>t.id===c.task_id)).length;
-      result[date]=doneN===0?'miss':doneN<tasks.length?'partial':'done';
+      const percent=total>0?Math.round(doneN/total*100):0;
+      const status=doneN===0?'miss':doneN<total?'partial':'done';
+      result[date]={ status, percent, done:doneN, total };
     }
     return result;
   }
 
   w.ApiAmal = { Completions, markCompleted, unmarkCompleted, isCompleted,
-    syncTodayFromCompletions, getStreak, getProgressSummary,
-    getTodayOverview, getLeaderboard, getCalendarData };
+    syncTodayFromCompletions, getStreak, getProgressSummary, getRangeProgress,
+    getListProgress, getTodayOverview, getLeaderboard, getCalendarData };
 
 })(typeof window!=='undefined'?window:globalThis);

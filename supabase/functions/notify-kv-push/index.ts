@@ -178,7 +178,7 @@ Deno.serve(async (req: Request) => {
         const bcSentEndpoints = new Set<string>();
         for (const sub of allSubs) {
           if (sub.endpoint && bcSentEndpoints.has(sub.endpoint)) continue;
-          await trySend(sub, makePayload("শিক্ষকের নতুন বার্তা এসেছে।", "student", "msg-out-bc"));
+          await trySend(sub, makePayload("জিম্মাদারের নতুন বার্তা এসেছে।", "student", "msg-out-bc"));
           if (sub.endpoint) bcSentEndpoints.add(sub.endpoint);
         }
       } else {
@@ -191,8 +191,8 @@ Deno.serve(async (req: Request) => {
         const waqfId = stu?.waqf_id ? String(stu.waqf_id) : null;
         const studentName = stu?.name ? String(stu.name) : null;
         const msgBody = studentName
-          ? `${studentName}, শিক্ষকের নতুন বার্তা এসেছে।`
-          : "শিক্ষকের নতুন বার্তা এসেছে।";
+          ? `${studentName}, জিম্মাদারের নতুন বার্তা এসেছে।`
+          : "জিম্মাদারের নতুন বার্তা এসেছে।";
         // Collect all endpoints to avoid duplicate pushes
         const sentEndpoints = new Set<string>();
 
@@ -246,7 +246,7 @@ Deno.serve(async (req: Request) => {
   );
 
   for (const sub of dedupedStudentSubs)
-    await trySend(sub, makePayload("শিক্ষকের নতুন আপডেট এসেছে। অ্যাপ খুলুন।", "student", `kv-student-${key}`));
+    await trySend(sub, makePayload("জিম্মাদারের নতুন আপডেট এসেছে। অ্যাপ খুলুন।", "student", `kv-student-${key}`));
   if (teacherSub)
     await trySend(teacherSub, makePayload("ছাত্রের নতুন আপডেট এসেছে।", "teacher", `kv-teacher-${key}`));
 

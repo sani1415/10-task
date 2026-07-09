@@ -5,21 +5,21 @@
 <base href="/">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,interactive-widget=resizes-content">
 <meta name="theme-color" content="#075E54">
-<meta name="description" content="শিক্ষক প্যানেল — Waqful Madinah">
+<meta name="description" content="জিম্মাদার প্যানেল — Waqful Madinah">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="শিক্ষক">
+<meta name="apple-mobile-web-app-title" content="জিম্মাদার">
 <link rel="manifest" href="manifest-teacher.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<title>শিক্ষক প্যানেল · Waqful Madinah</title>
+<title>জিম্মাদার প্যানেল · Waqful Madinah</title>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="tablet-desktop.css">
 <link rel="stylesheet" href="amal.css">
 <style>
 /* ── Teacher theme ── */
-/* লগইন: সফট লাইট — শিক্ষক: ঠান্ডা ব্লু-স্লেট */
+/* লগইন: সফট লাইট — জিম্মাদার: ঠান্ডা ব্লু-স্লেট */
 #lockScreen.lock-screen-soft{
   background:linear-gradient(180deg,#e0e9f4 0%,#f5f8fc 46%,#dbe7f3 100%);
   justify-content:flex-start;
@@ -72,7 +72,7 @@
 #lockScreen.lock-screen-soft .change-pin-btn:active{background:#f8fafc}
 #lockScreen.lock-screen-soft .pin-key-spacer{visibility:hidden;pointer-events:none;border:none;background:transparent!important;box-shadow:none!important}
 .header{background:#075E54}
-/* ফ্লোটিং নিচের ট্যাব (শিক্ষক) */
+/* ফ্লোটিং নিচের ট্যাব (জিম্মাদার) */
 .tea-main-shell{flex:1;display:flex;flex-direction:column;min-height:0;padding-bottom:var(--shell-pb,calc(12px + 68px + env(safe-area-inset-bottom)))}
 #app.in-chat #teaBottomNav{display:none!important}
 #app.in-chat .tea-main-shell{padding-bottom:0}
@@ -117,6 +117,39 @@
 .msg-sender{color:#128C7E}.form-input:focus{border-color:#128C7E}
 .chat-messages{background-color:#ECE5DD;background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23075E54' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
 .s-btn.chat{background:#E8F5F3;color:#128C7E}.s-btn.task{background:#FFF3E0;color:#E65100}.s-btn.pin{background:#E8EAF6;color:#3949AB}
+.s-btn .ic-svg svg{width:16px;height:16px}
+.tea-sched-pending-tag .ic-svg svg{width:12px;height:12px;vertical-align:-1px}
+.stu-toolbar{justify-content:space-between;align-items:center;gap:6px;padding:8px 12px}
+.stu-toolbar-years{display:flex;gap:6px;flex:1;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.stu-toolbar-years::-webkit-scrollbar{display:none}
+.stu-toolbar-sort{display:flex;gap:4px;flex-shrink:0;padding-left:8px;margin-left:2px;border-left:1px solid var(--gray-200)}
+.stu-sort-btn{width:34px;height:34px;border:1.5px solid var(--gray-300);background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--gray-600);transition:all .2s;padding:0;flex-shrink:0}
+.stu-sort-btn .ic-svg svg{width:18px;height:18px}
+.stu-sort-btn.active{background:#075E54;border-color:#075E54;color:#fff}
+.stu-toolbar .filter-chip{padding:4px 11px;font-size:12px}
+.s-avatar.s-avatar-pct,.chat-avatar.s-avatar-pct,.doc-group-avatar.s-avatar-pct,.header-avatar.s-avatar-pct,.tea-lb-avatar.s-avatar-pct{position:relative;background:var(--gray-200)!important;color:#075E54;font-size:12px;font-weight:800;overflow:hidden}
+.chat-avatar.s-avatar-pct{font-size:13px}.doc-group-avatar.s-avatar-pct,.tea-lb-avatar.s-avatar-pct{font-size:11px}.header-avatar.s-avatar-pct{font-size:11px;color:#fff}
+.s-avatar-pct::before{content:'';position:absolute;inset:0;border-radius:50%;background:conic-gradient(#25D366 calc(var(--pct,0)*1%),#E0E0E0 0);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px));mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px))}
+.header-avatar.s-avatar-pct::before{background:conic-gradient(#25D366 calc(var(--pct,0)*1%),rgba(255,255,255,.35) 0)}
+.s-avatar-pct>span{position:relative;z-index:1;line-height:1}
+.prog-mode-opt{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--gray-700);padding:6px 0;cursor:pointer}
+.prog-mode-opt input{accent-color:#075E54;width:16px;height:16px}
+.header-btn svg{display:block;width:20px;height:20px}
+.header-btn.header-btn--active{background:rgba(255,255,255,.22)}
+.ic-svg{display:inline-flex;align-items:center;justify-content:center;line-height:0;vertical-align:middle}
+.ic-svg svg{width:18px;height:18px;display:block;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.doc-tab-btn{display:flex;flex-direction:column;align-items:center;gap:2px}
+.doc-tab-ic{line-height:0;display:flex}.doc-tab-ic svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;opacity:.85}
+.doc-tab-btn.active .doc-tab-ic svg{stroke-width:2;opacity:1}
+.doc-btn .ic-svg svg,.tea-task-row-del .ic-svg svg{width:16px;height:16px}
+.doc-icon .ic-svg svg{width:20px;height:20px;color:#64748b}
+.grp-avatar .ic-svg svg{width:22px;height:22px;color:#075E54}
+.grp-edit-btn .ic-svg svg{width:16px;height:16px}
+.chat-badge--sched .ic-svg svg{width:12px;height:12px}
+.tea-amal-notice .ic-svg svg{width:18px;height:18px}
+.empty-state .icon .ic-svg svg{width:36px;height:36px;color:var(--gray-400)}
+.chat-avatar.chat-avatar--bc{background:#7B1FA2!important;color:#fff}
+.chat-avatar.chat-avatar--bc .ic-svg svg{width:22px;height:22px;stroke:#fff}
 
 /* ── Task type badge ── */
 .type-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:6px;vertical-align:middle}
@@ -259,18 +292,19 @@
 <!-- ══ HEADER ════════════════════════════════════════════ -->
 <div class="header" id="hdr">
   <button class="header-back" id="backBtn" onclick="closeChat()">‹</button>
-  <div class="header-avatar" id="hAvatar" style="background:#128C7E" onclick="if(curChat&&curChat!=='_broadcast')openStudentProfile(curChat)">শি</div>
-  <div class="header-info" style="cursor:default" id="hInfo" onclick="if(curChat&&curChat!=='_broadcast')openStudentProfile(curChat)"><div class="header-title" id="hTitle">Waqful Madinah</div><div class="header-sub" id="hSub">শিক্ষক প্যানেল</div></div>
+  <div class="header-avatar" id="hAvatar" style="display:none;background:#128C7E" onclick="if(curChat&&curChat!=='_broadcast')openStudentProfile(curChat)"></div>
+  <div class="header-info" style="cursor:default" id="hInfo" onclick="if(curChat&&curChat!=='_broadcast')openStudentProfile(curChat)"><div class="header-title" id="hTitle">Waqful Madinah</div><div class="header-sub" id="hSub">জিম্মাদার</div></div>
   <div class="header-actions">
-    <button class="header-btn" id="inChatSearchBtn" style="display:none" onclick="toggleInChatSearch()" title="এই চ্যাটে খুঁজুন">🔍</button>
-    <button class="header-btn" id="diaryToggleBtn" onclick="openDiary()" title="ডায়েরি">📓</button>
-    <button class="header-btn" id="searchToggleBtn" onclick="toggleSearch()">🔍</button>
+    <button type="button" class="header-btn" id="inChatSearchBtn" style="display:none" onclick="toggleInChatSearch()" title="এই চ্যাটে খুঁজুন" aria-label="এই চ্যাটে খুঁজুন"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
+    <button type="button" class="header-btn" id="diaryToggleBtn" onclick="openDiary()" title="ডায়েরি" aria-label="ডায়েরি"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><path d="M8 7h8M8 11h6"/></svg></button>
+    <button type="button" class="header-btn" id="searchToggleBtn" onclick="toggleSearch()" title="খুঁজুন" aria-label="খুঁজুন"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
+    <button type="button" class="header-btn" id="settingsToggleBtn" onclick="goTab('settings')" title="সেটিংস" aria-label="সেটিংস"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></button>
   </div>
 </div>
 
 <!-- ══ GLOBAL SEARCH BAR (all tabs) ══════════════════════ -->
 <div class="search-bar" id="searchBar" style="display:none">
-  <input type="search" id="globalMsgSearchIn" enterkeyhint="search" autocomplete="off" placeholder="🔍 নাম, আইডি বা মেসেজ খুঁজুন…" oninput="onSearchInput(this.value)">
+  <input type="search" id="globalMsgSearchIn" enterkeyhint="search" autocomplete="off" placeholder="নাম, আইডি বা মেসেজ খুঁজুন…" oninput="onSearchInput(this.value)">
 </div>
 <div class="global-msg-search-results" id="globalMsgSearchResults" style="display:none"></div>
 
@@ -281,21 +315,28 @@
 
 <!-- ══ STUDENTS ═══════════════════════════════════════════ -->
 <div class="screen" id="screen-students">
-  <div class="search-bar" style="display:flex;gap:8px;align-items:center">
-    <input placeholder="🔍 ছাত্র খুঁজুন..." oninput="renderStudentList(this.value)" style="flex:1">
-    <button onclick="document.getElementById('csvFileInput').click()" style="background:#128C7E;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">📂 ইমপোর্ট</button>
-    <input type="file" id="csvFileInput" accept=".csv,.txt" style="display:none" onchange="handleCSVImport(this)">
+  <div class="filter-bar stu-toolbar" id="studentToolbar" style="background:#fff">
+    <div class="stu-toolbar-years">
+      <button type="button" class="filter-chip active" data-year="" onclick="setStudentYearFilter('',this)">সব</button>
+      <button type="button" class="filter-chip" data-year="1" onclick="setStudentYearFilter(1,this)">১ম</button>
+      <button type="button" class="filter-chip" data-year="2" onclick="setStudentYearFilter(2,this)">২য়</button>
+      <button type="button" class="filter-chip" data-year="3" onclick="setStudentYearFilter(3,this)">৩য়</button>
+    </div>
+    <div class="stu-toolbar-sort">
+      <button type="button" class="stu-sort-btn active" data-sort="" onclick="setStudentPctSort('',this)" title="সাধারণ" aria-label="সাধারণ"><span class="ic-svg"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 6h16M4 12h10M4 18h6"/></svg></span></button>
+      <button type="button" class="stu-sort-btn" data-sort="desc" onclick="setStudentPctSort('desc',this)" title="% বেশি→কম" aria-label="পার্সেন্টেজ বেশি থেকে কম"><span class="ic-svg"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"/><rect x="10" y="9" width="4" height="11" rx="1" fill="currentColor" stroke="none"/><rect x="16" y="14" width="4" height="6" rx="1" fill="currentColor" stroke="none"/></svg></span></button>
+      <button type="button" class="stu-sort-btn" data-sort="asc" onclick="setStudentPctSort('asc',this)" title="% কম→বেশি" aria-label="পার্সেন্টেজ কম থেকে বেশি"><span class="ic-svg"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="14" width="4" height="6" rx="1" fill="currentColor" stroke="none"/><rect x="10" y="9" width="4" height="11" rx="1" fill="currentColor" stroke="none"/><rect x="16" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"/></svg></span></button>
+    </div>
   </div>
-  <div id="importResult" style="display:none"></div>
   <div class="list-scroll" id="studentList"></div>
 </div>
 
 <!-- ══ TASKS ══════════════════════════════════════════════ -->
 <div class="screen" id="screen-tasks">
   <div class="amal-sub-tabs">
-    <button class="amal-sub-tab active" onclick="goAmalTab('list',this)">📋 তালিকা</button>
-    <button class="amal-sub-tab"        onclick="goAmalTab('overview',this)">📊 সারসংক্ষেপ</button>
-    <button class="amal-sub-tab"        onclick="goAmalTab('students',this)">👥 ছাত্রভিত্তিক</button>
+    <button type="button" class="amal-sub-tab active" onclick="goAmalTab('list',this)"><span class="amal-sub-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12h6M9 16h6"/></svg></span><span class="amal-sub-lbl">তালিকা</span></button>
+    <button type="button" class="amal-sub-tab"        onclick="goAmalTab('overview',this)"><span class="amal-sub-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></span><span class="amal-sub-lbl">সারসংক্ষেপ</span></button>
+    <button type="button" class="amal-sub-tab"        onclick="goAmalTab('students',this)"><span class="amal-sub-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></span><span class="amal-sub-lbl">ছাত্রভিত্তিক</span></button>
   </div>
   <div id="amal-panel-list" class="amal-panel">
     <div class="stu-amal-filters no-scrollbar">
@@ -363,19 +404,19 @@
 <!-- ══ DOCUMENTS ══════════════════════════════════════════ -->
 <div class="screen" id="screen-docs">
   <div class="doc-tabs">
-    <button class="doc-tab-btn active" onclick="goDocTab('received',this)">📥 ছাত্রের পাঠানো</button>
-    <button class="doc-tab-btn"        onclick="goDocTab('sent',this)">📤 আমার পাঠানো</button>
-    <button class="doc-tab-btn"        onclick="goDocTab('storage',this)">💾 স্টোরেজ</button>
+    <button type="button" class="doc-tab-btn active" onclick="goDocTab('received',this)"><span class="doc-tab-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg></span><span>ছাত্রের পাঠানো</span></button>
+    <button type="button" class="doc-tab-btn"        onclick="goDocTab('sent',this)"><span class="doc-tab-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></span><span>আমার পাঠানো</span></button>
+    <button type="button" class="doc-tab-btn"        onclick="goDocTab('storage',this)"><span class="doc-tab-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 12h.01M10 12h8"/></svg></span><span>স্টোরেজ</span></button>
   </div>
   <div class="list-scroll">
     <div id="docsReceivedPane">
       <div id="pendingDocsBanner" style="display:none;margin:8px 12px 0;background:#FFF3E0;border:1.5px solid #FFB74D;border-radius:10px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px">
-        <span style="font-size:13px;font-weight:600;color:#E65100">⏳ <span id="pendingDocsCount">0</span>টি ডকুমেন্ট পর্যালোচনা বাকি</span>
+        <span style="font-size:13px;font-weight:600;color:#E65100"><span id="pendingDocsCount">0</span>টি ডকুমেন্ট পর্যালোচনা বাকি</span>
         <button onclick="fDoc('pending',document.getElementById('fchip-pending'))" style="font-size:12px;font-weight:700;color:#E65100;background:none;border:1.5px solid #E65100;border-radius:6px;padding:3px 10px;cursor:pointer">সব দেখুন</button>
       </div>
       <div class="filter-bar">
         <button class="filter-chip active" onclick="fDoc('all',this)">সব</button>
-        <button class="filter-chip" id="fchip-pending" onclick="fDoc('pending',this)">⏳ বাকি</button>
+        <button class="filter-chip" id="fchip-pending" onclick="fDoc('pending',this)">বাকি</button>
         <button class="filter-chip"        onclick="fDoc('general',this)">সাধারণ</button>
         <button class="filter-chip"        onclick="fDoc('question',this)">রোযনামচা</button>
         <button class="filter-chip"        onclick="fDoc('report',this)">বিবরণ</button>
@@ -398,17 +439,28 @@
 <!-- ══ SETTINGS ═══════════════════════════════════════════ -->
 <div class="screen" id="screen-settings">
   <div class="list-scroll">
-    <div class="sec-hd">শিক্ষকের তথ্য</div>
+    <div class="sec-hd">জিম্মাদারের তথ্য</div>
     <div class="backup-card">
-      <div class="form-group"><label class="form-label">আপনার নাম</label><input class="form-input" id="tName" placeholder="শিক্ষকের নাম"></div>
+      <div class="form-group"><label class="form-label">আপনার নাম</label><input class="form-input" id="tName" placeholder="জিম্মাদারের নাম"></div>
       <div class="form-group" style="margin-bottom:0"><label class="form-label">মাদরাসার নাম</label><input class="form-input" id="tMadrasa" placeholder="মাদরাসার নাম"></div>
       <button class="btn-primary" style="margin-top:12px" onclick="saveInfo()">✅ সংরক্ষণ</button>
     </div>
     <div class="sec-hd">পিন পরিবর্তন</div>
     <div class="backup-card">
-      <p>শিক্ষক প্যানেলের পিন পরিবর্তন করুন।</p>
+      <p>জিম্মাদার প্যানেলের পিন পরিবর্তন করুন।</p>
       <div class="form-group" style="margin-top:8px"><label class="form-label">নতুন পিন (৪ সংখ্যা)</label><input class="form-input" id="newTPin" type="number" placeholder="যেমন: 5678"></div>
       <button class="backup-btn" onclick="changeTPin()">🔑 পিন পরিবর্তন</button>
+    </div>
+    <div class="sec-hd">ছাত্র তালিকার অবস্থা %</div>
+    <div class="backup-card">
+      <p style="margin-bottom:10px">গোল ঘরের পার্সেন্টেজ কোন তারিখ থেকে হিসাব হবে।</p>
+      <label class="prog-mode-opt"><input type="radio" name="progMode" value="enrollment" onchange="onProgModeChange()"> ভর্তির তারিখ থেকে</label>
+      <label class="prog-mode-opt"><input type="radio" name="progMode" value="custom" onchange="onProgModeChange()"> নির্দিষ্ট তারিখ থেকে</label>
+      <div class="form-group" id="progCustomWrap" style="margin-top:10px;display:none">
+        <label class="form-label">শুরুর তারিখ</label>
+        <input class="form-input" type="date" id="progCustomFrom">
+      </div>
+      <button class="btn-primary" style="margin-top:12px" onclick="saveProgressSettings()">✅ সংরক্ষণ</button>
     </div>
     <div class="sec-hd">ব্যাকআপ</div>
     <div class="backup-card">
@@ -493,7 +545,6 @@
     <button type="button" class="tab-btn"        onclick="goTab('tasks')"    id="tab-tasks"><span class="tab-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12h6M9 16h6"/></svg></span><span class="tab-lbl">আমল</span><span class="tab-badge" id="tBadge"></span></button>
     <button type="button" class="tab-btn"        onclick="goTab('exams')"    id="tab-exams"><span class="tab-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="11" x2="15" y2="11"/></svg></span><span class="tab-lbl">পরীক্ষা</span></button>
     <button type="button" class="tab-btn"        onclick="goTab('docs')"     id="tab-docs"><span class="tab-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg></span><span class="tab-lbl">ডকুমেন্ট</span><span class="tab-badge" id="docBadge"></span></button>
-    <button type="button" class="tab-btn"        onclick="goTab('settings')" id="tab-settings"><span class="tab-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span><span class="tab-lbl">সেটিং</span></button>
   </div>
 </nav>
 
@@ -522,7 +573,7 @@
   <div class="diary-hd">
     <button class="profile-hd-back" onclick="closeDiary()">‹</button>
     <div class="profile-hd-info">
-      <div class="profile-hd-name">📓 আমার ডায়েরি</div>
+      <div class="profile-hd-name">আমার ডায়েরি</div>
       <div class="profile-hd-sub" id="diaryHdSub">ব্যক্তিগত অভিজ্ঞতা ও ঘটনা</div>
     </div>
     <button class="diary-new-btn" onclick="openDiaryEntryModal()">＋ নতুন</button>
@@ -707,6 +758,50 @@ let curProfileSid=null;
 let replyingTo=null;
 const C=['#128C7E','#1565C0','#6A1B9A','#BF360C','#1B5E20'];
 
+// ── Stroke SVG icons (bottom-nav / student amal style) ─────
+const _svgIcDone='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>';
+const _svgIcPend='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 1.5"/></svg>';
+const _svgIcLate='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5h.01"/></svg>';
+const _svgIcPartial='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 12a9 9 0 11-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>';
+const _svgTrash='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>';
+const _svgSearch='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>';
+const _svgDiary='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><path d="M8 7h8M8 11h6"/></svg>';
+const _svgMegaphone='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 11v2a1 1 0 001 1h2l6 4V6L6 10H4a1 1 0 00-1 1z"/><path d="M16 8.5a4.5 4.5 0 010 7"/><path d="M18.5 6a8 8 0 010 12"/></svg>';
+const _svgTag='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>';
+const _svgPencil='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>';
+const _svgEye='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const _svgCheck='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const _svgInbox='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>';
+const _svgSend='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
+const _svgHdd='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 12h.01M10 12h8"/></svg>';
+const _svgFolder='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>';
+const _svgFile='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+const _svgImage='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>';
+const _svgPdf='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13h6M9 17h4"/></svg>';
+const _svgCal='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>';
+const _svgRepeat='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>';
+const _svgPin='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 01-.76 1.57l-2.48 1.86A1 1 0 006.5 16h11a1 1 0 00.74-1.81l-2.48-1.86A2 2 0 0115 10.76V5a1 1 0 00-1-1h-4a1 1 0 00-1 1v5.76z"/></svg>';
+const _svgChat='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 11.5a8.5 8.5 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.5 8.5 0 01-3.8-.9L3 21l1.9-5.7a8.5 8.5 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.5 8.5 0 013.8-.9h.5a8.5 8.5 0 018 8v.5z"/></svg>';
+const _svgClip='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21.4 11.6l-8.5 8.5a5 5 0 01-7.1-7.1l9.2-9.2a3.2 3.2 0 014.5 4.5l-9.2 9.2a1.4 1.4 0 01-2-2l8.1-8.1"/></svg>';
+
+function pctAvatarHtml(sid, cls){
+  const prog=API.Tasks.getListProgress(sid);
+  const pct=Math.max(0,Math.min(100,prog.percent|0));
+  return `<div class="${cls||'s-avatar'} s-avatar-pct" style="--pct:${pct}" title="অবস্থা ${pct}%"><span>${pct}%</span></div>`;
+}
+function setHeaderAvatarHtml(html, bg){
+  const el=document.getElementById('hAvatar');
+  if(!el) return;
+  el.innerHTML=html;
+  el.style.background=bg||'#128C7E';
+}
+function fileIconSvg(type){
+  const t=type||'';
+  if(t==='image'||t.startsWith('image/')) return `<span class="ic-svg">${_svgImage}</span>`;
+  if(t==='pdf'||t==='application/pdf') return `<span class="ic-svg">${_svgPdf}</span>`;
+  return `<span class="ic-svg">${_svgFile}</span>`;
+}
+
 function showUploadPrepError(e){
   const m=e && e.message;
   if(m==='file_too_large') showToast('❌ একটি ফাইল সর্বোচ্চ ১০ MB!');
@@ -728,6 +823,7 @@ function init(){
     document.getElementById('tMadrasa').value=t.madrasa||'';
     document.getElementById('hTitle').textContent=t.madrasa||'Waqful Madinah';
     document.getElementById('t_dl').value=API.nextDate(3);
+    loadProgressSettingsUI();
     document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{ if(e.target===el) closeModal(el.id); }));
     updateTeacherNotifBtn();
     setTimeout(()=>void API.Pwa.refreshPushSubscription('teacher').then(updateTeacherNotifBtn),2000);
@@ -970,12 +1066,12 @@ function renderGrpSection(){
     const stus=API.Students.getAll().filter(s=>g.studentIds.includes(s.id));
     const preview=stus.slice(0,3).map(s=>s.name.split(' ')[0]).join(', ')+(stus.length>3?` +${stus.length-3}`:'');
     h+=`<div class="grp-item" onclick="openGrpPanel('${g.id}')">
-      <div class="grp-avatar">🏷️</div>
+      <div class="grp-avatar"><span class="ic-svg">${_svgTag}</span></div>
       <div class="grp-info">
         <div class="grp-name">${esc(g.name)}</div>
         <div class="grp-sub">${stus.length} জন${preview?' · '+esc(preview):''}</div>
       </div>
-      <button class="grp-edit-btn" onclick="event.stopPropagation();openGrpModal('${g.id}')">✏️</button>
+      <button class="grp-edit-btn" onclick="event.stopPropagation();openGrpModal('${g.id}')" title="সম্পাদনা" aria-label="সম্পাদনা"><span class="ic-svg">${_svgPencil}</span></button>
     </div>`;
   });
   return h;
@@ -986,14 +1082,7 @@ function renderChatList(f=''){
     .filter(s=>API.Students.matchesSearchQuery(s, f))
     .sort((a,b)=>msgTs(b)-msgTs(a));
   let h='';
-  if(!f){ h+=renderGrpSection(); const bc=API.Messages.getThread('_bc'); const last=bc[bc.length-1];
-    const rcpt=last&&_bcReadCounts[last.id];
-    const rcptHtml=rcpt
-      ? (rcpt.read_count<rcpt.total_count
-          ? `<span style="font-size:11px;font-weight:700;background:#FFF3E0;color:#E65100;border-radius:8px;padding:1px 7px;margin-left:4px">⏳ ${rcpt.read_count}/${rcpt.total_count} দেখেছেন</span>`
-          : `<span style="font-size:11px;font-weight:700;background:#E8F5E9;color:#2E7D32;border-radius:8px;padding:1px 7px;margin-left:4px">✅ সবাই দেখেছেন</span>`)
-      : '';
-    h+=`<div class="chat-item" onclick="openChat('_broadcast')"><div class="chat-avatar" style="background:#7B1FA2">📢</div><div class="chat-body"><div class="chat-row1"><span class="chat-name">📢 সবাইকে বার্তা</span><span class="chat-time">${last?.time||''}</span></div><div class="chat-row2"><span class="chat-preview">${esc(last?.text||'গ্রুপ বার্তা')}</span>${rcptHtml}</div></div></div>`; }
+  if(!f) h+=renderGrpSection();
   students.forEach(s=>{
     const msgs=API.Messages.getThread(s.id); const last=msgs[msgs.length-1];
     const ur=API.Messages.unreadCount(s.id,'in'); // messages from student (teacher hasn't read)
@@ -1002,15 +1091,26 @@ function renderChatList(f=''){
     if(last?.role==='out'){
       tickPrefix=last.read?'<span style="color:#25D366;font-size:13px">✓✓</span> ':'<span style="color:var(--gray-400);font-size:13px">✓</span> ';
     }
-    const preview=last?(tickPrefix+(last.type==='doc'?`📎 ${esc(last.fileName||last.text)}`:esc(last.text.slice(0,40)))):esc(s.cls||'নতুন');
+    const preview=last?(tickPrefix+(last.type==='doc'?`<span class="ic-svg" style="vertical-align:-2px">${_svgClip}</span> ${esc(last.fileName||last.text)}`:esc(last.text.slice(0,40)))):esc(s.cls||'নতুন');
     // Badge: green = student sent a message teacher hasn't read yet
     let badgeHtml='';
     if(ur) badgeHtml+=`<span class="chat-badge">${ur}</span>`;
     if(API.DailySchedule&&API.DailySchedule.hasPendingApproval(s.id))
-      badgeHtml+=`<span class="chat-badge chat-badge--sched" title="সময়সূচি অনুমোদনের অপেক্ষায়">📅</span>`;
-    h+=`<div class="chat-item" onclick="openChat('${s.id}')"><div class="chat-avatar" style="background:${s.color||C[0]}">${s.name.charAt(0)}</div><div class="chat-body"><div class="chat-row1"><span class="chat-name">${esc(s.name)}${s.responsibility?` <span style="font-size:10px;font-weight:700;color:#E65100;background:#FFF3E0;border-radius:5px;padding:1px 5px">${esc(s.responsibility)}</span>`:''}</span><span class="chat-time">${last?.time||''}</span></div><div class="chat-row2">${s.waqfId?`<span class="chat-waqf">${esc(API.Students.displayWaqfId(s.waqfId))}</span> · `:''}<span class="chat-preview">${preview}</span>${badgeHtml}</div></div></div>`;
+      badgeHtml+=`<span class="chat-badge chat-badge--sched" title="সময়সূচি অনুমোদনের অপেক্ষায়"><span class="ic-svg">${_svgCal}</span></span>`;
+    h+=`<div class="chat-item" onclick="openChat('${s.id}')">${pctAvatarHtml(s.id,'chat-avatar')}<div class="chat-body"><div class="chat-row1"><span class="chat-name">${esc(s.name)}${s.responsibility?` <span style="font-size:10px;font-weight:700;color:#E65100;background:#FFF3E0;border-radius:5px;padding:1px 5px">${esc(s.responsibility)}</span>`:''}</span><span class="chat-time">${last?.time||''}</span></div><div class="chat-row2">${s.waqfId?`<span class="chat-waqf">${esc(API.Students.displayWaqfId(s.waqfId))}</span> · `:''}<span class="chat-preview">${preview}</span>${badgeHtml}</div></div></div>`;
   });
-  document.getElementById('chatList').innerHTML=h||'<div class="empty-state"><div class="icon">💬</div><p>ছাত্র যোগ করুন।</p></div>';
+  // সবাইকে বার্তা — সবসময় তালিকার নিচে
+  if(!f){
+    const bc=API.Messages.getThread('_bc'); const last=bc[bc.length-1];
+    const rcpt=last&&_bcReadCounts[last.id];
+    const rcptHtml=rcpt
+      ? (rcpt.read_count<rcpt.total_count
+          ? `<span style="font-size:11px;font-weight:700;background:#FFF3E0;color:#E65100;border-radius:8px;padding:1px 7px;margin-left:4px">${rcpt.read_count}/${rcpt.total_count} দেখেছেন</span>`
+          : `<span style="font-size:11px;font-weight:700;background:#E8F5E9;color:#2E7D32;border-radius:8px;padding:1px 7px;margin-left:4px">সবাই দেখেছেন</span>`)
+      : '';
+    h+=`<div class="chat-item" onclick="openChat('_broadcast')"><div class="chat-avatar chat-avatar--bc"><span class="ic-svg">${_svgMegaphone}</span></div><div class="chat-body"><div class="chat-row1"><span class="chat-name">সবাইকে বার্তা</span><span class="chat-time">${last?.time||''}</span></div><div class="chat-row2"><span class="chat-preview">${esc(last?.text||'গ্রুপ বার্তা')}</span>${rcptHtml}</div></div></div>`;
+  }
+  document.getElementById('chatList').innerHTML=h||`<div class="empty-state"><div class="icon"><span class="ic-svg">${_svgChat}</span></div><p>ছাত্র যোগ করুন।</p></div>`;
 }
 function openChat(id){
   uiViewTransition(()=>{
@@ -1020,12 +1120,24 @@ function openChat(id){
   // Mark student messages as read — this triggers double-tick on student's side
   API.Messages.markRead(id==='_broadcast'?'_bc':id,'in');
   document.getElementById('backBtn').style.display='flex';
-  document.getElementById('hAvatar').textContent=isBC?'📢':s?.name.charAt(0);
-  document.getElementById('hAvatar').style.background=isBC?'#7B1FA2':(s?.color||C[0]);
+  const hAv=document.getElementById('hAvatar');
+  if(hAv) hAv.style.display='flex';
+  if(isBC){
+    setHeaderAvatarHtml(`<span class="ic-svg">${_svgMegaphone}</span>`,'#7B1FA2');
+    hAv.classList.add('chat-avatar--bc');
+  } else if(s){
+    hAv.classList.remove('chat-avatar--bc');
+    const prog=API.Tasks.getListProgress(s.id);
+    const pct=Math.max(0,Math.min(100,prog.percent|0));
+    setHeaderAvatarHtml(`<span>${pct}%</span>`,'#E0E0E0');
+    hAv.classList.add('s-avatar-pct');
+    hAv.style.setProperty('--pct',String(pct));
+  }
   document.getElementById('hTitle').textContent=isBC?'সবাইকে বার্তা':s?.name;
   document.getElementById('hSub').textContent=isBC?`${API.Students.getAll().length} জন`:(s?[s.waqfId?API.Students.displayWaqfId(s.waqfId):null,s.responsibility||null,s.cls||null].filter(Boolean).join(' · '):'');
   document.getElementById('fab').style.display='none';
   document.getElementById('searchToggleBtn').style.display='none';
+  const _setBtn=document.getElementById('settingsToggleBtn'); if(_setBtn) _setBtn.style.display='none';
   document.getElementById('inChatSearchBtn').style.display='flex';
   document.getElementById('bcNotice').classList.toggle('show',isBC);
   // Student tabs — only for 1:1 chats
@@ -1062,17 +1174,24 @@ function closeChat(){
   var _tn=document.getElementById('teaBottomNav'); if(_tn) _tn.style.display='block'; document.getElementById('fab').style.display='flex';
   document.getElementById('backBtn').style.display='none';
   document.getElementById('searchToggleBtn').style.display='flex';
+  const _setBtn2=document.getElementById('settingsToggleBtn'); if(_setBtn2) _setBtn2.style.display='flex';
   document.getElementById('inChatSearchBtn').style.display='none';
   const t=API.DB.getTeacher();
   document.getElementById('hTitle').textContent=t.madrasa||'Waqful Madinah';
-  document.getElementById('hSub').textContent='শিক্ষক প্যানেল';
-  document.getElementById('hAvatar').textContent='শি'; document.getElementById('hAvatar').style.background='#128C7E';
+  document.getElementById('hSub').textContent='জিম্মাদার';
+  const hAvClose=document.getElementById('hAvatar');
+  if(hAvClose){
+    hAvClose.classList.remove('s-avatar-pct','chat-avatar--bc');
+    hAvClose.style.removeProperty('--pct');
+    hAvClose.innerHTML='';
+    hAvClose.style.display='none';
+  }
   document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
   document.getElementById('screen-'+curTab).classList.add('active');
   renderChatList(); updateBadge();
   });
 }
-function fileIcon(type){ const t=type||''; return (t==='image'||t.startsWith('image/'))?'🖼️':(t==='pdf'||t==='application/pdf')?'📕':t.includes('word')||t.includes('doc')?'📝':t.includes('sheet')||t.includes('excel')?'📊':'📎'; }
+function fileIcon(type){ return fileIconSvg(type); }
 
 // ══ CONTACT GROUPS ════════════════════════════════════════
 function openGrpPanel(gid){
@@ -1538,20 +1657,78 @@ async function sendMsg(){
 }
 
 // ══ STUDENTS ═══════════════════════════════════════════════
-function renderStudentList(f=''){
-  const list=API.Students.getAll().filter(s=>API.Students.matchesSearchQuery(s, f));
-  if(!list.length){ document.getElementById('studentList').innerHTML='<div class="empty-state"><div class="icon">👥</div><p>ছাত্র নেই।</p></div>'; return; }
+let studentYearFilter=null; // null=সব, 1|2|3=বর্ষ
+let studentPctSort=''; // '' | 'desc' | 'asc'
+function setStudentYearFilter(year,btn){
+  studentYearFilter=year===''||year==null?null:Number(year);
+  document.querySelectorAll('#studentToolbar [data-year]').forEach(c=>c.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderStudentList();
+}
+function setStudentPctSort(mode,btn){
+  studentPctSort=mode==='desc'||mode==='asc'?mode:'';
+  document.querySelectorAll('#studentToolbar .stu-sort-btn').forEach(c=>c.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderStudentList();
+}
+function loadProgressSettingsUI(){
+  const cfg=API.ProgressSettings.get();
+  const en=document.querySelector('input[name="progMode"][value="enrollment"]');
+  const cu=document.querySelector('input[name="progMode"][value="custom"]');
+  if(en) en.checked=cfg.mode!=='custom';
+  if(cu) cu.checked=cfg.mode==='custom';
+  const wrap=document.getElementById('progCustomWrap');
+  const inp=document.getElementById('progCustomFrom');
+  if(wrap) wrap.style.display=cfg.mode==='custom'?'block':'none';
+  if(inp) inp.value=cfg.customFrom||'';
+}
+function onProgModeChange(){
+  const mode=(document.querySelector('input[name="progMode"]:checked')||{}).value||'enrollment';
+  const wrap=document.getElementById('progCustomWrap');
+  if(wrap) wrap.style.display=mode==='custom'?'block':'none';
+}
+function saveProgressSettings(){
+  const mode=(document.querySelector('input[name="progMode"]:checked')||{}).value||'enrollment';
+  const customFrom=(document.getElementById('progCustomFrom')||{}).value||'';
+  if(mode==='custom'&&!/^\d{4}-\d{2}-\d{2}$/.test(customFrom)){
+    showToast('শুরুর তারিখ দিন'); return;
+  }
+  API.ProgressSettings.save({ mode, customFrom });
+  showToast('✅ সংরক্ষিত');
+  renderStudentList();
+}
+function renderStudentList(){
+  let list=API.Students.getAll();
+  if(studentYearFilter!=null){
+    list=list.filter(s=>API.Students.getBatchYear(s.enrollmentDate)===studentYearFilter);
+  }
+  if(studentPctSort){
+    list=list.slice().map(s=>{
+      const prog=API.Tasks.getListProgress(s.id);
+      return { s, pct:Math.max(0,Math.min(100,prog.percent|0)) };
+    }).sort((a,b)=>{
+      const d=studentPctSort==='asc'?a.pct-b.pct:b.pct-a.pct;
+      if(d!==0) return d;
+      return String(a.s.name||'').localeCompare(String(b.s.name||''),'bn');
+    }).map(x=>x.s);
+  }
+  if(!list.length){ document.getElementById('studentList').innerHTML='<div class="empty-state"><div class="icon"><span class="ic-svg"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></span></div><p>ছাত্র নেই।</p></div>'; return; }
   document.getElementById('studentList').innerHTML=list.map(s=>{
+    const batch=API.Students.formatBatchYear(s.enrollmentDate);
+    const metaParts=[];
+    if(s.waqfId) metaParts.push(`<span style="color:#128C7E;font-weight:600">${esc(API.Students.displayWaqfId(s.waqfId))}</span>`);
+    if(batch) metaParts.push(`<span>${esc(batch)}</span>`);
+    const schedTag=API.DailySchedule&&API.DailySchedule.hasPendingApproval(s.id)?` <span class="tea-sched-pending-tag" title="সময়সূচি অনুমোদন"><span class="ic-svg">${_svgCal}</span></span>`:'';
     return `<div class="student-item" onclick="openStudentProfile('${s.id}')">
-      <div class="s-avatar" style="background:${s.color||C[0]}">${s.name.charAt(0)}</div>
+      ${pctAvatarHtml(s.id,'s-avatar')}
       <div class="s-info">
-        <div class="s-name">${esc(s.name)}${s.responsibility?` <span style="font-size:11px;font-weight:600;color:#E65100;background:#FFF3E0;border-radius:6px;padding:1px 6px">${esc(s.responsibility)}</span>`:''}${API.DailySchedule&&API.DailySchedule.hasPendingApproval(s.id)?` <span class="tea-sched-pending-tag" title="সময়সূচি অনুমোদন">📅</span>`:''}</div>
-        <div class="s-meta"><span style="color:#128C7E;font-weight:600">${esc(s.waqfId?API.Students.displayWaqfId(s.waqfId):'—')}</span></div>
+        <div class="s-name">${esc(s.name)}${s.responsibility?` <span style="font-size:11px;font-weight:600;color:#E65100;background:#FFF3E0;border-radius:6px;padding:1px 6px">${esc(s.responsibility)}</span>`:''}${schedTag}</div>
+        <div class="s-meta">${metaParts.join(' · ')||'—'}</div>
       </div>
       <div class="s-actions">
-        <button class="s-btn chat" onclick="event.stopPropagation();goTab('chats');openChat('${s.id}')">💬</button>
-        <button class="s-btn task" onclick="event.stopPropagation();openAddTask('${s.id}')">📋</button>
-        <button class="s-btn pin"  onclick="event.stopPropagation();viewPin('${s.id}')">🔑</button>
+        <button class="s-btn chat" onclick="event.stopPropagation();goTab('chats');openChat('${s.id}')" title="চ্যাট" aria-label="চ্যাট"><span class="ic-svg">${_svgChat}</span></button>
+        <button class="s-btn task" onclick="event.stopPropagation();openAddTask('${s.id}')" title="আমল" aria-label="আমল"><span class="ic-svg"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12h6M9 16h6"/></svg></span></button>
+        <button class="s-btn pin"  onclick="event.stopPropagation();viewPin('${s.id}')" title="পিন" aria-label="পিন"><span class="ic-svg"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></span></button>
       </div>
     </div>`;
   }).join('');
@@ -1590,8 +1767,8 @@ function renderTaskList(f){
   if(f) tFilter=f;
   const tasks=API.Tasks.getAll();
   const el=document.getElementById('taskList');
-  if(!tasks.length){ el.innerHTML='<div class="empty-state"><div class="icon">📋</div><p>কোনো আমল নেই।</p></div>'; return; }
-  const ic={done:'✅',pending:'⏳',late:'❌',partial:'🔄'};
+  if(!tasks.length){ el.innerHTML=`<div class="empty-state"><div class="icon"><span class="ic-svg"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12h6M9 16h6"/></svg></span></div><p>কোনো আমল নেই।</p></div>`; return; }
+  const ic={done:_svgIcDone,pending:_svgIcPend,late:_svgIcLate,partial:_svgIcPartial};
   const dailyTasks=tasks.filter(t=>t.type==='daily');
   const onetimeTasks=tasks.filter(t=>t.type==='onetime');
 
@@ -1618,13 +1795,13 @@ function renderTaskList(f){
     const rowCls='tea-task-row'+(st==='done'?' done':'')+(st==='late'?' late':'');
     const statCls='tea-task-row-stat'+(full?' full':'');
     return `<div class="${rowCls}">
-      <span class="tea-task-row-ic" aria-hidden="true">${ic[st]||'⏳'}</span>
+      <span class="tea-task-row-ic" aria-hidden="true">${ic[st]||_svgIcPend}</span>
       <div class="tea-task-row-mid">
         <span class="tea-task-row-title">${esc(t.title)}</span>
       </div>
       <span class="stu-task-row-pill ${isDaily?'daily':'onetime'}">${isDaily?'দৈনিক':'এককালীন'}</span>
       <span class="${statCls}">${doneCount}/${ids.length}</span>
-      <button type="button" class="tea-task-row-del" onclick="deleteTask('${t.id}')" title="মুছুন" aria-label="মুছুন">🗑</button>
+      <button type="button" class="tea-task-row-del" onclick="deleteTask('${t.id}')" title="মুছুন" aria-label="মুছুন"><span class="ic-svg">${_svgTrash}</span></button>
     </div>`;
   }
 
@@ -1633,13 +1810,13 @@ function renderTaskList(f){
   if(tFilter==='all'||tFilter==='daily'){
     if(dailyTasks.length){
       const doneToday=dailyTasks.filter(t=>{ const ids=Object.keys(t.assignees||{}); const d=ids.filter(id=>API.Tasks.isDailyDoneToday(t,id)).length; return d===ids.length&&ids.length>0; }).length;
-      h+=`<div class="tea-amal-notice"><span aria-hidden="true">🔄</span><span>দৈনিক আমল — আজ ${doneToday}/${dailyTasks.length} টি সম্পূর্ণ।</span></div>`;
+      h+=`<div class="tea-amal-notice"><span class="ic-svg" aria-hidden="true">${_svgRepeat}</span><span>দৈনিক আমল — আজ ${doneToday}/${dailyTasks.length} টি সম্পূর্ণ।</span></div>`;
       dailyTasks.forEach(t=>{ h+=teaTaskRowHtml(t); });
     }
   }
   if(tFilter==='all'||tFilter==='onetime'){
     if(onetimeTasks.length){
-      h+=`<div class="tea-amal-notice tea-amal-notice--once"><span aria-hidden="true">📌</span><span>এককালীন আমল</span></div>`;
+      h+=`<div class="tea-amal-notice tea-amal-notice--once"><span class="ic-svg" aria-hidden="true">${_svgPin}</span><span>এককালীন আমল</span></div>`;
       onetimeTasks.forEach(t=>{ h+=teaTaskRowHtml(t); });
     }
   }
@@ -1650,7 +1827,7 @@ function renderTaskList(f){
     if(part) h+=`<div class="tea-amal-subhd">${sub}</div>`+part;
   }
 
-  el.innerHTML=h||'<div class="empty-state"><div class="icon">🔍</div><p>এই ফিল্টারে কিছু নেই।</p></div>';
+  el.innerHTML=h||`<div class="empty-state"><div class="icon"><span class="ic-svg">${_svgSearch}</span></div><p>এই ফিল্টারে কিছু নেই।</p></div>`;
 }
 function fTask(f,btn){ document.querySelectorAll('#amal-panel-list .stu-filter-pill').forEach(c=>c.classList.remove('active')); btn.classList.add('active'); renderTaskList(f); }
 function toggleA(){ showToast('✅ আমল সম্পন্ন করবে ছাত্র নিজে।'); }
@@ -1705,13 +1882,13 @@ function renderAmalOverview(dateStr){
     }).join('');
     h+=`<div class="amal-card">
       <div class="amal-card-hd"><span class="amal-card-title">${esc(task.title)}</span>
-        <span class="type-badge ${task.type==='daily'?'daily':'onetime'}">${task.type==='daily'?'🔁':'📌'}</span></div>
+        <span class="type-badge ${task.type==='daily'?'daily':'onetime'}">${task.type==='daily'?'দৈনিক':'এককালীন'}</span></div>
       <div class="amal-prog-wrap"><div class="amal-prog-bar"><div class="amal-prog-fill" style="width:${percent}%"></div></div>
         <span class="amal-prog-txt">${completed.length}/${assignees.length}</span></div>
       <div class="amal-avatar-strip">${avatars}</div>
     </div>`;
   });
-  if(!overview.length) h+=`<div class="empty-state"><div class="icon">📋</div><p>এই তারিখে কোনো আমল নেই।</p></div>`;
+  if(!overview.length) h+=`<div class="empty-state"><div class="icon"><span class="ic-svg"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12h6M9 16h6"/></svg></span></div><p>এই তারিখে কোনো আমল নেই।</p></div>`;
   el.innerHTML=h;
 }
 function renderAmalLeaderboard(period){
@@ -1731,7 +1908,7 @@ function renderAmalLeaderboard(period){
     h+=`<div class="tea-lb-block">
       <button type="button" class="tea-lb-row" onclick="_toggleLbDetail('ld-${esc(item.sid)}',this)">
         <span class="tea-lb-rank${rk}" aria-hidden="true">${rank}</span>
-        <span class="tea-lb-avatar" style="background:${item.color||'#128C7E'}">${(item.name||'?').slice(0,2)}</span>
+        ${pctAvatarHtml(item.sid,'tea-lb-avatar')}
         <span class="tea-lb-info">
           <span class="tea-lb-name">${esc(item.name)}${item.responsibility?` <span style="font-size:10px;font-weight:700;color:#E65100;background:#FFF3E0;border-radius:5px;padding:1px 5px">${esc(item.responsibility)}</span>`:''}</span>
           <span class="tea-lb-meta">${item.done}/${item.total} সম্পন্ন</span>
@@ -1867,7 +2044,7 @@ function renderQuestionOptions(q,i){
   if(q.type==='file_upload'){
     return `<input type="text" class="form-input" placeholder="ফাইল আপলোডের নির্দেশনা" value="${esc(q.uploadInstructions||'')}" onchange="qChange(${i},'uploadInstructions',this.value)">`;
   }
-  return `<p style="font-size:12px;color:var(--gray-400);padding:4px 0">শিক্ষক নিজে নম্বর দেবেন।</p>`;
+  return `<p style="font-size:12px;color:var(--gray-400);padding:4px 0">জিম্মাদার নিজে নম্বর দেবেন।</p>`;
 }
 function qChange(i,key,val){ questions[i][key]=val; }
 function qOptChange(i,oi,val){ questions[i].options[oi]=val; }
@@ -2011,7 +2188,7 @@ function renderDocsGrouped(){
   if(banner){ banner.style.display=pendingAll.length>0?'flex':'none'; const pc=document.getElementById('pendingDocsCount'); if(pc) pc.textContent=pendingAll.length; }
   const filtered=docFilter==='all'?all:docFilter==='pending'?pendingAll:all.filter(d=>d.category===docFilter);
   const el=document.getElementById('docsGrouped');
-  if(!filtered.length){ el.innerHTML='<div class="empty-state"><div class="icon">📥</div><p>'+(docFilter==='pending'?'সব পর্যালোচনা সম্পন্ন! ✅':'ছাত্ররা এখনো কোনো ফাইল পাঠায়নি।')+'</p></div>'; return; }
+  if(!filtered.length){ el.innerHTML=`<div class="empty-state"><div class="icon"><span class="ic-svg">${_svgInbox}</span></div><p>`+(docFilter==='pending'?'সব পর্যালোচনা সম্পন্ন!':'ছাত্ররা এখনো কোনো ফাইল পাঠায়নি।')+`</p></div>`; return; }
 
   // Group by student
   const groups={};
@@ -2020,12 +2197,12 @@ function renderDocsGrouped(){
   el.innerHTML=Object.entries(groups).map(([sid,docs])=>{
     const s=API.Students.getById(sid);
     const name=s?.name||docs[0]?.studentName||'অজানা';
-    const color=s?.color||C[0];
     const unread=docs.filter(d=>!d.read).length;
     const grpId='grp_'+sid;
+    const av=s?pctAvatarHtml(sid,'doc-group-avatar'):`<div class="doc-group-avatar" style="background:${C[0]}">${esc(name.charAt(0))}</div>`;
     return `<div class="doc-group">
       <div class="doc-group-hd" onclick="toggleDocGroup('${grpId}','${sid}')">
-        <div class="doc-group-avatar" style="background:${color}">${name.charAt(0)}</div>
+        ${av}
         <span class="doc-group-name">${esc(name)}${s?.waqfId?' <span style="color:#128C7E;font-weight:600;font-size:13px">'+esc(API.Students.displayWaqfId(s.waqfId))+'</span>':''}</span>
         ${unread?`<span class="unread-dot"></span>`:''}
         <span class="doc-group-count">${docs.length}টি</span>
@@ -2038,19 +2215,18 @@ function renderDocsGrouped(){
   }).join('');
 }
 function renderDocItem(d){
-  const icon=d.fileType?.startsWith('image/')?'🖼️':d.fileType==='application/pdf'?'📕':'📄';
   const catLabel={general:'সাধারণ',question:'রোযনামচা',report:'বিবরণ'}[d.category]||d.category||'সাধারণ';
   const isPending=d.reviewStatus==='pending';
   return `<div class="doc-item" id="ditem_${d.id}">
-    <div class="doc-icon">${icon}</div>
+    <div class="doc-icon">${fileIconSvg(d.fileType)}</div>
     <div class="doc-info">
       <div class="doc-name">${esc(d.fileName)}</div>
-      <div class="doc-meta">${isPending?'<span class="doc-pending-badge">⏳ বাকি</span>':''}<span class="doc-cat-badge">${catLabel}</span>${formatBytes(d.fileSize)} · ${formatDate(d.uploadedAt)}</div>
+      <div class="doc-meta">${isPending?'<span class="doc-pending-badge">বাকি</span>':''}<span class="doc-cat-badge">${catLabel}</span>${formatBytes(d.fileSize)} · ${formatDate(d.uploadedAt)}</div>
     </div>
     <div class="doc-actions">
-      ${isPending?`<button class="doc-btn done" onclick="markDocReviewed('${d.id}')" title="সম্পন্ন করুন">✅</button>`:''}
-      <button class="doc-btn view" onclick="previewDoc('${d.id}')" title="দেখুন">👁</button>
-      <button class="doc-btn del"  onclick="deleteDoc('${d.id}')" title="মুছুন">🗑</button>
+      ${isPending?`<button class="doc-btn done" onclick="markDocReviewed('${d.id}')" title="সম্পন্ন করুন" aria-label="সম্পন্ন"><span class="ic-svg">${_svgCheck}</span></button>`:''}
+      <button class="doc-btn view" onclick="previewDoc('${d.id}')" title="দেখুন" aria-label="দেখুন"><span class="ic-svg">${_svgEye}</span></button>
+      <button class="doc-btn del"  onclick="deleteDoc('${d.id}')" title="মুছুন" aria-label="মুছুন"><span class="ic-svg">${_svgTrash}</span></button>
     </div>
   </div>`;
 }
@@ -2081,17 +2257,17 @@ async function deleteDoc(id){ if(!confirm('এই ডকুমেন্ট ম�
 function renderTeacherSentDocs(){
   const all=API.Docs.getAll().filter(d=>d.sentBy==='teacher');
   const el=document.getElementById('docsSentGrouped');
-  if(!all.length){ el.innerHTML='<div class="empty-state"><div class="icon">📤</div><p>এখনো কোনো ফাইল পাঠাননি।</p></div>'; return; }
+  if(!all.length){ el.innerHTML=`<div class="empty-state"><div class="icon"><span class="ic-svg">${_svgSend}</span></div><p>এখনো কোনো ফাইল পাঠাননি।</p></div>`; return; }
   const groups={};
   all.forEach(d=>{ if(!groups[d.studentId]) groups[d.studentId]=[]; groups[d.studentId].push(d); });
   el.innerHTML=Object.entries(groups).map(([sid,docs])=>{
     const s=API.Students.getById(sid);
     const name=s?.name||docs[0]?.studentName||'অজানা';
-    const color=s?.color||C[0];
     const grpId='sgrp_'+sid;
+    const av=s?pctAvatarHtml(sid,'doc-group-avatar'):`<div class="doc-group-avatar" style="background:${C[0]}">${esc(name.charAt(0))}</div>`;
     return `<div class="doc-group">
       <div class="doc-group-hd" onclick="toggleSentDocGroup('${grpId}')">
-        <div class="doc-group-avatar" style="background:${color}">${name.charAt(0)}</div>
+        ${av}
         <span class="doc-group-name">${esc(name)}${s?.waqfId?' <span style="color:#128C7E;font-weight:600;font-size:13px">'+esc(API.Students.displayWaqfId(s.waqfId))+'</span>':''}</span>
         <span class="doc-group-count">${docs.length}টি</span>
         <span class="doc-group-chevron" id="chev_${grpId}">›</span>
@@ -2104,8 +2280,8 @@ function renderTeacherSentDocs(){
             <div class="doc-meta">${formatBytes(d.fileSize)} · ${formatDate(d.uploadedAt)}</div>
           </div>
           <div class="doc-actions">
-            <button class="doc-btn view" onclick="previewDoc('${d.id}')" title="দেখুন">👁</button>
-            <button class="doc-btn del"  onclick="deleteDoc('${d.id}')" title="মুছুন">🗑</button>
+            <button class="doc-btn view" onclick="previewDoc('${d.id}')" title="দেখুন" aria-label="দেখুন"><span class="ic-svg">${_svgEye}</span></button>
+            <button class="doc-btn del"  onclick="deleteDoc('${d.id}')" title="মুছুন" aria-label="মুছুন"><span class="ic-svg">${_svgTrash}</span></button>
           </div>
         </div>`).join('')}
       </div>
@@ -2137,16 +2313,15 @@ function renderStorageTree(){
 
   document.getElementById('storageFileTree').innerHTML=Object.entries(groups).map(([name,files])=>`
     <div class="doc-group" style="margin:0 12px 8px">
-      <div class="doc-group-hd" style="cursor:default"><span style="font-size:18px">📁</span><span class="doc-group-name">${esc(name)}</span><span class="doc-group-count">${files.length} ফাইল</span></div>
+      <div class="doc-group-hd" style="cursor:default"><span class="ic-svg" style="color:#075E54">${_svgFolder}</span><span class="doc-group-name">${esc(name)}</span><span class="doc-group-count">${files.length} ফাইল</span></div>
       ${files.map(d=>{
-        const icon=d.fileType?.startsWith('image/')?'🖼️':d.fileType==='application/pdf'?'📕':'📄';
         const sizeKB=d.fileSize?Math.round(d.fileSize/1024):0;
         return `<div class="doc-item">
-          <div class="doc-icon" style="font-size:18px">${icon}</div>
+          <div class="doc-icon">${fileIconSvg(d.fileType)}</div>
           <div class="doc-info"><div class="doc-name">${esc(d.fileName)}</div><div class="doc-meta">${sizeKB} KB · ${formatDate(d.uploadedAt)}</div></div>
           <div class="doc-actions">
-            <button class="doc-btn view" onclick="previewDoc('${d.id}')">👁</button>
-            <button class="doc-btn del"  onclick="deleteDoc('${d.id}')">🗑</button>
+            <button class="doc-btn view" onclick="previewDoc('${d.id}')" title="দেখুন" aria-label="দেখুন"><span class="ic-svg">${_svgEye}</span></button>
+            <button class="doc-btn del"  onclick="deleteDoc('${d.id}')" title="মুছুন" aria-label="মুছুন"><span class="ic-svg">${_svgTrash}</span></button>
           </div>
         </div>`;
       }).join('')}
@@ -2155,7 +2330,7 @@ function renderStorageTree(){
 
 // ══ SETTINGS ═══════════════════════════════════════════════
 async function sendBC(){ const text=document.getElementById('bcText').value.trim(); if(!text){ showToast('বার্তা লিখুন!'); return; } try{ await API.Messages.broadcast(text); closeModal('bcModal'); document.getElementById('bcText').value=''; renderChatList(); showToast('📢 সবাইকে পাঠানো হয়েছে'); }catch(e){ console.error(e); showToast('❌ বার্তা পাঠানো হয়নি'); } }
-async function saveInfo(){ try{ await API.DB.saveTeacher({name:document.getElementById('tName').value.trim()||'শিক্ষক',madrasa:document.getElementById('tMadrasa').value.trim()||'Waqful Madinah'}); document.getElementById('hTitle').textContent=API.DB.getTeacher().madrasa; showToast('✅ সংরক্ষিত'); }catch(e){ console.error(e); showToast('❌ সংরক্ষণ হয়নি'); } }
+async function saveInfo(){ try{ await API.DB.saveTeacher({name:document.getElementById('tName').value.trim()||'জিম্মাদার',madrasa:document.getElementById('tMadrasa').value.trim()||'Waqful Madinah'}); document.getElementById('hTitle').textContent=API.DB.getTeacher().madrasa; showToast('✅ সংরক্ষিত'); }catch(e){ console.error(e); showToast('❌ সংরক্ষণ হয়নি'); } }
 async function changeTPin(){ const p=String(document.getElementById('newTPin').value).trim(); if(!/^\d{4}$/.test(p)){ showToast('৪ সংখ্যার পিন দিন!'); return; } try{ await API.Auth.setTeacherPin(p); document.getElementById('newTPin').value=''; showToast('✅ পিন পরিবর্তন হয়েছে'); }catch(e){ console.error(e); showToast('❌ পিন পরিবর্তন হয়নি'); } }
 function doExport(){ const b=new Blob([API.DB.exportJSON()],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`madrasa_${API.today()}.json`; a.click(); showToast('✅ ব্যাকআপ হচ্ছে'); }
 function doImport(input){ const r=new FileReader(); r.onload=e=>{ try{ API.DB.importJSON(e.target.result).then(()=>{ renderAll(); showToast('✅ পুনরুদ্ধার সম্পন্ন!'); }).catch(()=>showToast('❌ পুনরুদ্ধার ব্যর্থ!')); }catch{ showToast('❌ ফাইল সঠিক নয়!'); } }; r.readAsText(input.files[0]); input.value=''; }
@@ -2166,8 +2341,10 @@ function goTab(tab){
   curTab=tab;
   // Close profile panel if open
   if(document.getElementById('profileView').classList.contains('open')) closeStudentProfile();
-  // Restore search button (may have been hidden inside a chat)
+  // Restore header actions (may have been hidden inside a chat)
   document.getElementById('searchToggleBtn').style.display='flex';
+  const setBtn=document.getElementById('settingsToggleBtn');
+  if(setBtn){ setBtn.style.display='flex'; setBtn.classList.toggle('header-btn--active', tab==='settings'); }
   const sb=document.getElementById('searchBar');
   if(sb&&sb.style.display!=='none'){
     const inp=sb.querySelector('input'); if(inp) inp.value='';
@@ -2175,16 +2352,27 @@ function goTab(tab){
     hideGlobalMsgSearchResults(); renderChatList('');
   }
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('tab-'+tab).classList.add('active');
+  const tabBtn=document.getElementById('tab-'+tab);
+  if(tabBtn) tabBtn.classList.add('active');
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+tab).classList.add('active');
   document.getElementById('chatView').classList.remove('open'); curChat=null;
+  document.getElementById('app').classList.remove('in-chat');
+  document.getElementById('backBtn').style.display='none';
+  document.getElementById('inChatSearchBtn').style.display='none';
   // Reset chat header to default
   const _t=API.DB.getTeacher();
   document.getElementById('hTitle').textContent=_t.madrasa||'Waqful Madinah';
-  document.getElementById('hSub').textContent='শিক্ষক প্যানেল';
-  document.getElementById('hAvatar').textContent='শি'; document.getElementById('hAvatar').style.background='#128C7E';
+  document.getElementById('hSub').textContent='জিম্মাদার';
+  const hAvTab=document.getElementById('hAvatar');
+  if(hAvTab){
+    hAvTab.classList.remove('s-avatar-pct','chat-avatar--bc');
+    hAvTab.style.removeProperty('--pct');
+    hAvTab.innerHTML='';
+    hAvTab.style.display='none';
+  }
   document.getElementById('fab').style.display=tab==='settings'?'none':'flex';
+  if(tab==='settings') loadProgressSettingsUI();
   if(tab==='exams')  { renderQuizList(); goExamTab('list'); }
   if(tab==='docs')   { renderDocsGrouped(); }
   if(tab==='tasks')  { if(_amalTab==='overview') renderAmalOverview(); else if(_amalTab==='students') renderAmalLeaderboard(); else renderTaskList(); }
@@ -2203,9 +2391,9 @@ function toggleSearch(forceClose){
   b.style.display=open?'block':'none';
   if(open){
     if(curTab==='docs'){
-      inp.placeholder='🔍 ডকুমেন্ট বা ছাত্রের নাম খুঁজুন…';
+      inp.placeholder='ডকুমেন্ট বা ছাত্রের নাম খুঁজুন…';
     } else {
-      inp.placeholder='🔍 নাম, আইডি বা মেসেজ খুঁজুন…';
+      inp.placeholder='নাম, আইডি বা মেসেজ খুঁজুন…';
     }
     inp.focus();
   } else {
@@ -2226,7 +2414,7 @@ function onDocSearchInput(q){
   }):null;
   if(!filtered){ renderDocsGrouped(); return; }
   const el=document.getElementById('docsGrouped');
-  if(!filtered.length){ el.innerHTML='<div class="empty-state"><div class="icon">🔍</div><p>কোনো ফলাফল নেই।</p></div>'; return; }
+  if(!filtered.length){ el.innerHTML=`<div class="empty-state"><div class="icon"><span class="ic-svg">${_svgSearch}</span></div><p>কোনো ফলাফল নেই।</p></div>`; return; }
   el.innerHTML=filtered.map(d=>`<div style="padding:8px 0;border-bottom:1px solid var(--gray-100)">${renderDocItem(d)}</div>`).join('');
 }
 
@@ -2234,9 +2422,9 @@ function onDocSearchInput(q){
 function openStudentProfile(sid){
   curProfileSid=sid;
   const s=API.Students.getById(sid); if(!s) return;
-  const batch=API.Students.getBatchYear(s.enrollmentDate);
+  const batchLbl=API.Students.formatBatchYear(s.enrollmentDate);
   document.getElementById('profileHdName').textContent=s.name;
-  document.getElementById('profileHdSub').textContent=(s.waqfId?API.Students.displayWaqfId(s.waqfId):'')+(batch!=null?' · '+batch+'য় বর্ষ':'');
+  document.getElementById('profileHdSub').textContent=(s.waqfId?API.Students.displayWaqfId(s.waqfId):'')+(batchLbl?' · '+batchLbl:'');
   // Reset to first tab
   document.querySelectorAll('.prof-tab').forEach((b,i)=>b.classList.toggle('active',i===0));
   document.querySelectorAll('.prof-tab').forEach(t=>t.classList.remove('prof-tab--sched-alert'));
@@ -2320,10 +2508,10 @@ async function deleteDiaryEntry(id){
   showToast('🗑 মুছে ফেলা হয়েছে');
 }
 function renderProfileBody(s){
-  const batch=API.Students.getBatchYear(s.enrollmentDate);
+  const batchLbl=API.Students.formatBatchYear(s.enrollmentDate);
   const academic=API.AcademicHistory.getAll(s.id);
   const notes=API.TeacherNotes.getAll(s.id);
-  const subLine=(()=>{ const p=[]; if(s.waqfId) p.push(API.Students.displayWaqfId(s.waqfId)); if(batch!=null) p.push(batch+'য় বর্ষ'); if(s.enrollmentDate) p.push(s.enrollmentDate.slice(0,4)); return p.length?p.join(' · '):'পরিচয়'; })();
+  const subLine=(()=>{ const p=[]; if(s.waqfId) p.push(API.Students.displayWaqfId(s.waqfId)); if(batchLbl) p.push(batchLbl); if(s.enrollmentDate) p.push(s.enrollmentDate.slice(0,4)); return p.length?p.join(' · '):'পরিচয়'; })();
   document.getElementById('profileBody').innerHTML=`
   <!-- ── Tab: তথ্য ───────────────────────────────────── -->
   <div class="prof-pane" id="ppane-info">
@@ -2378,7 +2566,7 @@ function renderProfileBody(s){
   <!-- ── Tab: নোট ───────────────────────────────────── -->
   <div class="prof-pane" id="ppane-notes" style="display:none">
     <div class="profile-v2-sheet">
-      <div class="profile-v2-sec">শিক্ষকের নোট <span style="font-size:11px;font-weight:400;color:var(--gray-400);text-transform:none;letter-spacing:0">(ছাত্র দেখতে পাবে না)</span></div>
+      <div class="profile-v2-sec">জিম্মাদারের নোট <span style="font-size:11px;font-weight:400;color:var(--gray-400);text-transform:none;letter-spacing:0">(ছাত্র দেখতে পাবে না)</span></div>
       <div id="notesList">${renderNotesList(notes)}</div>
       <div class="note-add-row">
         <textarea id="noteInput" placeholder="নতুন নোট লিখুন..." rows="2"></textarea>
@@ -2407,7 +2595,7 @@ function renderProfileBody(s){
     </div>
     <div class="profile-section profile-v2-foot-danger">
       <div class="profile-sec-hd">ঝুঁকিপূর্ণ কাজ</div>
-      <p style="font-size:13px;color:var(--gray-600);padding:0 14px 8px;line-height:1.55;margin:0">ছাত্রের নাম, ওয়াকফ ও পিন <strong>থাকবে</strong>। চ্যাট, আমল, পরীক্ষার জমা, ডকুমেন্ট, লক্ষ্য, একাডেমিক রেকর্ড ও শিক্ষকের নোট মুছে যাবে।</p>
+      <p style="font-size:13px;color:var(--gray-600);padding:0 14px 8px;line-height:1.55;margin:0">ছাত্রের নাম, ওয়াকফ ও পিন <strong>থাকবে</strong>। চ্যাট, আমল, পরীক্ষার জমা, ডকুমেন্ট, লক্ষ্য, একাডেমিক রেকর্ড ও জিম্মাদারের নোট মুছে যাবে।</p>
       <div style="padding:0 14px 12px">
         <button type="button" onclick="confirmClearStudentData()" style="width:100%;background:#fff;border:1.5px solid #E57373;color:#B71C1C;border-radius:10px;padding:10px 14px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer">🧹 শুধু সংশ্লিষ্ট তথ্য মুছুন</button>
       </div>
@@ -2517,7 +2705,7 @@ function renderNotesList(notes){
 }
 async function confirmClearStudentData(){
   if(!curProfileSid) return;
-  if(!confirm('এই ছাত্রের চ্যাট, আমল, পরীক্ষার জমা, ডকুমেন্ট, লক্ষ্য, একাডেমিক রেকর্ড ও শিক্ষকের নোট সব মুছে যাবে। ছাত্রের নাম, ওয়াকফ ও পিন অপরিবর্তিত থাকবে। চালিয়ে যাবেন?')) return;
+  if(!confirm('এই ছাত্রের চ্যাট, আমল, পরীক্ষার জমা, ডকুমেন্ট, লক্ষ্য, একাডেমিক রেকর্ড ও জিম্মাদারের নোট সব মুছে যাবে। ছাত্রের নাম, ওয়াকফ ও পিন অপরিবর্তিত থাকবে। চালিয়ে যাবেন?')) return;
   try{
     await API.Students.clearAllRelatedData(curProfileSid);
     closeStudentProfile();
@@ -2554,9 +2742,9 @@ async function saveProfileEdits(){
     cls:g('p_cls'), roll:g('p_roll'), enrollmentDate:g('p_enroll'),
   }); }catch(e){ console.error(e); showToast('❌ প্রোফাইল সেভ হয়নি'); return; }
   const s=API.Students.getById(curProfileSid);
-  const batch=API.Students.getBatchYear(s.enrollmentDate);
+  const batchLbl=API.Students.formatBatchYear(s.enrollmentDate);
   document.getElementById('profileHdName').textContent=s.name;
-  document.getElementById('profileHdSub').textContent=(s.waqfId?API.Students.displayWaqfId(s.waqfId):'')+(batch!=null?' · '+batch+'য় বর্ষ':'');
+  document.getElementById('profileHdSub').textContent=(s.waqfId?API.Students.displayWaqfId(s.waqfId):'')+(batchLbl?' · '+batchLbl:'');
   renderProfileBody(s);
   renderAll(); showToast('✅ প্রোফাইল সেভ হয়েছে');
 }
@@ -2654,29 +2842,6 @@ async function deleteNote(nid){
   catch(e){ console.error(e); showToast('❌ নোট মোছা যায়নি'); return; }
   document.getElementById('note_'+nid)?.remove();
 }
-// ══ CSV IMPORT ══════════════════════════════════════════════
-function handleCSVImport(input){
-  if(!input.files?.length) return;
-  const file=input.files[0]; input.value='';
-  const reader=new FileReader();
-  reader.onload=async e=>{
-    try{
-      const results=await API.Students.importFromCSV(e.target.result);
-      const el=document.getElementById('importResult');
-      el.style.display='block';
-      el.innerHTML=`<div class="import-result">
-        <div class="import-ok">✅ ${results.success} জন ছাত্র যোগ হয়েছে</div>
-        ${results.errors.length?`<div class="import-err">⚠️ ${results.errors.length} টি ত্রুটি:<br>${results.errors.map(e=>'• '+e).join('<br>')}</div>`:''}
-        <button onclick="document.getElementById('importResult').style.display='none'" style="background:none;border:none;color:var(--gray-400);font-size:12px;cursor:pointer;margin-top:8px">বন্ধ করুন ✕</button>
-      </div>`;
-      renderAll();
-    } catch(err){
-      showToast('❌ ফাইল পড়া যায়নি: '+err.message);
-    }
-  };
-  reader.readAsText(file);
-}
-
 // Hide bottom nav when keyboard is open (interactive-widget=resizes-content handles the rest)
 function fixVH(){
   const kbOpen=window.visualViewport&&(window.innerHeight-window.visualViewport.height>100);

@@ -1,9 +1,9 @@
 {
   "id": "/teacher/",
-  "name": "Waqful Madinah — শিক্ষক",
-  "short_name": "শিক্ষক",
+  "name": "Waqful Madinah — জিম্মাদার",
+  "short_name": "জিম্মাদার",
   "categories": ["education", "productivity"],
-  "description": "Waqful Madinah — শিক্ষক প্যানেল",
+  "description": "Waqful Madinah — জিম্মাদার প্যানেল",
   "start_url": "/teacher/",
   "scope": "/teacher/",
   "display": "standalone",

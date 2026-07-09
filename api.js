@@ -2,7 +2,8 @@
 const API = (() => {
   const DB_KEY='madrasa_db', GOALS_KEY='madrasa_goals',
         EXAMS_KEY='madrasa_exams', DOCS_KEY='madrasa_docs',
-        T_PIN_KEY='teacher_pin', DEF_PIN='1234';
+        T_PIN_KEY='teacher_pin', DEF_PIN='1234',
+        PROG_SETTINGS_KEY='madrasa_progress_settings';
 
   const _useRemote = typeof window !== 'undefined' && window.RemoteSync && window.RemoteSync.isRemote();
   const RS = typeof window !== 'undefined' ? window.RemoteSync : null;
@@ -300,7 +301,18 @@ const API = (() => {
 
     getBatchYear(enrollmentDate) {
       if(!enrollmentDate) return null;
-      return new Date().getFullYear() - new Date(enrollmentDate).getFullYear();
+      const n=new Date().getFullYear() - new Date(enrollmentDate).getFullYear();
+      if(n<0) return null;
+      return Math.max(1, n); // একই ক্যালেন্ডার বছর = ১ম বর্ষ
+    },
+    /** বর্ষ লেবেল: ১ম বর্ষ / ২য় বর্ষ / … */
+    formatBatchYear(enrollmentDate) {
+      const n=this.getBatchYear(enrollmentDate);
+      if(n==null) return '';
+      if(n===1) return '১ম বর্ষ';
+      if(n===2) return '২য় বর্ষ';
+      if(n===3) return '৩য় বর্ষ';
+      return n+'য় বর্ষ';
     },
     async add({ name, cls, roll, note, pin, fatherName='', fatherOccupation='', contact='', district='', upazila='', bloodGroup='', enrollmentDate='', responsibility='' }) {
       const db = DB.get();
@@ -950,10 +962,42 @@ const API = (() => {
 
     // ── ApiAmal delegates ─────────────────────────────────────
     getStreak(sid,tid)       { const AA=window.ApiAmal; return AA?AA.getStreak(sid,tid):{current:0,longest:0}; },
-    getProgressSummary(sid)  { const AA=window.ApiAmal; return AA?AA.getProgressSummary(sid):{today:{done:0,total:0,percent:0},week:{done:0,total:0,percent:0},month:{done:0,total:0,percent:0}}; },
+    getProgressSummary(sid)  { const AA=window.ApiAmal; const z={done:0,total:0,percent:0}; return AA?AA.getProgressSummary(sid):{today:z,week:z,month:z,all:z}; },
+    getRangeProgress(sid,from,to){ const AA=window.ApiAmal; return AA&&AA.getRangeProgress?AA.getRangeProgress(sid,from,to):{done:0,total:0,percent:0,from,to}; },
+    getListProgress(sid)     { const AA=window.ApiAmal; return AA&&AA.getListProgress?AA.getListProgress(sid):{done:0,total:0,percent:0,from:null,to:today()}; },
     getTodayOverview(date)   { const AA=window.ApiAmal; return AA?AA.getTodayOverview(date):[]; },
     getLeaderboard(period)   { const AA=window.ApiAmal; return AA?AA.getLeaderboard(period):[]; },
     getCalendarData(sid,y,m) { const AA=window.ApiAmal; return AA?AA.getCalendarData(sid,y,m):{}; },
+  };
+
+  // ── Progress settings (শিক্ষক তালিকার % সময়সীমা) ─────────
+  // mode: 'enrollment' | 'custom' — localStorage (শিক্ষকের ডিভাইস)
+  const ProgressSettings = {
+    _defaults() { return { mode:'enrollment', customFrom:'' }; },
+    get() {
+      try {
+        const raw=JSON.parse(localStorage.getItem(PROG_SETTINGS_KEY)||'null');
+        if(!raw||typeof raw!=='object') return this._defaults();
+        const mode=raw.mode==='custom'?'custom':'enrollment';
+        const customFrom=/^\d{4}-\d{2}-\d{2}$/.test(raw.customFrom||'')?raw.customFrom:'';
+        return { mode, customFrom };
+      } catch { return this._defaults(); }
+    },
+    save({ mode, customFrom }={}) {
+      const next={
+        mode: mode==='custom'?'custom':'enrollment',
+        customFrom:/^\d{4}-\d{2}-\d{2}$/.test(customFrom||'')?customFrom:'',
+      };
+      localStorage.setItem(PROG_SETTINGS_KEY, JSON.stringify(next));
+      return next;
+    },
+    /** ছাত্র অনুযায়ী % হিসাবের শুরুর তারিখ (YYYY-MM-DD) বা null */
+    resolveFrom(student) {
+      const cfg=this.get();
+      if(cfg.mode==='custom'&&cfg.customFrom) return cfg.customFrom;
+      const en=student&&student.enrollmentDate;
+      return en&&/^\d{4}-\d{2}-\d{2}/.test(en)?String(en).slice(0,10):null;
+    },
   };
 
   // ── GOALS ─────────────────────────────────────────────────
@@ -1303,7 +1347,7 @@ const API = (() => {
   };
 
   return {
-    Auth, DB, Students, Messages, Tasks, Goals, Exams, Docs, AcademicHistory, TeacherNotes, Diary, Groups, today, nowTime, nextDate, uid,
+    Auth, DB, Students, Messages, Tasks, Goals, Exams, Docs, AcademicHistory, TeacherNotes, Diary, Groups, ProgressSettings, today, nowTime, nextDate, uid,
     MAX_UPLOAD_BYTES,
     prepareFilesForUpload,
     unlockTeacherRemote(pin) {
@@ -1356,37 +1400,16 @@ function openModal(id){
   const el=document.getElementById(id);
   if(!el) return;
   el.classList.remove('modal-closing');
-  el.classList.add('open');
   const sh=el.querySelector('.modal-sheet');
-  if(sh&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-    sh.style.transform='translateY(100%)';
-    requestAnimationFrame(()=>{ requestAnimationFrame(()=>{ sh.style.transform=''; }); });
-  }
+  if(sh) sh.style.transform='';
+  el.classList.add('open');
 }
 function closeModal(id){
   const el=document.getElementById(id);
   if(!el||!el.classList.contains('open')) return;
-  const sheet=el.querySelector('.modal-sheet');
-  if(!sheet||window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-    el.classList.remove('open','modal-closing');
-    return;
-  }
-  if(el.classList.contains('modal-closing')) return;
-  el.classList.add('modal-closing');
-  let fin=false;
-  const done=()=>{
-    if(fin) return;
-    fin=true;
-    el.classList.remove('open','modal-closing');
-    sheet.removeEventListener('transitionend',onEnd);
-    clearTimeout(tid);
-  };
-  const onEnd=e=>{
-    if(e.target!==sheet||e.propertyName!=='transform') return;
-    done();
-  };
-  sheet.addEventListener('transitionend',onEnd);
-  const tid=setTimeout(done,420);
+  const sh=el.querySelector('.modal-sheet');
+  if(sh) sh.style.transform='';
+  el.classList.remove('open','modal-closing');
 }
 function formatBytes(b){ if(!b) return ''; if(b<1024) return b+' B'; if(b<1048576) return (b/1024).toFixed(1)+' KB'; return (b/1048576).toFixed(1)+' MB'; }
 function formatDate(iso){ if(!iso) return ''; return new Date(iso).toLocaleDateString('bn-BD',{year:'numeric',month:'short',day:'numeric'}); }
