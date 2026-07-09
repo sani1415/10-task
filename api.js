@@ -1346,8 +1346,82 @@ const API = (() => {
     },
   };
 
+  // ── বিবরণ (জিম্মাদার ড্যাশবোর্ড) ───────────────────────────
+  // দৈনিক আমল সারি/সারাংশ = গতকাল (দিন শেষ হওয়া স্থির তথ্য)
+  const _yesterday = () => {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return d.toISOString().split('T')[0];
+  };
+  const Biboron = {
+    yesterdayDate() { return _yesterday(); },
+    _dayProgress(sid) {
+      const y = _yesterday();
+      const p = Tasks.getRangeProgress(sid, y, y);
+      return { done: p.done | 0, total: p.total | 0, percent: p.percent | 0, date: y };
+    },
+    getSummary() {
+      const y = _yesterday();
+      const overview = Tasks.getTodayOverview(y);
+      let dayDone = 0, dayTotal = 0;
+      overview.forEach(o => {
+        dayDone += o.completed.length;
+        dayTotal += o.completed.length + o.pending.length;
+      });
+      const students = Students.getAll();
+      let behindDay = 0;
+      students.forEach(s => {
+        const t = this._dayProgress(s.id);
+        if (t.total > 0 && t.done < t.total) behindDay++;
+      });
+      const pendingDocs = Docs.getAll().filter(d => d.sentBy !== 'teacher' && d.reviewStatus === 'pending').length;
+      const DS = typeof window !== 'undefined' ? window.API?.DailySchedule : null;
+      const pendingSched = DS && DS.pendingApprovalCount ? DS.pendingApprovalCount() : 0;
+      const cfg = ProgressSettings.get();
+      const yLabel = new Date(y + 'T12:00:00').toLocaleDateString('bn-BD', { weekday: 'long', day: 'numeric', month: 'long' });
+      return {
+        dayPct: dayTotal > 0 ? Math.round(dayDone / dayTotal * 100) : 0,
+        dayDone, dayTotal, behindDay, pendingDocs, pendingSched,
+        // পুরনো কী — UI সামঞ্জস্য
+        todayPct: dayTotal > 0 ? Math.round(dayDone / dayTotal * 100) : 0,
+        todayDone: dayDone, todayTotal: dayTotal, behindToday: behindDay,
+        progressLabel: cfg.mode === 'custom' ? 'নির্দিষ্ট তারিখ থেকে' : 'ভর্তির তারিখ থেকে',
+        dateLabel: yLabel,
+        dayLabel: 'গতকাল',
+      };
+    },
+    getStudentRow(sid) {
+      const t = this._dayProgress(sid);
+      const flags = [];
+      if (Docs.getAll().some(d => d.studentId === sid && d.reviewStatus === 'pending' && d.sentBy !== 'teacher')) flags.push('doc');
+      const DS = typeof window !== 'undefined' ? window.API?.DailySchedule : null;
+      if (DS && DS.hasPendingApproval && DS.hasPendingApproval(sid)) flags.push('sched');
+      const now = today();
+      const hasPendingQuiz = Exams.getQuizzes().some(q => {
+        if (!(q.assigneeIds || []).includes(sid)) return false;
+        if (q.deadline && q.deadline < now) return false;
+        return !Exams.getSubmission(q.id, sid);
+      });
+      if (hasPendingQuiz) flags.push('quiz');
+      return { dayDone: t.done, dayTotal: t.total, todayDone: t.done, todayTotal: t.total, flags };
+    },
+    getBatchHint(students, yearFilter) {
+      if (!students.length) return { count: 0, avgPct: 0, behindDay: 0, behindToday: 0, prefix: 'মোট ০ জন' };
+      let sum = 0, behind = 0;
+      students.forEach(s => {
+        sum += Math.max(0, Math.min(100, Tasks.getListProgress(s.id).percent | 0));
+        const t = this._dayProgress(s.id);
+        if (t.total > 0 && t.done < t.total) behind++;
+      });
+      const avg = Math.round(sum / students.length);
+      const y = yearFilter === 1 ? '১ম বর্ষ' : yearFilter === 2 ? '২য় বর্ষ' : yearFilter === 3 ? '৩য় বর্ষ' : '';
+      const prefix = y ? `${y} · ${students.length} জন` : `মোট ${students.length} জন`;
+      return { count: students.length, avgPct: avg, behindDay: behind, behindToday: behind, prefix };
+    },
+  };
+
   return {
-    Auth, DB, Students, Messages, Tasks, Goals, Exams, Docs, AcademicHistory, TeacherNotes, Diary, Groups, ProgressSettings, today, nowTime, nextDate, uid,
+    Auth, DB, Students, Messages, Tasks, Goals, Exams, Docs, AcademicHistory, TeacherNotes, Diary, Groups, ProgressSettings, Biboron, today, nowTime, nextDate, uid,
     MAX_UPLOAD_BYTES,
     prepareFilesForUpload,
     unlockTeacherRemote(pin) {
