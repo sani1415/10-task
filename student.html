@@ -192,17 +192,29 @@
 .stu-sched-banner.rejected{background:#FFEBEE;color:#B71C1C;border-bottom:1px solid #FFCDD2}
 .stu-sched-table{width:100%;border-collapse:collapse;font-size:13px}
 .stu-sched-table th{text-align:left;background:#4CAF50;color:#fff;padding:8px 10px;font-weight:600}
-.stu-sched-table th:last-child{text-align:right;width:36%}
+.stu-sched-table th:first-child{width:38%}
 .stu-sched-table td{padding:8px 10px;border-bottom:1px solid var(--gray-100);vertical-align:top}
-.stu-sched-table td:last-child{text-align:right;font-weight:600;color:#43A047;white-space:pre-wrap;word-break:break-word}
 .stu-sched-table tr:nth-child(even) td{background:var(--gray-50)}
 .stu-sched-foot{padding:10px 12px;display:flex;gap:8px;flex-wrap:wrap}
 .stu-sched-btn{flex:1;min-width:120px;background:#4CAF50;color:#fff;border:none;border-radius:10px;padding:9px 12px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer}
 .stu-sched-btn.secondary{background:var(--gray-200);color:var(--gray-700)}
-.schedule-edit-row{display:flex;gap:8px;margin-bottom:8px;align-items:center}
-.schedule-edit-row input{flex:1;font-family:var(--font);font-size:14px;padding:8px 10px;border:1.5px solid var(--gray-300);border-radius:8px;min-width:0}
-.schedule-edit-del{background:#FFEBEE;border:none;color:#C62828;width:34px;height:34px;border-radius:9px;cursor:pointer;padding:0;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;line-height:0}
-.schedule-edit-del svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.schedule-edit-row{display:flex;align-items:center;gap:4px;margin-bottom:8px;min-width:0}
+.sched-in-clock{width:48px;flex:0 0 48px;text-align:center;font-variant-numeric:tabular-nums;font-family:var(--font);font-size:13px;font-weight:700;padding:8px 2px;border:1.5px solid var(--gray-300);border-radius:8px;background:#fff;outline:none}
+.sched-in-clock:focus{border-color:#4CAF50}
+.sched-ampm-wrap{position:relative;flex-shrink:0}
+.sched-ampm-btn{border:1.5px solid var(--gray-300);background:#fff;color:#334155;border-radius:8px;padding:7px 5px;font-family:var(--font);font-size:11px;font-weight:800;cursor:pointer;min-width:34px;line-height:1.1}
+.sched-ampm-btn.open{border-color:#4CAF50;background:#E8F5E9;color:#2E7D32}
+.sched-ampm-menu{display:none;position:absolute;left:50%;transform:translateX(-50%);top:calc(100% + 4px);z-index:5;background:#fff;border:1px solid #E2E8F0;border-radius:10px;box-shadow:0 8px 20px rgba(15,23,42,.12);overflow:hidden;min-width:52px}
+.sched-ampm-menu.open{display:block}
+.sched-ampm-opt{display:block;width:100%;border:none;background:#fff;padding:8px 10px;font-family:var(--font);font-size:12px;font-weight:800;color:#334155;cursor:pointer;text-align:center}
+.sched-ampm-opt:hover,.sched-ampm-opt.active{background:#E8F5E9;color:#2E7D32}
+.sched-time-dash{color:#94a3b8;font-weight:700;flex-shrink:0;padding:0 1px;font-size:13px}
+.sched-in-task{flex:1;font-family:var(--font);font-size:13px;padding:8px 8px;border:1.5px solid var(--gray-300);border-radius:8px;min-width:0;background:#fff;outline:none}
+.sched-in-task:focus{border-color:#4CAF50}
+.schedule-edit-del{background:#FFEBEE;border:none;color:#C62828;width:32px;height:32px;border-radius:9px;cursor:pointer;padding:0;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;line-height:0}
+.schedule-edit-del svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.stu-sched-table th:first-child{width:38%}
+.stu-sched-table td:first-child{font-weight:600;color:#43A047;white-space:pre-wrap;word-break:break-word}
 /* সময়সূচি সম্পাদনা — শিরোনাম */
 #scheduleEditModal .modal-title{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px}
 #scheduleEditModal .modal-title-ic{display:inline-flex;line-height:0;color:#4CAF50}
@@ -482,7 +494,7 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
 <div class="screen active" id="screen-tasks">
   <div class="amal-sub-tabs">
     <button type="button" class="amal-sub-tab active" onclick="goAmalTab('today',this)"><span class="amal-sub-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12h6M9 16h6"/></svg></span><span class="amal-sub-lbl">আজ</span></button>
-    <button type="button" class="amal-sub-tab"        onclick="goAmalTab('history',this)"><span class="amal-sub-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span><span class="amal-sub-lbl">ইতিহাস</span></button>
+    <button type="button" class="amal-sub-tab"        onclick="goAmalTab('biboron',this)"><span class="amal-sub-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1v11"/><path d="M19 10a7 7 0 01-14 0"/><path d="M12 19v4M8 23h8"/></svg></span><span class="amal-sub-lbl">বিবরণ</span></button>
     <button type="button" class="amal-sub-tab"        onclick="goAmalTab('schedule',this)"><span class="amal-sub-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span class="amal-sub-lbl">নিজামুল আওকাত</span></button>
   </div>
   <div id="amal-panel-today" class="amal-panel">
@@ -495,8 +507,18 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
     </div>
     <div class="list-scroll stu-amal-list" id="taskList"></div>
   </div>
-  <div id="amal-panel-history" class="amal-panel" style="display:none">
-    <div class="list-scroll" id="amalCalendarContent"></div>
+  <div id="amal-panel-biboron" class="amal-panel" style="display:none">
+    <div class="goal-add-bar">
+      <button type="button" class="goal-add-btn" style="width:100%" onclick="openDailyNoteModal()"><span class="goal-btn-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14M5 12h14"/></svg></span>নতুন নোট</button>
+    </div>
+    <div class="list-scroll">
+      <div class="daily-note-intro">
+        <div class="daily-note-intro-text">আজকে কি শিখলে? কি ভালো হলো? কি ভুল হলো? সংক্ষেপে লেখো।</div>
+      </div>
+      <div class="daily-note-filter" id="dailyNoteFilter"></div>
+      <div id="dailyNoteList"></div>
+      <div style="height:20px"></div>
+    </div>
   </div>
   <div id="amal-panel-schedule" class="amal-panel" style="display:none">
     <div class="list-scroll" id="taskSchedulePanel"></div>
@@ -559,45 +581,20 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
 
 <!-- ══ GOALS ══════════════════════════════════════════════ -->
 <div class="screen" id="screen-goals">
-  <div class="goal-inner-tabs" role="tablist" aria-label="লক্ষ্য মেনু">
-    <button type="button" id="goalInnerTabBiboron" class="goal-inner-tab active" role="tab" aria-selected="true" onclick="switchGoalInnerTab('biboron')">বিবরণ</button>
-    <button type="button" id="goalInnerTabGoals" class="goal-inner-tab" role="tab" aria-selected="false" onclick="switchGoalInnerTab('goals')">লক্ষ্য</button>
+  <div class="goal-add-bar">
+    <button type="button" class="goal-add-btn" style="width:100%" onclick="openModal('addGoalModal')"><span class="goal-btn-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14M5 12h14"/></svg></span>নতুন লক্ষ্য যোগ করুন</button>
   </div>
-
-  <div id="goalBiboronPane" class="goal-inner-pane active" role="tabpanel" aria-labelledby="goalInnerTabBiboron">
-    <div class="goal-add-bar">
-      <button type="button" class="goal-add-btn" style="width:100%" onclick="openDailyNoteModal()"><span class="goal-btn-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14M5 12h14"/></svg></span>নতুন নোট</button>
+  <div class="list-scroll">
+    <div id="goalProgress"></div>
+    <div class="filter-bar">
+      <button type="button" class="filter-chip active" onclick="fGoal('all',this)">সব</button>
+      <button type="button" class="filter-chip goal-chip-ilm" onclick="fGoal('ilm',this)">ইলম</button>
+      <button type="button" class="filter-chip goal-chip-amal" onclick="fGoal('amal',this)">আমল</button>
+      <button type="button" class="filter-chip goal-chip-akhlaq" onclick="fGoal('akhlaq',this)">আখলাক</button>
+      <button type="button" class="filter-chip goal-chip-afkar" onclick="fGoal('afkar',this)">আফকার</button>
     </div>
-    <div class="list-scroll">
-      <div class="daily-note-intro">
-        <div class="daily-note-intro-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1v11"/><path d="M19 10a7 7 0 01-14 0"/><path d="M12 19v4M8 23h8"/></svg></div>
-        <div>
-          <div class="daily-note-intro-title">দৈনিক বিবরণ</div>
-          <div class="daily-note-intro-text">আজ কী করেছ, কী শিখেছ, কোথায় ভুল হয়েছে বা ভালো হয়েছে - সংক্ষেপে লিখে রাখো।</div>
-        </div>
-      </div>
-      <div class="daily-note-filter" id="dailyNoteFilter"></div>
-      <div id="dailyNoteList"></div>
-      <div style="height:20px"></div>
-    </div>
-  </div>
-
-  <div id="goalListPane" class="goal-inner-pane" role="tabpanel" aria-labelledby="goalInnerTabGoals">
-    <div class="goal-add-bar">
-      <button type="button" class="goal-add-btn" style="width:100%" onclick="openModal('addGoalModal')"><span class="goal-btn-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14M5 12h14"/></svg></span>নতুন লক্ষ্য যোগ করুন</button>
-    </div>
-    <div class="list-scroll">
-      <div id="goalProgress"></div>
-      <div class="filter-bar">
-        <button type="button" class="filter-chip active" onclick="fGoal('all',this)">সব</button>
-        <button type="button" class="filter-chip goal-chip-ilm" onclick="fGoal('ilm',this)">ইলম</button>
-        <button type="button" class="filter-chip goal-chip-amal" onclick="fGoal('amal',this)">আমল</button>
-        <button type="button" class="filter-chip goal-chip-akhlaq" onclick="fGoal('akhlaq',this)">আখলাক</button>
-        <button type="button" class="filter-chip goal-chip-afkar" onclick="fGoal('afkar',this)">আফকার</button>
-      </div>
-      <div id="goalList"></div>
-      <div style="height:20px"></div>
-    </div>
+    <div id="goalList"></div>
+    <div style="height:20px"></div>
   </div>
 </div>
 
@@ -627,8 +624,20 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
   <button class="btn-secondary" onclick="closeModal('addGoalModal')">বাতিল</button>
 </div></div>
 
+<!-- Amal history calendar (floating) -->
+<div class="amal-cal-popover" id="amalCalPopover" aria-hidden="true">
+  <div class="amal-cal-backdrop" onclick="closeAmalCalendar()"></div>
+  <div class="amal-cal-sheet" role="dialog" aria-label="আমল ইতিহাস">
+    <div class="amal-cal-sheet-hd">
+      <span class="amal-cal-sheet-title">আমল ইতিহাস</span>
+      <button type="button" class="amal-cal-close" onclick="closeAmalCalendar()" aria-label="বন্ধ">✕</button>
+    </div>
+    <div id="amalCalendarContent"></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="dailyNoteModal"><div class="modal-sheet daily-note-sheet">
-  <div class="modal-handle"></div><div class="modal-title">নতুন বিবরণ</div>
+  <div class="modal-handle"></div><div class="modal-title" id="dailyNoteModalTitle">নতুন বিবরণ</div>
   <div class="daily-recorder">
     <button type="button" id="dailyRecordBtn" class="daily-record-btn" onclick="toggleDailyRecording()" aria-label="রেকর্ড শুরু করুন">
       <span class="daily-record-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1v11"/><path d="M19 10a7 7 0 01-14 0"/><path d="M12 19v4M8 23h8"/></svg></span>
@@ -677,7 +686,7 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
 <div class="modal-overlay" id="scheduleEditModal"><div class="modal-sheet">
   <div class="modal-handle"></div>
   <div class="modal-title"><span class="modal-title-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>সম্পাদনা</div>
-  <p class="stu-sched-hint">পরিবর্তন জিম্মাদার অনুমোদনের পর প্রযোজ্য হবে।</p>
+  <p class="stu-sched-hint">এক লাইনে: শুরু – শেষ · AM/PM · কাজ। সংখ্যা লিখলে ফরম্যাট হবে (৫৩০ → ৫:৩০)।</p>
   <div id="scheduleEditRows"></div>
   <button type="button" class="btn-secondary stu-sched-add" onclick="scheduleEditAddRow()"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>সারি যোগ</button>
   <div class="stu-sched-actions">
@@ -727,11 +736,12 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
 <script src="pwa-notify.js"></script>
 <script>
 // ══ State ══════════════════════════════════════════════════
-let me=null, tFilter='all', gFilter='all', goalInnerTab='biboron', replyingTo=null, studentDocTab='sent';
+let me=null, tFilter='all', gFilter='all', replyingTo=null, studentDocTab='sent';
 let activeQuizId=null, quizAnswers={}, quizTimerInterval=null, quizSecondsLeft=0;
 let pendingFile=null, chatPendingFile=null;
 let studentChatPreviewDocId=null;
 let dailyNoteSecondsLeft=120;
+let dailyNoteEditId=null;
 let _dailyVoiceBound=false;
 let dailyNoteCatId='general';
 let dailyNoteListFilter='all';
@@ -966,40 +976,137 @@ function renderTaskSchedulePanel(){
   else if(pend&&pend.status==='rejected')
     banner='<div class="stu-sched-banner rejected">✕ জিম্মাদার প্রত্যাখ্যান করেছেন'+(pend.teacherNote?(' · '+esc(pend.teacherNote)):'')+'। আবার সম্পাদনা করে পাঠাতে পারেন।</div>';
   const body=rows.length
-    ? `<table class="stu-sched-table"><thead><tr><th>কাজ</th><th>সময়</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.task)}</td><td>${esc(r.time)}</td></tr>`).join('')}</tbody></table>`
+    ? `<table class="stu-sched-table"><thead><tr><th>সময়</th><th>কাজ</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.time)}</td><td>${esc(r.task)}</td></tr>`).join('')}</tbody></table>`
     : '';
   el.innerHTML=`<div class="stu-sched-card"><div class="stu-sched-card-hd">বিসমিল্লাহির রহমানির রহিম</div>${banner}${body}<div class="stu-sched-foot"><button type="button" class="stu-sched-btn" onclick="openScheduleEditModal()">তৈরি করো</button></div></div><div style="height:16px"></div>`;
+}
+
+const _schedDelIc='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg>';
+function schedDigitsOnly(s){ return String(s||'').replace(/\D/g,'').slice(0,4); }
+function schedLiveClock(digits){
+  const d=schedDigitsOnly(digits);
+  if(d.length<=2) return d;
+  if(d.length===3) return d[0]+':'+d.slice(1);
+  return d.slice(0,2)+':'+d.slice(2);
+}
+function schedFormatClock(digits){
+  const d=schedDigitsOnly(digits);
+  if(!d) return '';
+  let h=0,m=0;
+  if(d.length<=2){ h=parseInt(d,10)||0; m=0; }
+  else if(d.length===3){ h=parseInt(d[0],10)||0; m=parseInt(d.slice(1),10)||0; }
+  else { h=parseInt(d.slice(0,2),10)||0; m=parseInt(d.slice(2),10)||0; }
+  if(h>12) h=h%12||12;
+  if(h===0) h=12;
+  if(m>59) m=59;
+  return h+':'+String(m).padStart(2,'0');
+}
+function schedNormAmpm(v){
+  const s=String(v||'').trim().toUpperCase();
+  if(s.startsWith('P')||s.indexOf('পি')>=0) return 'PM';
+  return 'AM';
+}
+function schedParseStored(time){
+  const raw=String(time||'').trim();
+  const empty={start:'',end:'',ampm:'AM'};
+  if(!raw) return empty;
+  const re=/(\d{1,2})\s*[:.]?\s*(\d{0,2})\s*(AM|PM|A\.M\.|P\.M\.|এ\.?\s*ম\.?|পি\.?\s*ম\.?)?\s*[-–—~]\s*(\d{1,2})\s*[:.]?\s*(\d{0,2})\s*(AM|PM|A\.M\.|P\.M\.|এ\.?\s*ম\.?|পি\.?\s*ম\.?)?/i;
+  const m=raw.match(re);
+  if(m){
+    const sDig=(m[1]||'')+(m[2]?String(m[2]).padStart(2,'0'):'');
+    const eDig=(m[4]||'')+(m[5]?String(m[5]).padStart(2,'0'):'');
+    return {
+      start:schedFormatClock(sDig),
+      end:schedFormatClock(eDig),
+      ampm:schedNormAmpm(m[3]||m[6]||'AM')
+    };
+  }
+  const one=/(\d{1,2})\s*[:.]?\s*(\d{0,2})\s*(AM|PM|A\.M\.|P\.M\.|এ\.?\s*ম\.?|পি\.?\s*ম\.?)?/i.exec(raw);
+  if(one){
+    const dig=(one[1]||'')+(one[2]?String(one[2]).padStart(2,'0'):'');
+    return {start:schedFormatClock(dig),end:'',ampm:schedNormAmpm(one[3]||'AM')};
+  }
+  return empty;
+}
+function schedComposeTime(start,end,ampm){
+  const s=schedFormatClock(start);
+  const e=schedFormatClock(end);
+  const ap=schedNormAmpm(ampm);
+  if(!s&&!e) return '';
+  if(s&&e) return s+' – '+e+' '+ap;
+  if(s) return s+' '+ap;
+  return e+' '+ap;
+}
+function schedAmpmBtn(val){
+  const v=schedNormAmpm(val);
+  return `<div class="sched-ampm-wrap"><button type="button" class="sched-ampm-btn" data-ampm-for="row" onclick="schedToggleAmpmMenu(this)" aria-label="AM/PM">${v}</button><div class="sched-ampm-menu" role="listbox"><button type="button" class="sched-ampm-opt${v==='AM'?' active':''}" onclick="schedPickAmpm(this,'AM')">AM</button><button type="button" class="sched-ampm-opt${v==='PM'?' active':''}" onclick="schedPickAmpm(this,'PM')">PM</button></div></div>`;
+}
+function schedEditRowHtml(r){
+  const p=schedParseStored(r&&r.time);
+  const task=esc((r&&r.task)||'');
+  return `<div class="schedule-edit-row">
+    <input type="text" class="sched-in-clock sched-in-start" inputmode="numeric" maxlength="5" placeholder="শুরু" value="${esc(p.start)}" oninput="schedOnClockInput(this)" onblur="schedOnClockBlur(this)">
+    <span class="sched-time-dash">–</span>
+    <input type="text" class="sched-in-clock sched-in-end" inputmode="numeric" maxlength="5" placeholder="শেষ" value="${esc(p.end)}" oninput="schedOnClockInput(this)" onblur="schedOnClockBlur(this)">
+    ${schedAmpmBtn(p.ampm)}
+    <input type="text" class="sched-in-task" placeholder="কাজ" value="${task}">
+    <button type="button" class="schedule-edit-del" onclick="this.closest('.schedule-edit-row').remove()" aria-label="সারি মুছুন">${_schedDelIc}</button>
+  </div>`;
+}
+function schedOnClockInput(inp){
+  const d=schedDigitsOnly(inp.value);
+  inp.value=schedLiveClock(d);
+  inp.dataset.digits=d;
+}
+function schedOnClockBlur(inp){
+  const d=schedDigitsOnly(inp.dataset.digits||inp.value);
+  inp.value=schedFormatClock(d);
+  inp.dataset.digits=d;
+}
+function schedCloseAllAmpmMenus(except){
+  document.querySelectorAll('#scheduleEditRows .sched-ampm-menu.open').forEach(m=>{ if(m!==except) m.classList.remove('open'); });
+  document.querySelectorAll('#scheduleEditRows .sched-ampm-btn.open').forEach(b=>{ if(!except||b.nextElementSibling!==except) b.classList.remove('open'); });
+}
+function schedToggleAmpmMenu(btn){
+  const menu=btn.nextElementSibling;
+  const open=menu.classList.contains('open');
+  schedCloseAllAmpmMenus();
+  if(!open){ menu.classList.add('open'); btn.classList.add('open'); }
+}
+function schedPickAmpm(opt,val){
+  const wrap=opt.closest('.sched-ampm-wrap');
+  const btn=wrap.querySelector('.sched-ampm-btn');
+  btn.textContent=schedNormAmpm(val);
+  wrap.querySelectorAll('.sched-ampm-opt').forEach(o=>o.classList.toggle('active',o===opt));
+  schedCloseAllAmpmMenus();
 }
 function openScheduleEditModal(){
   if(!me||!API.DailySchedule) return;
   const ds=API.DailySchedule.getForStudent(me.id);
-  const editRows=(ds.pending&&ds.pending.status==='pending'&&ds.pending.rows&&ds.pending.rows.length)?ds.pending.rows:(ds.rows&&ds.rows.length?ds.rows:[{id:'',task:'',time:''}]);
+  const editRows=(ds.pending&&ds.pending.status==='pending'&&ds.pending.rows&&ds.pending.rows.length)?ds.pending.rows:(ds.rows&&ds.rows.length?ds.rows:[{task:'',time:''}]);
   const wrap=document.getElementById('scheduleEditRows');
-  const delIc='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg>';
-  wrap.innerHTML=editRows.map((r,i)=>`<div class="schedule-edit-row" data-i="${i}"><input type="text" placeholder="কাজ" class="sched-in-task" value="${esc(r.task)}"><input type="text" placeholder="সময়" class="sched-in-time" value="${esc(r.time)}"><button type="button" class="schedule-edit-del" onclick="this.parentNode.remove()" aria-label="সারি মুছুন">${delIc}</button></div>`).join('');
-  if(!wrap.querySelector('.schedule-edit-row')) wrap.innerHTML=`<div class="schedule-edit-row" data-i="0"><input type="text" class="sched-in-task" placeholder="কাজ"><input type="text" class="sched-in-time" placeholder="সময়"><button type="button" class="schedule-edit-del" onclick="this.parentNode.remove()" aria-label="সারি মুছুন">${delIc}</button></div>`;
+  wrap.innerHTML=editRows.map(r=>schedEditRowHtml(r)).join('')||schedEditRowHtml({task:'',time:''});
   openModal('scheduleEditModal');
 }
 function scheduleEditAddRow(){
   const wrap=document.getElementById('scheduleEditRows');
-  const i=wrap.querySelectorAll('.schedule-edit-row').length;
-  const d=document.createElement('div');
-  d.className='schedule-edit-row';
-  d.dataset.i=i;
-  d.innerHTML='<input type="text" class="sched-in-task" placeholder="কাজ"><input type="text" class="sched-in-time" placeholder="সময়"><button type="button" class="schedule-edit-del" onclick="this.parentNode.remove()" aria-label="সারি মুছুন"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg></button>';
-  wrap.appendChild(d);
+  wrap.insertAdjacentHTML('beforeend',schedEditRowHtml({task:'',time:''}));
 }
 function scheduleCollectRows(){
   const out=[];
   document.querySelectorAll('#scheduleEditRows .schedule-edit-row').forEach(row=>{
-    const t=row.querySelector('.sched-in-task')?.value.trim()||'';
-    const tm=row.querySelector('.sched-in-time')?.value.trim()||'';
-    if(t||tm) out.push({task:t,time:tm});
+    const task=row.querySelector('.sched-in-task')?.value.trim()||'';
+    const start=row.querySelector('.sched-in-start')?.value||'';
+    const end=row.querySelector('.sched-in-end')?.value||'';
+    const ampm=row.querySelector('.sched-ampm-btn')?.textContent||'AM';
+    const time=schedComposeTime(start,end,ampm);
+    if(task||time) out.push({task,time});
   });
   return out;
 }
 async function scheduleSubmitForApproval(){
   if(!me) return;
+  document.querySelectorAll('#scheduleEditRows .sched-in-clock').forEach(schedOnClockBlur);
   const rows=scheduleCollectRows();
   if(!rows.length){ showToast('অন্তত একটি সারি দিন'); return; }
   try{
@@ -1009,6 +1116,10 @@ async function scheduleSubmitForApproval(){
     showToast('প্রস্তাব পাঠানো হয়েছে। জিম্মাদার অনুমোদন দিলে কার্যকর হবে।');
   }catch(e){ console.error(e); showToast('পাঠানো যায়নি'); }
 }
+
+document.addEventListener('click',function(e){
+  if(!e.target.closest('.sched-ampm-wrap')) schedCloseAllAmpmMenus();
+});
 
 // ══ CHAT ═══════════════════════════════════════════════════
 function tickHtml(msg){
@@ -1334,14 +1445,23 @@ async function undoTaskDone(tid){
 
 // ── আমল sub-tabs (ছাত্র) ─────────────────────────────────────
 let _amalTab='today';
+const _svgAmalCal='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>';
 function goAmalTab(tab,btn){
+  if(tab==='history') tab='biboron';
   _amalTab=tab;
   document.querySelectorAll('.amal-sub-tab').forEach(b=>b.classList.remove('active'));
   if(btn) btn.classList.add('active');
+  else{
+    const map={today:0,biboron:1,schedule:2};
+    const tabs=document.querySelectorAll('#screen-tasks .amal-sub-tab');
+    const ix=map[tab]; if(tabs[ix]) tabs[ix].classList.add('active');
+  }
   document.querySelectorAll('#screen-tasks .amal-panel').forEach(p=>p.style.display='none');
-  document.getElementById('amal-panel-'+tab).style.display='';
+  const panel=document.getElementById('amal-panel-'+tab);
+  if(panel) panel.style.display='';
+  closeAmalCalendar();
   if(tab==='today'){ renderAmalDashboard(); renderTaskList(); }
-  else if(tab==='history') renderAmalCalendar();
+  else if(tab==='biboron') renderDailyNotes();
   else if(tab==='schedule') renderTaskSchedulePanel();
 }
 function renderAmalDashboard(){
@@ -1355,17 +1475,31 @@ function renderAmalDashboard(){
     const svg=`<svg class="stu-ring-svg" width="52" height="52" viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="${R}" fill="none" stroke="#e8e8e8" stroke-width="5"/><circle cx="26" cy="26" r="${R}" fill="none" stroke="${stroke}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${off}" transform="rotate(-90 26 26)" style="transition:stroke-dashoffset .35s"/></svg>`;
     return `<div class="stu-ring-col"><div class="stu-svg-ring-wrap">${svg}<span class="stu-ring-pct">${p}%</span></div><span class="stu-ring-lbl">${lbl}</span></div>`;
   }
+  const hd=`<div class="stu-amal-dash-hd"><div class="stu-amal-dash-title">আমলের বিবরণ</div><button type="button" class="stu-amal-cal-btn" onclick="openAmalCalendar()" title="আমল ইতিহাস" aria-label="আমল ইতিহাস ক্যালেন্ডার">${_svgAmalCal}</button></div>`;
   if(!dailyTasks.length){
-    el.innerHTML=`<div class="stu-amal-dash-wrap"><div class="stu-amal-dash-card stu-amal-dash-card--empty"><div class="stu-amal-dash-hd"><div class="stu-amal-dash-title">আমলের বিবরণ</div></div><p class="stu-amal-dash-hint">উস্তাদ দৈনিক আমল যোগ করলে এখানে অগ্রগতি দেখা যাবে।</p></div></div>`;
+    el.innerHTML=`<div class="stu-amal-dash-wrap"><div class="stu-amal-dash-card stu-amal-dash-card--empty">${hd}<p class="stu-amal-dash-hint">উস্তাদ দৈনিক আমল যোগ করলে এখানে অগ্রগতি দেখা যাবে।</p></div></div>`;
     return;
   }
   const all=prog.all||{percent:0};
   el.innerHTML=`<div class="stu-amal-dash-wrap">
     <div class="stu-amal-dash-card">
-      <div class="stu-amal-dash-hd"><div class="stu-amal-dash-title">আমলের বিবরণ</div></div>
+      ${hd}
       <div class="stu-amal-rings">${ringCol(prog.today.percent,'#4CAF50','আজ')}${ringCol(prog.week.percent,'#43A047','সপ্তাহ')}${ringCol(prog.month.percent,'#42A5F5','মাস')}${ringCol(all.percent,'#8D6E63','শুরু থেকে')}</div>
     </div>
   </div>`;
+}
+function openAmalCalendar(){
+  const pop=document.getElementById('amalCalPopover');
+  if(!pop) return;
+  pop.classList.add('open');
+  pop.setAttribute('aria-hidden','false');
+  renderAmalCalendar();
+}
+function closeAmalCalendar(){
+  const pop=document.getElementById('amalCalPopover');
+  if(!pop) return;
+  pop.classList.remove('open');
+  pop.setAttribute('aria-hidden','true');
 }
 function renderAmalCalendar(){
   const el=document.getElementById('amalCalendarContent'); if(!el||!me) return;
@@ -1376,9 +1510,9 @@ function renderAmalCalendar(){
   const pad=n=>String(n).padStart(2,'0');
   const mNames=['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
   let h=`<div class="cal-header">
-    <button class="date-nav-btn" onclick="_calNav(-1)">◀</button>
+    <button type="button" class="date-nav-btn" onclick="_calNav(-1)">◀</button>
     <span class="cal-month-title">${mNames[m-1]} ${y}</span>
-    <button class="date-nav-btn" onclick="_calNav(1)">▶</button>
+    <button type="button" class="date-nav-btn" onclick="_calNav(1)">▶</button>
   </div>
   <div class="s-cal-grid">
     <div class="s-cal-day-hd">রবি</div><div class="s-cal-day-hd">সোম</div><div class="s-cal-day-hd">মঙ্গল</div>
@@ -1649,17 +1783,6 @@ function catIc(c){
   const map={ilm:_svgGoalBook,study:_svgGoalBook,amal:_svgGoalClip,ibadah:_svgGoalClip,akhlaq:_svgGoalHeart,afkar:_svgGoalBulb,quran:_svgGoalBook,other:_svgGoalTarget};
   return `<span class="goal-meta-ic" aria-hidden="true">${map[c]||_svgGoalTarget}</span>`;
 }
-function switchGoalInnerTab(tab){
-  goalInnerTab=tab==='goals'?'goals':'biboron';
-  const isBib=goalInnerTab==='biboron';
-  document.getElementById('goalInnerTabBiboron').classList.toggle('active',isBib);
-  document.getElementById('goalInnerTabBiboron').setAttribute('aria-selected',isBib?'true':'false');
-  document.getElementById('goalInnerTabGoals').classList.toggle('active',!isBib);
-  document.getElementById('goalInnerTabGoals').setAttribute('aria-selected',!isBib?'true':'false');
-  document.getElementById('goalBiboronPane').classList.toggle('active',isBib);
-  document.getElementById('goalListPane').classList.toggle('active',!isBib);
-  if(isBib) renderDailyNotes(); else renderGoals();
-}
 function getDailyNotes(){
   if(!me||!API.StudentNotes) return [];
   return API.StudentNotes.getAll(me.id);
@@ -1705,7 +1828,10 @@ function renderDailyNotes(){
     <div class="daily-note-head"><div class="daily-note-date">${esc(dailyNoteDateLabel(n.date))}</div><div class="daily-note-time">${esc(n.time||'')}</div></div>
     <div class="daily-note-cat-badge">${esc(catLbl)}</div>
     <div class="daily-note-body">${esc(n.text)}</div>
-    <div class="daily-note-actions"><button type="button" class="daily-note-del" onclick="deleteDailyNote('${esc(n.id)}')">মুছুন</button></div>
+    <div class="daily-note-actions">
+      <button type="button" class="daily-note-edit" onclick="openDailyNoteEdit('${esc(n.id)}')">সম্পাদনা</button>
+      <button type="button" class="daily-note-del" onclick="deleteDailyNote('${esc(n.id)}')">মুছুন</button>
+    </div>
   </div>`;
   }).join('');
 }
@@ -1796,8 +1922,11 @@ function stopDailyRecording(run){
 function openDailyNoteModal(){
   ensureDailyVoice();
   stopDailyRecording(false);
+  dailyNoteEditId=null;
   dailyNoteSecondsLeft=120;
   dailyNoteCatId='general';
+  const title=document.getElementById('dailyNoteModalTitle');
+  if(title) title.textContent='নতুন বিবরণ';
   const txt=document.getElementById('dailyNoteText');
   if(txt) txt.value='';
   renderDailyNoteCats();
@@ -1805,8 +1934,27 @@ function openDailyNoteModal(){
   updateDailyNoteSaveState();
   openModal('dailyNoteModal');
 }
+function openDailyNoteEdit(noteId){
+  if(!me||!API.StudentNotes||!noteId) return;
+  const note=API.StudentNotes.get(me.id, noteId);
+  if(!note){ showToast('নোট পাওয়া যায়নি'); return; }
+  ensureDailyVoice();
+  stopDailyRecording(false);
+  dailyNoteEditId=note.id;
+  dailyNoteSecondsLeft=120;
+  dailyNoteCatId=note.categoryId||'general';
+  const title=document.getElementById('dailyNoteModalTitle');
+  if(title) title.textContent='বিবরণ সম্পাদনা';
+  const txt=document.getElementById('dailyNoteText');
+  if(txt) txt.value=note.text||'';
+  renderDailyNoteCats();
+  setDailyRecorderState('idle');
+  updateDailyNoteSaveState();
+  openModal('dailyNoteModal');
+}
 function closeDailyNoteModal(){
   stopDailyRecording(false);
+  dailyNoteEditId=null;
   closeModal('dailyNoteModal');
 }
 async function saveDailyNote(){
@@ -1818,8 +1966,12 @@ async function saveDailyNote(){
   const btn=document.getElementById('dailyNoteSaveBtn');
   if(btn) btn.disabled=true;
   try{
-    await API.StudentNotes.add(me.id,{text,categoryId:dailyNoteCatId||'general'});
-    closeModal('dailyNoteModal');
+    if(dailyNoteEditId){
+      await API.StudentNotes.update(me.id, dailyNoteEditId, {text, categoryId:dailyNoteCatId||'general'});
+    } else {
+      await API.StudentNotes.add(me.id,{text,categoryId:dailyNoteCatId||'general'});
+    }
+    closeDailyNoteModal();
     renderDailyNotes();
     showToast('বিবরণ সেভ হয়েছে');
   }catch(e){
@@ -1981,6 +2133,7 @@ function updateBadges(){
 // ══ NAV ════════════════════════════════════════════════════
 function goTab(tab){
   uiViewTransition(()=>{
+  closeAmalCalendar();
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -1992,7 +2145,7 @@ function goTab(tab){
   if(tab==='exams') renderExamList();
   if(tab==='tasks' && me){ renderAmalDashboard(); renderTaskList(); }
   if(tab==='docs'){ renderSentDocs(); renderReceivedDocs(); }
-  if(tab==='goals'){ switchGoalInnerTab('biboron'); renderDailyNotes(); }
+  if(tab==='goals') renderGoals();
   });
 }
 

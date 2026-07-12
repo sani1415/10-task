@@ -179,8 +179,15 @@
 .biboron-hint strong{color:var(--gray-700);font-weight:700}
 .stu-today--zero{color:#C62828!important;font-weight:700}
 .stu-today--done{color:var(--gray-500)!important;font-weight:600}
-.stu-flags{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap}
-.stu-flag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;background:var(--gray-100);color:var(--gray-600);border:1px solid var(--gray-200)}
+.s-name-side{white-space:nowrap;font-weight:500}
+.s-name-meta{display:inline-block;font-size:12px;font-weight:500;color:var(--gray-500);line-height:1.35;padding:1px 3px;vertical-align:baseline;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.s-name-meta.stu-today--zero{color:#C62828!important;font-weight:700}
+.s-name-meta.stu-today--done{color:var(--gray-500)!important;font-weight:600}
+#screen-students .s-name{line-height:1.45;overflow:visible}
+#screen-students .s-info{overflow:visible;min-width:0}
+#screen-students .list-scroll{overflow-x:visible}
+.stu-flag-ic{display:inline-flex;align-items:center;margin-left:6px;vertical-align:middle;color:#E65100;line-height:0}
+.stu-flag-ic svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .stu-more-wrap{position:relative;flex-shrink:0}
 .stu-more-btn{width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:var(--gray-500);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
 .stu-more-btn:active,.stu-more-btn.open{background:var(--gray-100)}
@@ -307,9 +314,30 @@
 .grp-empty-chips{font-size:13px;color:#94a3b8;padding:8px 14px}
 .grp-compose-hint{flex:1;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:13px;padding:20px}
 .grp-send-bar{display:flex;align-items:flex-end;gap:8px;padding:10px 12px max(12px,env(safe-area-inset-bottom));border-top:1px solid #f1f5f9;background:#fff;flex-shrink:0}
-.schedule-edit-row{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start}
-.schedule-edit-row input{flex:1;font-family:var(--font);font-size:14px;padding:8px 10px;border:1.5px solid var(--gray-300);border-radius:8px}
-.schedule-edit-del{background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:4px}
+.schedule-edit-row{display:flex;align-items:center;gap:4px;margin-bottom:8px;min-width:0}
+.sched-in-clock{width:48px;flex:0 0 48px;text-align:center;font-variant-numeric:tabular-nums;font-family:var(--font);font-size:13px;font-weight:700;padding:8px 2px;border:1.5px solid var(--gray-300);border-radius:8px;background:#fff;outline:none}
+.sched-in-clock:focus{border-color:#075E54}
+.sched-ampm-wrap{position:relative;flex-shrink:0}
+.sched-ampm-btn{border:1.5px solid var(--gray-300);background:#fff;color:#334155;border-radius:8px;padding:7px 5px;font-family:var(--font);font-size:11px;font-weight:800;cursor:pointer;min-width:34px;line-height:1.1}
+.sched-ampm-btn.open{border-color:#075E54;background:#E8F5F3;color:#075E54}
+.sched-ampm-menu{display:none;position:absolute;left:50%;transform:translateX(-50%);top:calc(100% + 4px);z-index:5;background:#fff;border:1px solid #E2E8F0;border-radius:10px;box-shadow:0 8px 20px rgba(15,23,42,.12);overflow:hidden;min-width:52px}
+.sched-ampm-menu.open{display:block}
+.sched-ampm-opt{display:block;width:100%;border:none;background:#fff;padding:8px 10px;font-family:var(--font);font-size:12px;font-weight:800;color:#334155;cursor:pointer;text-align:center}
+.sched-ampm-opt:hover,.sched-ampm-opt.active{background:#E8F5F3;color:#075E54}
+.sched-time-dash{color:#94a3b8;font-weight:700;flex-shrink:0;padding:0 1px;font-size:13px}
+.sched-in-task{flex:1;font-family:var(--font);font-size:13px;padding:8px 8px;border:1.5px solid var(--gray-300);border-radius:8px;min-width:0;background:#fff;outline:none}
+.sched-in-task:focus{border-color:#075E54}
+.schedule-edit-del{background:#FFEBEE;border:none;color:#C62828;width:32px;height:32px;border-radius:9px;cursor:pointer;padding:0;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;line-height:0}
+.schedule-edit-del svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tea-sched-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
+.tea-sched-table th{text-align:left;background:#075E54;color:#fff;padding:8px 10px;font-weight:600}
+.tea-sched-table th:first-child{width:42%}
+.tea-sched-table td{padding:8px 10px;border-bottom:1px solid var(--gray-100);vertical-align:top}
+.tea-sched-table tr:nth-child(even) td{background:var(--gray-50)}
+.tea-sched-table td:first-child{font-weight:600;color:#075E54;white-space:pre-wrap;word-break:break-word}
+.tea-sched-hint{font-size:12px;color:#64748b;margin:0 0 10px;line-height:1.45}
+.tea-sched-add{width:100%;margin:8px 0;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.tea-sched-add svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .tab-badge.tab-badge--sched{background:#FF9800;color:#fff;font-size:10px;min-width:18px}
 .chat-badge.chat-badge--sched{font-size:11px;padding:2px 6px;min-width:auto;background:#FF9800;color:#fff;font-weight:700}
 .tea-sched-pending-tag{display:inline-block;vertical-align:middle}
@@ -1742,7 +1770,7 @@ async function sendMsg(){
 let studentYearFilter=null; // null=সব, 1|2|3=বর্ষ
 let studentPctSort=''; // '' | 'desc' | 'asc' | 'yesterday'
 let stuRowMenuId=null;
-const _stuFlagLbl={doc:'ডক বাকি',sched:'সময়সূচি',quiz:'পরীক্ষা'};
+const _docFlagIc='<span class="stu-flag-ic" title="ডক বাকি" aria-label="ডক বাকি"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><line x1="8" y1="9" x2="10" y2="9"/></svg></span>';
 function setStudentYearFilter(year,btn){
   studentYearFilter=year===''||year==null?null:Number(year);
   document.querySelectorAll('#studentToolbar [data-year]').forEach(c=>c.classList.remove('active'));
@@ -1895,16 +1923,16 @@ function renderStudentList(){
     const row=API.Biboron?API.Biboron.getStudentRow(s.id):{todayDone:0,todayTotal:0,flags:[]};
     const dayDone=row.dayDone!=null?row.dayDone:row.todayDone;
     const dayTotal=row.dayTotal!=null?row.dayTotal:row.todayTotal;
-    const metaParts=[];
-    if(s.waqfId) metaParts.push(`<span style="color:#128C7E;font-weight:600">${esc(API.Students.displayWaqfId(s.waqfId))}</span>`);
-    if(batch) metaParts.push(`<span>${esc(batch)}</span>`);
-    let dayCls='';
+    let dayCls='s-name-meta';
     if(dayTotal>0){
-      if(dayDone===0) dayCls=' stu-today--zero';
-      else if(dayDone>=dayTotal) dayCls=' stu-today--done';
+      if(dayDone===0) dayCls+=' stu-today--zero';
+      else if(dayDone>=dayTotal) dayCls+=' stu-today--done';
     }
-    const dayHtml=dayTotal>0?`<span class="${dayCls.trim()}">গতকাল ${dayDone}/${dayTotal}</span>`:'';
-    const flagsHtml=row.flags&&row.flags.length?`<div class="stu-flags">${row.flags.map(f=>`<span class="stu-flag">${esc(_stuFlagLbl[f]||f)}</span>`).join('')}</div>`:'';
+    const sideBits=[];
+    if(batch) sideBits.push(`<span class="s-name-meta">${esc(batch)}</span>`);
+    if(dayTotal>0) sideBits.push(`<span class="${dayCls}">গতকাল ${dayDone}/${dayTotal}</span>`);
+    const sideHtml=sideBits.length?`<span class="s-name-side"> · ${sideBits.join(' · ')}</span>`:'';
+    const docIc=row.flags&&row.flags.includes('doc')?_docFlagIc:'';
     const menuOpen=stuRowMenuId===s.id;
     const menuHtml=menuOpen?`<div class="stu-more-menu">
       <button type="button" class="stu-more-item" onclick="stuRowAction('chat','${s.id}',event)">রিসালা</button>
@@ -1914,9 +1942,7 @@ function renderStudentList(){
     return `<div class="student-item" onclick="if(stuRowMenuId){closeStuRowMenu();renderStudentList();return;}openStudentProfile('${s.id}')">
       ${pctAvatarHtml(s.id,'s-avatar')}
       <div class="s-info">
-        <div class="s-name">${esc(s.name)}${s.responsibility?` <span style="font-size:11px;font-weight:600;color:#E65100;background:#FFF3E0;border-radius:6px;padding:1px 6px">${esc(s.responsibility)}</span>`:''}</div>
-        <div class="s-meta">${[metaParts.join(' · '), dayHtml].filter(Boolean).join(' · ')||'—'}</div>
-        ${flagsHtml}
+        <div class="s-name">${esc(s.name)}${s.responsibility?` <span style="font-size:11px;font-weight:600;color:#E65100;background:#FFF3E0;border-radius:6px;padding:1px 6px">${esc(s.responsibility)}</span>`:''}${sideHtml}${docIc}</div>
       </div>
       <div class="stu-more-wrap">
         <button type="button" class="stu-more-btn${menuOpen?' open':''}" onclick="toggleStuRowMenu('${s.id}',event)" title="আরও" aria-label="আরও"><span class="ic-svg"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.5" fill="currentColor" stroke="none"/></svg></span></button>
@@ -2810,6 +2836,7 @@ function switchProfileTab(tab,btn){
 function renderSchedulePane(s){
   const el=document.getElementById('schedulePaneInner');
   if(!el||!s||!API.DailySchedule) return;
+  if(window.ScheduleEditUI) ScheduleEditUI.bindDocClick();
   const ds=API.DailySchedule.getForStudent(s.id);
   const rows=ds.rows||[];
   const pend=ds.pending;
@@ -2817,9 +2844,9 @@ function renderSchedulePane(s){
   if(pend&&pend.status==='pending'&&pend.rows&&pend.rows.length){
     pendBlock=`<div class="profile-v2-sheet" style="margin-bottom:10px">
       <div class="profile-v2-sec">অনুমোদনের অপেক্ষায় · ছাত্রের প্রস্তাব</div>
-      <table style="width:100%;font-size:13px;border-collapse:collapse">
-      <thead><tr><th style="text-align:left;padding:6px">কাজ</th><th style="text-align:right;padding:6px">সময়</th></tr></thead>
-      <tbody>${pend.rows.map((r,i)=>{const ch=(i>=rows.length||rows[i].task!==r.task||rows[i].time!==r.time);const bg=ch?'background:#FFF9C4;':'';return `<tr><td style="${bg}padding:6px;border-bottom:1px solid var(--gray-100)">${esc(r.task)}</td><td style="${bg}text-align:right;padding:6px;border-bottom:1px solid var(--gray-100)">${esc(r.time)}</td></tr>`;}).join('')}</tbody></table>
+      <table class="tea-sched-table">
+      <thead><tr><th>সময়</th><th>কাজ</th></tr></thead>
+      <tbody>${pend.rows.map((r,i)=>{const ch=(i>=rows.length||rows[i].task!==r.task||rows[i].time!==r.time);const bg=ch?'background:#FFF9C4;':'';return `<tr><td style="${bg}">${esc(r.time)}</td><td style="${bg}">${esc(r.task)}</td></tr>`;}).join('')}</tbody></table>
       <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
         <button type="button" style="background:#2E7D32;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-family:var(--font);font-weight:600;cursor:pointer" onclick="teacherApproveSchedule('${s.id}')">✅ অনুমোদন</button>
         <button type="button" style="background:#fff;color:#E65100;border:1.5px solid #E65100;border-radius:8px;padding:8px 14px;font-family:var(--font);font-weight:600;cursor:pointer" onclick="teacherRejectSchedulePrompt('${s.id}')">✕ প্রত্যাখ্যান</button>
@@ -2827,34 +2854,41 @@ function renderSchedulePane(s){
     </div>`;
   }
   const rowEdits=rows.length?rows:[{task:'',time:''}];
-  const editorRows=rowEdits.map(r=>`<div class="schedule-edit-row"><input type="text" class="sched-t-task" placeholder="কাজ" value="${esc(r.task)}"><input type="text" class="sched-t-time" placeholder="সময়" value="${esc(r.time)}"><button type="button" class="schedule-edit-del" onclick="this.parentNode.remove()">✕</button></div>`).join('');
+  const editorRows=(window.ScheduleEditUI
+    ? rowEdits.map(r=>ScheduleEditUI.rowHtml(r)).join('')
+    : rowEdits.map(r=>`<div class="schedule-edit-row"><input type="text" class="sched-in-task" placeholder="কাজ" value="${esc(r.task)}"><input type="text" class="sched-in-clock" placeholder="সময়" value="${esc(r.time)}"><button type="button" class="schedule-edit-del" onclick="this.closest('.schedule-edit-row').remove()">✕</button></div>`).join(''));
   el.innerHTML=pendBlock+`
     <div class="profile-v2-sheet">
       <div class="profile-v2-sec">নির্ধারিত সময়সূচি</div>
-      <p style="font-size:12px;color:var(--gray-500);margin:0 0 10px;line-height:1.45">ছাত্র সম্পাদনা অনুমোদনের জন্য পাঠালে এখানে দেখা যাবে। আপনি সরাসরি সেভ করলে তাৎক্ষণিক কার্যকর হবে।</p>
+      <p class="tea-sched-hint">এক লাইনে: শুরু – শেষ · AM/PM · কাজ। ছাত্রের প্রস্তাব এখানে অনুমোদন করা যায়; সরাসরি সেভ করলে তাৎক্ষণিক কার্যকর হবে।</p>
       <div id="teaScheduleRows">${editorRows}</div>
-      <button type="button" class="btn-secondary" style="width:100%;margin:8px 0" onclick="teaScheduleAddRow()">＋ সারি যোগ</button>
+      <button type="button" class="btn-secondary tea-sched-add" onclick="teaScheduleAddRow()"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>সারি যোগ</button>
       <button type="button" class="btn-primary" style="width:100%" onclick="teacherSaveScheduleDirect('${s.id}')">💾 সময়সূচি সেভ করুন</button>
     </div>`;
 }
 function teaScheduleAddRow(){
   const wrap=document.getElementById('teaScheduleRows');
   if(!wrap) return;
-  const d=document.createElement('div');
-  d.className='schedule-edit-row';
-  d.innerHTML='<input type="text" class="sched-t-task" placeholder="কাজ"><input type="text" class="sched-t-time" placeholder="সময়"><button type="button" class="schedule-edit-del" onclick="this.parentNode.remove()">✕</button>';
-  wrap.appendChild(d);
+  if(window.ScheduleEditUI){
+    wrap.insertAdjacentHTML('beforeend',ScheduleEditUI.rowHtml({task:'',time:''}));
+    return;
+  }
+  wrap.insertAdjacentHTML('beforeend','<div class="schedule-edit-row"><input type="text" class="sched-in-task" placeholder="কাজ"><input type="text" class="sched-in-clock" placeholder="সময়"><button type="button" class="schedule-edit-del" onclick="this.closest(\'.schedule-edit-row\').remove()">✕</button></div>');
 }
 function teacherCollectScheduleRows(){
+  if(window.ScheduleEditUI) return ScheduleEditUI.collectRows('#teaScheduleRows');
   const out=[];
   document.querySelectorAll('#teaScheduleRows .schedule-edit-row').forEach(row=>{
-    const t=row.querySelector('.sched-t-task')?.value.trim()||'';
-    const tm=row.querySelector('.sched-t-time')?.value.trim()||'';
+    const t=row.querySelector('.sched-in-task')?.value.trim()||'';
+    const tm=row.querySelector('.sched-in-clock')?.value.trim()||'';
     if(t||tm) out.push({task:t,time:tm});
   });
   return out;
 }
 async function teacherSaveScheduleDirect(sid){
+  if(window.ScheduleEditUI){
+    document.querySelectorAll('#teaScheduleRows .sched-in-clock').forEach(el=>ScheduleEditUI.onClockBlur(el));
+  }
   const rows=teacherCollectScheduleRows();
   try{
     await API.DailySchedule.setTeacherDirect(sid,rows);

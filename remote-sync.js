@@ -925,8 +925,11 @@
   }
 
   async function upsertStudentNoteRemote(note, sid) {
-    if (!usesSecureKv() || role() !== 'student' || !_studentPin) return;
-    const sb = getClient(); if (!sb) return;
+    if (!usesSecureKv() || role() !== 'student' || !_studentPin) {
+      throw new Error('note_save_unavailable');
+    }
+    const sb = getClient();
+    if (!sb) throw new Error('note_save_unavailable');
     await rpcOrThrow(sb, 'madrasa_rel_upsert_student_note', {
       p_pin: _studentPin,
       p_student_id: sid,
@@ -942,8 +945,9 @@
   }
 
   async function deleteStudentNoteRemote(sid, noteId) {
-    if (!usesSecureKv()) return;
-    const sb = getClient(); if (!sb) return;
+    if (!usesSecureKv()) throw new Error('note_delete_unavailable');
+    const sb = getClient();
+    if (!sb) throw new Error('note_delete_unavailable');
     if (role() === 'student' && _studentPin) {
       await rpcOrThrow(sb, 'madrasa_rel_delete_student_note', {
         p_pin: _studentPin,
@@ -955,7 +959,9 @@
         p_teacher_pin: _teacherPin,
         p_note_id: noteId,
       });
-    } else return;
+    } else {
+      throw new Error('note_delete_unavailable');
+    }
     const by = mem.studentNotesByStudent || {};
     if (by[sid]) by[sid] = by[sid].filter(n => n.id !== noteId);
   }

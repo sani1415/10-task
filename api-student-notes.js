@@ -62,6 +62,15 @@
     localStorage.setItem(LS_NOTES, JSON.stringify(map || {}));
   }
 
+  function _patchLocal(sid, note) {
+    const map = _readNotesLS();
+    const list = Array.isArray(map[sid]) ? map[sid] : [];
+    const ix = list.findIndex(n => n.id === note.id);
+    if (ix >= 0) list[ix] = note; else list.unshift(note);
+    map[sid] = list;
+    _writeNotesLS(map);
+  }
+
   const StudentNotes = {
     DEFAULT_CATS: DEFAULT_CATS.map(c => ({ ...c })),
 
@@ -126,6 +135,10 @@
       return (Array.isArray(all[sid]) ? all[sid] : []).map(_normNote);
     },
 
+    get(sid, noteId) {
+      return this.getAll(sid).find(n => n.id === noteId) || null;
+    },
+
     async add(sid, { text, categoryId }) {
       const note = {
         id: _uid('sn'),
@@ -136,20 +149,37 @@
         text: String(text || '').trim(),
       };
       if (!note.text) throw new Error('empty');
-      if (_remote() && _RS().upsertStudentNoteRemote) {
+      if (_remote()) {
+        if (!_RS() || !_RS().upsertStudentNoteRemote) throw new Error('note_save_unavailable');
         await _RS().upsertStudentNoteRemote(note, sid);
         return note;
       }
-      const map = _readNotesLS();
-      const list = Array.isArray(map[sid]) ? map[sid] : [];
-      list.unshift(note);
-      map[sid] = list;
-      _writeNotesLS(map);
+      _patchLocal(sid, note);
+      return note;
+    },
+
+    async update(sid, noteId, { text, categoryId }) {
+      const prev = this.get(sid, noteId);
+      if (!prev) throw new Error('not_found');
+      const note = {
+        ...prev,
+        categoryId: categoryId || prev.categoryId || 'general',
+        time: _nowTime(),
+        text: String(text || '').trim(),
+      };
+      if (!note.text) throw new Error('empty');
+      if (_remote()) {
+        if (!_RS() || !_RS().upsertStudentNoteRemote) throw new Error('note_save_unavailable');
+        await _RS().upsertStudentNoteRemote(note, sid);
+        return note;
+      }
+      _patchLocal(sid, note);
       return note;
     },
 
     async delete(sid, noteId) {
-      if (_remote() && _RS().deleteStudentNoteRemote) {
+      if (_remote()) {
+        if (!_RS() || !_RS().deleteStudentNoteRemote) throw new Error('note_delete_unavailable');
         await _RS().deleteStudentNoteRemote(sid, noteId);
         return;
       }

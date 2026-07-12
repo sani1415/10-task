@@ -109,8 +109,19 @@
 .stu-amal-dash-card{background:#fff;border-radius:20px;padding:12px 14px 14px;box-shadow:0 8px 24px rgba(15,118,110,.05);border:1px solid rgba(255,255,255,.9);margin-bottom:4px}
 .stu-amal-dash-card--empty{padding-bottom:12px}
 .stu-amal-dash-hint{font-size:12px;color:var(--gray-500);margin:8px 0 0;line-height:1.45;text-align:center}
-.stu-amal-dash-hd{display:flex;justify-content:center;align-items:center;margin-bottom:10px}
+.stu-amal-dash-hd{display:flex;justify-content:center;align-items:center;gap:8px;margin-bottom:10px;position:relative}
 .stu-amal-dash-title{font-size:15px;font-weight:700;color:#1e293b;text-align:center}
+.stu-amal-cal-btn{position:absolute;right:0;top:50%;transform:translateY(-50%);width:34px;height:34px;border:none;border-radius:10px;background:#F1F5F9;color:#475569;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.stu-amal-cal-btn:hover{background:#E2E8F0;color:#0f172a}
+.stu-amal-cal-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.amal-cal-popover{position:fixed;inset:0;z-index:220;display:none;align-items:flex-end;justify-content:center;padding:16px}
+.amal-cal-popover.open{display:flex}
+.amal-cal-backdrop{position:absolute;inset:0;background:rgba(15,23,42,.4);pointer-events:auto}
+.amal-cal-sheet{position:relative;z-index:1;width:100%;max-width:min(400px,100%);background:#fff;border-radius:18px;box-shadow:0 20px 50px rgba(15,23,42,.22);overflow:hidden;max-height:min(78vh,560px);display:flex;flex-direction:column}
+.amal-cal-sheet-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid var(--gray-200);background:#fff;flex-shrink:0}
+.amal-cal-sheet-title{font-size:15px;font-weight:800;color:var(--gray-800)}
+.amal-cal-close{border:none;background:var(--gray-100);color:var(--gray-600);width:32px;height:32px;border-radius:10px;font-size:16px;cursor:pointer;line-height:1}
+#amalCalPopover #amalCalendarContent{overflow-y:auto;-webkit-overflow-scrolling:touch}
 .stu-amal-rings{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
 .stu-ring-col{display:flex;flex-direction:column;align-items:center;text-align:center}
 .stu-svg-ring-wrap{position:relative;width:52px;height:52px;display:flex;align-items:center;justify-content:center}
@@ -123,6 +134,7 @@
 
 .stu-amal-list{padding:4px 20px 80px;background:transparent}
 #amal-panel-today.amal-panel{background:#f3f4f6}
+#amal-panel-biboron.amal-panel{background:#f3f4f6}
 #amal-panel-today .stu-amal-filters{padding-left:20px;padding-right:20px}
 
 /* ছাত্র আমল তালিকা — এক সারি (কম জায়গা) */
