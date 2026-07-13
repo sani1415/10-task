@@ -211,6 +211,9 @@
 .schedule-edit-del svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .stu-sched-table th:first-child{width:38%}
 .stu-sched-table td:first-child{font-weight:600;color:#43A047;white-space:pre-wrap;word-break:break-word}
+.stu-sched-row-del{width:32px;text-align:center!important}
+.stu-sched-row-del-btn{background:none;border:none;color:var(--gray-400);font-size:14px;cursor:pointer;padding:4px;line-height:1}
+.stu-sched-row-del-btn:active{color:#C62828}
 /* সময়সূচি সম্পাদনা — শিরোনাম */
 #scheduleEditModal .modal-title{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px}
 #scheduleEditModal .modal-title-ic{display:inline-flex;line-height:0;color:#4CAF50}
@@ -383,6 +386,7 @@
 
         <!-- ── Step 2: PIN ── -->
         <div id="loginStepPin" style="display:none">
+          <div id="loginPinForName" class="login-lbl-name" style="display:none"></div>
           <div class="login-lbl-c">পিন কোড দিন</div>
           <div class="stu-pin-dots">
             <div class="pin-dot" id="spd0"></div>
@@ -409,7 +413,6 @@
 
       </div>
       <div id="loginErr" class="login-err"></div>
-      <div id="loginPinForName" class="login-lbl-name" style="display:none"></div>
     </div>
   </div>
   <input id="loginId" type="hidden"><input id="loginPin" type="hidden">
@@ -418,7 +421,7 @@
 var _skId='',_skPin='';
 function _skUpdateIdDisplay(){[0,1,2].forEach(function(i){var d=document.getElementById('sid'+i);if(d)d.classList.toggle('filled',i<_skId.length);});}
 function _skUpdatePinDots(){[0,1,2,3].forEach(function(i){var d=document.getElementById('spd'+i);if(d)d.classList.toggle('filled',i<_skPin.length);});}
-function skp(field,digit){if(field==='id'){if(_skId.length>=3)return;_skId+=digit;_skUpdateIdDisplay();}else{if(_skPin.length>=4)return;_skPin+=digit;_skUpdatePinDots();if(_skPin.length===4)setTimeout(function(){if(typeof doLogin==='function')doLogin();},120);}}
+function skp(field,digit){if(field==='id'){if(_skId.length>=3)return;_skId+=digit;_skUpdateIdDisplay();if(_skId.length===3)setTimeout(function(){if(typeof loginIdNext==='function')loginIdNext();},120);}else{if(_skPin.length>=4)return;_skPin+=digit;_skUpdatePinDots();if(_skPin.length===4)setTimeout(function(){if(typeof doLogin==='function')doLogin();},120);}}
 function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay();}else{_skPin=_skPin.slice(0,-1);_skUpdatePinDots();}}
 </script>
 
@@ -512,7 +515,15 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
         <button type="button" class="daily-note-add-btn" onclick="openDailyNoteModal()"><span class="goal-btn-ic" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14M5 12h14"/></svg></span>নতুন নোট</button>
         <p class="daily-note-intro-text">আজকের অর্জন, ভালো কি হলো?, ভুল কি হলো? সংক্ষেপে লেখো।</p>
       </div>
-      <div class="daily-note-filter" id="dailyNoteFilter"></div>
+      <div class="daily-note-filter-bar">
+        <div class="daily-note-filter-wrap">
+          <button type="button" class="daily-note-filter-btn" onclick="toggleDailyNoteFilterMenu(this)" aria-haspopup="true" aria-label="ফিল্টার">
+            <span class="ic-svg" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 6h16"/><path d="M7 12h10"/><path d="M10 18h4"/></svg></span>
+            <span class="daily-note-filter-label" id="dailyNoteFilterLabel">সব</span>
+          </button>
+          <div class="daily-note-filter-menu" id="dailyNoteFilter"></div>
+        </div>
+      </div>
       <div id="dailyNoteList"></div>
       <div style="height:20px"></div>
     </div>
@@ -647,7 +658,7 @@ function skd(field){if(field==='id'){_skId=_skId.slice(0,-1);_skUpdateIdDisplay(
   </div>
   <textarea class="form-input daily-note-text" id="dailyNoteText" rows="12" placeholder="এখানে লিখুন, অথবা মাইকে বলে ট্রান্সক্রিপশন নিন…" oninput="updateDailyNoteSaveState()"></textarea>
   <div class="daily-note-modal-actions">
-    <button type="button" class="btn-secondary daily-note-action-btn" onclick="closeDailyNoteModal()">বাতিল</button>
+    <button type="button" id="dailyNoteCancelBtn" class="btn-secondary daily-note-action-btn" onclick="dailyNoteCancelClick()">বাতিল</button>
     <div class="daily-note-voice-wrap">
       <span id="dailyRecordTimer" class="daily-record-timer" aria-hidden="true">02:00</span>
       <button type="button" id="dailyRecordBtn" class="chat-mic-btn" onclick="toggleDailyRecording()" title="ভয়েস রেকর্ড" aria-label="রেকর্ড শুরু করুন">
@@ -743,6 +754,7 @@ let dailyNoteEditId=null;
 let _dailyVoiceBound=false;
 let dailyNoteCatId='general';
 let dailyNoteListFilter='all';
+let dailyNoteForced=false;
 let amalWorkDate=null; /* null = আজ; YYYY-MM-DD = নির্বাচিত দিন */
 
 function showUploadPrepError(e){
@@ -855,7 +867,7 @@ function loginIdNext(){
   document.getElementById('loginId').value=_skId;
   const s=API.Students.getByWaqfShortId(_skId);
   const nameEl=document.getElementById('loginPinForName');
-  if(nameEl){ nameEl.textContent=s?s.name:''; nameEl.style.display=s?'block':'none'; }
+  if(nameEl){ nameEl.textContent='ওয়াক্বফ নং: '+_skId+(s&&s.name?' · '+s.name:''); nameEl.style.display='block'; }
   document.getElementById('loginStepId').style.display='none';
   document.getElementById('loginStepPin').style.display='flex';
 }
@@ -926,8 +938,16 @@ function onLogin(){
   const sb=document.getElementById('stuInChatSearchBtn'); if(sb) sb.style.display='flex';
   var _nav=document.getElementById('stuBottomNav'); if(_nav) _nav.style.display='block';
   renderAll();
-  goTab('tasks');
+  goTab('tasks',true);
   void API.Pwa.enableNotificationsAfterAuth('student', { waqfId: me && me.waqfId });
+  checkFortnightlyLock();
+}
+function checkFortnightlyLock(){
+  if(!me||!API.StudentNotes) return false;
+  const status=API.StudentNotes.getFortnightlyStatus(me.id);
+  if(!status.locked) return false;
+  openDailyNoteModal(status.cfg,status.lastDate);
+  return true;
 }
 function waqfDaysSinceEnrollment(student){
   const en=student&&student.enrollmentDate;
@@ -954,7 +974,10 @@ function updateHeaderStats(){
   if(daysNumEl) daysNumEl.textContent=days==null?'—':String(days);
 }
 function logout(){
+  goTab('tasks',true);
   me=null;
+  dailyNoteForced=false;
+  closeModal('dailyNoteModal');
   try{ stopChatVoice(false); }catch(e){}
   try{ stopDailyRecording(false); }catch(e){}
   closeStuInChatSearch();
@@ -968,7 +991,6 @@ function logout(){
   if(_lnEl) _lnEl.style.display='none';
   document.getElementById('lockScreen').style.display='flex';
   Promise.resolve(API.refreshStudentLockHints()).then(()=>renderPendingSection());
-  goTab('tasks');
 }
 function renderAll(){ updateHeaderStats(); renderTaskSchedulePanel(); renderChat(); renderTaskList(); renderAmalDashboard(); renderExamList(); renderSentDocs(); renderReceivedDocs(); renderGoals(); renderDailyNotes(); updateBadges(); }
 
@@ -978,15 +1000,47 @@ function renderTaskSchedulePanel(){
   const ds=API.DailySchedule.getForStudent(me.id);
   const rows=ds.rows||[];
   const pend=ds.pending;
+  const isPending=!!(pend&&pend.status==='pending');
   let banner='';
-  if(pend&&pend.status==='pending')
-    banner='<div class="stu-sched-banner pending">⏳ আপনার পরিবর্তনের অনুমোদনের অপেক্ষায়। নিচে বর্তমান সময়সূচি দেখা যাচ্ছে।</div>';
+  if(isPending)
+    banner='<div class="stu-sched-banner pending">⏳ আপনার পরিবর্তনের অনুমোদনের অপেক্ষায় — নিচে কী বদলাচ্ছে দেখুন।</div>';
   else if(pend&&pend.status==='rejected')
     banner='<div class="stu-sched-banner rejected">✕ জিম্মাদার প্রত্যাখ্যান করেছেন'+(pend.teacherNote?(' · '+esc(pend.teacherNote)):'')+'। আবার সম্পাদনা করে পাঠাতে পারেন।</div>';
-  const body=rows.length
-    ? `<table class="stu-sched-table"><thead><tr><th>সময়</th><th>কাজ</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.time)}</td><td>${esc(r.task)}</td></tr>`).join('')}</tbody></table>`
-    : '';
-  el.innerHTML=`<div class="stu-sched-card"><div class="stu-sched-card-hd">বিসমিল্লাহির রহমানির রহিম</div>${banner}${body}<div class="stu-sched-foot"><button type="button" class="stu-sched-btn" onclick="openScheduleEditModal()">তৈরি করো</button></div></div><div style="height:16px"></div>`;
+  let body='';
+  if(isPending){
+    const diffOps=API.DailySchedule.diffRows(rows,pend.rows||[]);
+    body=diffOps.length
+      ? `<table class="stu-sched-table"><thead><tr><th>সময়</th><th>কাজ</th></tr></thead><tbody>${diffOps.map(op=>{const cls=op.type==='del'?' class="sched-diff-del"':op.type==='add'?' class="sched-diff-add"':'';return `<tr${cls}><td>${esc(op.row.time)}</td><td>${esc(op.row.task)}</td></tr>`;}).join('')}</tbody></table>`
+      : '<p style="padding:10px 14px;font-size:12px;color:var(--gray-500)">সম্পূর্ণ সময়সূচি মুছে ফেলার প্রস্তাব পাঠানো হয়েছে।</p>';
+  } else if(rows.length){
+    body=`<table class="stu-sched-table"><thead><tr><th>সময়</th><th>কাজ</th><th></th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td>${esc(r.time)}</td><td>${esc(r.task)}</td><td class="stu-sched-row-del"><button type="button" class="stu-sched-row-del-btn" onclick="scheduleDeleteRow(${i})" aria-label="সারি মুছুন">✕</button></td></tr>`).join('')}</tbody></table>`;
+  }
+  const showDeleteAll=!isPending&&rows.length>0;
+  el.innerHTML=`<div class="stu-sched-card"><div class="stu-sched-card-hd">বিসমিল্লাহির রহমানির রহিম</div>${banner}${body}<div class="stu-sched-foot"><button type="button" class="stu-sched-btn" onclick="openScheduleEditModal()">তৈরি করো</button>${showDeleteAll?'<button type="button" class="stu-sched-btn secondary" onclick="scheduleSubmitDeleteAll()">🗑 সম্পূর্ণ মুছুন</button>':''}</div></div><div style="height:16px"></div>`;
+}
+async function scheduleDeleteRow(idx){
+  if(!me||!API.DailySchedule) return;
+  const ds=API.DailySchedule.getForStudent(me.id);
+  const rows=ds.rows||[];
+  if(idx<0||idx>=rows.length) return;
+  const ok=await showConfirm('এই সারিটি মুছে ফেলার জন্য জিম্মাদারের অনুমোদন চাইবেন?',{title:'সারি মুছুন',okText:'পাঠান',danger:true});
+  if(!ok) return;
+  const reduced=rows.filter((_,i)=>i!==idx).map(r=>({task:r.task,time:r.time}));
+  try{
+    await API.DailySchedule.submitProposal(me.id,reduced);
+    renderTaskSchedulePanel();
+    showToast('মুছে ফেলার প্রস্তাব পাঠানো হয়েছে');
+  }catch(e){ console.error(e); showToast('পাঠানো যায়নি'); }
+}
+async function scheduleSubmitDeleteAll(){
+  if(!me||!API.DailySchedule) return;
+  const ok=await showConfirm('সম্পূর্ণ সময়সূচি মুছে ফেলার জন্য জিম্মাদারের অনুমোদন চাইবেন?',{title:'সম্পূর্ণ মুছুন',okText:'পাঠান',danger:true});
+  if(!ok) return;
+  try{
+    await API.DailySchedule.submitProposal(me.id,[]);
+    renderTaskSchedulePanel();
+    showToast('মুছে ফেলার প্রস্তাব পাঠানো হয়েছে');
+  }catch(e){ console.error(e); showToast('পাঠানো যায়নি'); }
 }
 
 const _schedDelIc='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg>';
@@ -1127,6 +1181,7 @@ async function scheduleSubmitForApproval(){
 
 document.addEventListener('click',function(e){
   if(!e.target.closest('.sched-ampm-wrap')) schedCloseAllAmpmMenus();
+  if(!e.target.closest('.daily-note-filter-wrap')) closeDailyNoteFilterMenu();
 });
 
 // ══ CHAT ═══════════════════════════════════════════════════
@@ -1851,14 +1906,28 @@ function dailyNoteDateLabel(date){
 function renderDailyNoteFilter(){
   const el=document.getElementById('dailyNoteFilter');
   if(!el||!API.StudentNotes) return;
-  const cats=API.StudentNotes.getCategories();
-  el.innerHTML=`<button type="button" class="filter-chip${dailyNoteListFilter==='all'?' active':''}" onclick="setDailyNoteFilter('all',this)">সব</button>`
-    +cats.map(c=>`<button type="button" class="filter-chip${dailyNoteListFilter===c.id?' active':''}" onclick="setDailyNoteFilter('${esc(c.id)}',this)">${esc(c.label)}</button>`).join('');
+  const items=[{id:'all',label:'সব'}].concat(API.StudentNotes.getCategories());
+  el.innerHTML=items.map(c=>`<button type="button" class="daily-note-filter-opt${dailyNoteListFilter===c.id?' active':''}" onclick="setDailyNoteFilter('${esc(c.id)}')">${esc(c.label)}</button>`).join('');
+  const lbl=document.getElementById('dailyNoteFilterLabel');
+  const active=items.find(c=>c.id===dailyNoteListFilter)||items[0];
+  if(lbl) lbl.textContent=active.label;
 }
-function setDailyNoteFilter(id,btn){
+function toggleDailyNoteFilterMenu(btn){
+  const menu=document.getElementById('dailyNoteFilter');
+  if(!menu) return;
+  const open=menu.classList.contains('open');
+  closeDailyNoteFilterMenu();
+  if(!open){ menu.classList.add('open'); btn.classList.add('open'); }
+}
+function closeDailyNoteFilterMenu(){
+  const menu=document.getElementById('dailyNoteFilter');
+  const btn=document.querySelector('.daily-note-filter-btn');
+  if(menu) menu.classList.remove('open');
+  if(btn) btn.classList.remove('open');
+}
+function setDailyNoteFilter(id){
   dailyNoteListFilter=id||'all';
-  document.querySelectorAll('#dailyNoteFilter .filter-chip').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
+  closeDailyNoteFilterMenu();
   renderDailyNotes();
 }
 function renderDailyNoteCats(){
@@ -1887,21 +1956,24 @@ function renderDailyNotes(){
   }
   el.innerHTML=filtered.map(n=>{
     const catLbl=API.StudentNotes?API.StudentNotes.catLabel(n.categoryId||'general'):'সাধারণ';
+    const locked=n.reviewStatus==='done';
+    const actions=locked?'':`<div class="daily-note-actions">
+          <button type="button" class="daily-note-act-btn edit" onclick="openDailyNoteEdit('${esc(n.id)}')" title="সম্পাদনা" aria-label="সম্পাদনা"><span class="ic-svg">${_svgNotePencil}</span></button>
+          <button type="button" class="daily-note-act-btn del" onclick="deleteDailyNote('${esc(n.id)}')" title="মুছুন" aria-label="মুছুন"><span class="ic-svg">${_svgNoteTrash}</span></button>
+        </div>`;
     return `<div class="daily-note-item">
     <div class="daily-note-main">
       <div class="daily-note-head-row">
         <div class="daily-note-date">${esc(dailyNoteDateLabel(n.date))}</div>
         <div class="daily-note-meta">
           <span class="daily-note-cat-badge">${esc(catLbl)}</span>
+          ${!locked?'<span class="daily-note-pending-badge">পর্যালোচনাধীন</span>':''}
           <span class="daily-note-time">${esc(n.time||'')}</span>
         </div>
       </div>
       <div class="daily-note-title-row">
         <span class="daily-note-title-preview">${esc(dailyNotePreview(n))}</span>
-        <div class="daily-note-actions">
-          <button type="button" class="daily-note-act-btn edit" onclick="openDailyNoteEdit('${esc(n.id)}')" title="সম্পাদনা" aria-label="সম্পাদনা"><span class="ic-svg">${_svgNotePencil}</span></button>
-          <button type="button" class="daily-note-act-btn del" onclick="deleteDailyNote('${esc(n.id)}')" title="মুছুন" aria-label="মুছুন"><span class="ic-svg">${_svgNoteTrash}</span></button>
-        </div>
+        ${actions}
       </div>
     </div>
   </div>`;
@@ -1973,19 +2045,32 @@ function toggleDailyRecording(){
 function stopDailyRecording(run){
   if(typeof VoiceType!=='undefined') VoiceType.stop('daily', !!run);
 }
-function openDailyNoteModal(){
+function openDailyNoteModal(forceCfg,forceLastDate){
   ensureDailyVoice();
   stopDailyRecording(false);
   dailyNoteEditId=null;
   dailyNoteSecondsLeft=120;
-  dailyNoteCatId='general';
+  dailyNoteForced=!!forceCfg;
+  dailyNoteCatId=forceCfg?(forceCfg.categoryId||'general'):'general';
   const title=document.getElementById('dailyNoteModalTitle');
-  if(title) title.textContent='নতুন বিবরণ';
+  if(title) title.textContent=dailyNoteForced?'পাক্ষিক বিবরণ (বাধ্যতামূলক)':'নতুন বিবরণ';
   const titleIn=document.getElementById('dailyNoteTitle');
   if(titleIn) titleIn.value='';
   const txt=document.getElementById('dailyNoteText');
-  if(txt) txt.value='';
+  if(txt){
+    txt.value='';
+    const lastLine=forceLastDate?`(সর্বশেষ বিবরণ: ${forceLastDate})`:'(এখনও কোনো পাক্ষিক বিবরণ জমা দেননি)';
+    txt.placeholder=dailyNoteForced
+      ? (forceCfg.questions&&forceCfg.questions.length
+          ? 'এই প্রশ্নগুলোর আলোকে লিখুন:\n'+forceCfg.questions.map(q=>'• '+q.text).join('\n')+'\n\n'+lastLine
+          : 'আজকের সার্বিক অবস্থা লিখুন (আমল, পড়ালেখা, সমস্যা — যা মনে হয়)\n\n'+lastLine)
+      : 'এখানে লিখুন, অথবা মাইকে বলে ট্রান্সক্রিপশন নিন…';
+  }
   renderDailyNoteCats();
+  const catSel=document.getElementById('dailyNoteCatSelect');
+  if(catSel) catSel.disabled=dailyNoteForced;
+  const cancelBtn=document.getElementById('dailyNoteCancelBtn');
+  if(cancelBtn) cancelBtn.textContent=dailyNoteForced?'লগ-আউট':'বাতিল';
   setDailyRecorderState('idle');
   updateDailyNoteSaveState();
   openModal('dailyNoteModal');
@@ -1994,8 +2079,10 @@ function openDailyNoteEdit(noteId){
   if(!me||!API.StudentNotes||!noteId) return;
   const note=API.StudentNotes.get(me.id, noteId);
   if(!note){ showToast('নোট পাওয়া যায়নি'); return; }
+  if(note.reviewStatus==='done'){ showToast('শিক্ষক পর্যালোচনা করে ফেলেছেন — এখন এডিট করা যাবে না'); return; }
   ensureDailyVoice();
   stopDailyRecording(false);
+  dailyNoteForced=false;
   dailyNoteEditId=note.id;
   dailyNoteSecondsLeft=120;
   dailyNoteCatId=note.categoryId||'general';
@@ -2004,16 +2091,25 @@ function openDailyNoteEdit(noteId){
   const titleIn=document.getElementById('dailyNoteTitle');
   if(titleIn) titleIn.value=note.title||'';
   const txt=document.getElementById('dailyNoteText');
-  if(txt) txt.value=note.text||'';
+  if(txt){ txt.value=note.text||''; txt.placeholder='এখানে লিখুন, অথবা মাইকে বলে ট্রান্সক্রিপশন নিন…'; }
   renderDailyNoteCats();
+  const catSel=document.getElementById('dailyNoteCatSelect');
+  if(catSel) catSel.disabled=false;
+  const cancelBtn=document.getElementById('dailyNoteCancelBtn');
+  if(cancelBtn) cancelBtn.textContent='বাতিল';
   setDailyRecorderState('idle');
   updateDailyNoteSaveState();
   openModal('dailyNoteModal');
 }
 function closeDailyNoteModal(){
+  if(dailyNoteForced) return;
   stopDailyRecording(false);
   dailyNoteEditId=null;
   closeModal('dailyNoteModal');
+}
+function dailyNoteCancelClick(){
+  if(dailyNoteForced){ logout(); return; }
+  closeDailyNoteModal();
 }
 async function saveDailyNote(){
   const txt=document.getElementById('dailyNoteText');
@@ -2024,31 +2120,36 @@ async function saveDailyNote(){
   stopDailyRecording(false);
   const btn=document.getElementById('dailyNoteSaveBtn');
   if(btn) btn.disabled=true;
+  const wasForced=dailyNoteForced;
   try{
     if(dailyNoteEditId){
       await API.StudentNotes.update(me.id, dailyNoteEditId, {text, title, categoryId:dailyNoteCatId||'general'});
     } else {
       await API.StudentNotes.add(me.id,{text, title, categoryId:dailyNoteCatId||'general'});
     }
+    dailyNoteForced=false;
     closeDailyNoteModal();
     renderDailyNotes();
-    showToast('বিবরণ সেভ হয়েছে');
+    showToast(wasForced?'✅ পাক্ষিক বিবরণ জমা হয়েছে':'বিবরণ সেভ হয়েছে');
   }catch(e){
     console.error(e);
-    showToast('সেভ হয়নি — আবার চেষ্টা করুন');
+    showToast(e.message==='note_locked'?'শিক্ষক পর্যালোচনা করে ফেলেছেন — এখন এডিট করা যাবে না':'সেভ হয়নি — আবার চেষ্টা করুন');
     updateDailyNoteSaveState();
   }
 }
 async function deleteDailyNote(id){
+  if(!me||!API.StudentNotes) return;
+  const note=API.StudentNotes.get(me.id,id);
+  if(note&&note.reviewStatus==='done'){ showToast('শিক্ষক পর্যালোচনা করে ফেলেছেন — এখন ডিলিট করা যাবে না'); return; }
   const ok=await showConfirm('এই বিবরণটি মুছে ফেলবেন?',{title:'বিবরণ মুছুন',okText:'মুছে ফেলুন',danger:true});
-  if(!ok||!me||!API.StudentNotes) return;
+  if(!ok) return;
   try{
     await API.StudentNotes.delete(me.id,id);
     renderDailyNotes();
     showToast('বিবরণ মুছে ফেলা হয়েছে');
   }catch(e){
     console.error(e);
-    showToast('মুছা যায়নি');
+    showToast(e.message==='note_locked'?'শিক্ষক পর্যালোচনা করে ফেলেছেন — এখন ডিলিট করা যাবে না':'মুছা যায়নি');
   }
 }
 function renderGoals(){
@@ -2190,8 +2291,8 @@ function updateBadges(){
 }
 
 // ══ NAV ════════════════════════════════════════════════════
-function goTab(tab){
-  uiViewTransition(()=>{
+function goTab(tab,instant){
+  const run=()=>{
   closeAmalCalendar();
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
@@ -2205,7 +2306,8 @@ function goTab(tab){
   if(tab==='tasks' && me){ renderAmalDashboard(); renderTaskList(); }
   if(tab==='docs'){ renderSentDocs(); renderReceivedDocs(); }
   if(tab==='goals') renderGoals();
-  });
+  };
+  if(instant) run(); else uiViewTransition(run);
 }
 
 // Hide bottom nav when keyboard is open (interactive-widget=resizes-content handles the rest)

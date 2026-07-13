@@ -134,6 +134,32 @@
         return d && d.pending && d.pending.status === 'pending';
       }).length;
     },
+
+    /** পুরনো বনাম প্রস্তাবিত rows-এর ক্রমানুসারে diff (LCS-based) — [{type:'same'|'del'|'add', row}] */
+    diffRows(oldRows, newRows) {
+      const oldArr = oldRows || [];
+      const newArr = newRows || [];
+      const key = r => (r.task || '') + '|' + (r.time || '');
+      const n = oldArr.length, m = newArr.length;
+      const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+      for (let i = n - 1; i >= 0; i--) {
+        for (let j = m - 1; j >= 0; j--) {
+          dp[i][j] = key(oldArr[i]) === key(newArr[j])
+            ? dp[i + 1][j + 1] + 1
+            : Math.max(dp[i + 1][j], dp[i][j + 1]);
+        }
+      }
+      const ops = [];
+      let i = 0, j = 0;
+      while (i < n && j < m) {
+        if (key(oldArr[i]) === key(newArr[j])) { ops.push({ type: 'same', row: newArr[j] }); i++; j++; }
+        else if (dp[i + 1][j] >= dp[i][j + 1]) { ops.push({ type: 'del', row: oldArr[i] }); i++; }
+        else { ops.push({ type: 'add', row: newArr[j] }); j++; }
+      }
+      while (i < n) { ops.push({ type: 'del', row: oldArr[i] }); i++; }
+      while (j < m) { ops.push({ type: 'add', row: newArr[j] }); j++; }
+      return ops;
+    },
   };
 
   /** Shared schedule editor (student + teacher) — start/end clock + AM/PM + task */

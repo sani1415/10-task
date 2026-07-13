@@ -249,9 +249,16 @@
         categoryId: n.category_id || 'general',
         date: n.note_date || '', time: n.note_time || '',
         title: n.title || '', text: n.text || '',
+        reviewStatus: n.review_status || 'done',
       });
     });
     mem.studentNotesByStudent = notesBy;
+    mem.fortnightly = {
+      enabled: !!cfg.fortnightly_enabled,
+      intervalDays: cfg.fortnightly_interval_days > 0 ? cfg.fortnightly_interval_days : 15,
+      categoryId: cfg.fortnightly_category_id || '',
+      questions: Array.isArray(cfg.fortnightly_questions) ? cfg.fortnightly_questions : [],
+    };
   }
 
   // ── Assemble relational student bundle → mem ─────────────────
@@ -335,9 +342,16 @@
         categoryId: n.category_id || 'general',
         date: n.note_date || '', time: n.note_time || '',
         title: n.title || '', text: n.text || '',
+        reviewStatus: n.review_status || 'done',
       });
     });
     mem.studentNotesByStudent = notesBy;
+    mem.fortnightly = {
+      enabled: !!cfg.fortnightly_enabled,
+      intervalDays: cfg.fortnightly_interval_days > 0 ? cfg.fortnightly_interval_days : 15,
+      categoryId: cfg.fortnightly_category_id || '',
+      questions: Array.isArray(cfg.fortnightly_questions) ? cfg.fortnightly_questions : [],
+    };
   }
 
   // ── Schedule / flush ─────────────────────────────────────────
@@ -861,6 +875,24 @@
     });
   }
 
+  async function updateFortnightlyConfigRemote(cfg) {
+    if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
+    const sb = getClient(); if (!sb) return;
+    await rpcOrThrow(sb, 'madrasa_rel_update_fortnightly_config', {
+      p_teacher_pin: _teacherPin,
+      p_enabled: !!cfg.enabled,
+      p_interval_days: cfg.intervalDays > 0 ? cfg.intervalDays : 15,
+      p_category_id: cfg.categoryId || '',
+      p_questions: cfg.questions || [],
+    });
+    mem.fortnightly = {
+      enabled: !!cfg.enabled,
+      intervalDays: cfg.intervalDays > 0 ? cfg.intervalDays : 15,
+      categoryId: cfg.categoryId || '',
+      questions: cfg.questions || [],
+    };
+  }
+
   async function upsertAcademicHistoryRemote(sid, record) {
     if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
     const sb = getClient(); if (!sb) return;
@@ -914,7 +946,7 @@
     });
   }
 
-  function _patchNoteInMem(note, sid) {
+  function _patchNoteInMem(note, sid, reviewStatus) {
     const by = mem.studentNotesByStudent || (mem.studentNotesByStudent = {});
     const list = by[sid] || (by[sid] = []);
     const ix = list.findIndex(n => n.id === note.id);
@@ -923,6 +955,7 @@
       categoryId: note.categoryId || 'general',
       date: note.date || '', time: note.time || '',
       title: note.title || '', text: note.text || '',
+      reviewStatus: reviewStatus || (ix >= 0 ? list[ix].reviewStatus : 'pending') || 'pending',
     };
     if (ix >= 0) list[ix] = row; else list.unshift(row);
   }
@@ -933,7 +966,7 @@
     }
     const sb = getClient();
     if (!sb) throw new Error('note_save_unavailable');
-    await rpcOrThrow(sb, 'madrasa_rel_upsert_student_note', {
+    const res = await rpcOrThrow(sb, 'madrasa_rel_upsert_student_note', {
       p_pin: _studentPin,
       p_student_id: sid,
       p_note: {
@@ -945,7 +978,21 @@
         text: note.text || '',
       },
     });
-    _patchNoteInMem(note, sid);
+    _patchNoteInMem(note, sid, res && res.review_status);
+  }
+
+  async function markNoteReviewedRemote(noteId) {
+    if (!usesSecureKv() || role() !== 'teacher' || !_teacherPin) return;
+    const sb = getClient(); if (!sb) return;
+    await rpcOrThrow(sb, 'madrasa_rel_mark_note_reviewed', {
+      p_teacher_pin: _teacherPin,
+      p_note_id: noteId,
+    });
+    const by = mem.studentNotesByStudent || {};
+    Object.keys(by).forEach(sid => {
+      const n = (by[sid] || []).find(x => x.id === noteId);
+      if (n) n.reviewStatus = 'done';
+    });
   }
 
   async function deleteStudentNoteRemote(sid, noteId) {
@@ -1111,9 +1158,9 @@
     fetchGroupsRemote, upsertGroupRemote, deleteGroupRemote,
     fetchDiaryRemote, upsertDiaryRemote, deleteDiaryRemote,
     upsertTeacherNoteRemote, deleteTeacherNoteRemote,
-    updateConfigRemote, upsertAcademicHistoryRemote, deleteAcademicHistoryRemote,
+    updateConfigRemote, updateFortnightlyConfigRemote, upsertAcademicHistoryRemote, deleteAcademicHistoryRemote,
     upsertGoalRemote, deleteGoalRemote, saveDocumentRemote, deleteDocumentRemote,
-    upsertStudentNoteRemote, deleteStudentNoteRemote,
+    upsertStudentNoteRemote, deleteStudentNoteRemote, markNoteReviewedRemote,
     upsertNoteCategoryRemote, deleteNoteCategoryRemote,
     submitQuizRemote, updateQuizScoreRemote, updateTaskStatusRemote, completeOnetimeTaskRemote,
     saveTaskRemote, saveQuizRemote, saveStudentRemote, updateStudentPinRemote,

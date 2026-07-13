@@ -81,6 +81,9 @@ body{font-family:var(--font);background:var(--gray-200);height:100vh;height:100d
 .tea-chat-sched-btn{border-radius:8px;padding:8px 14px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;border:none}
 .tea-chat-sched-btn--ok{background:#2E7D32;color:#fff}
 .tea-chat-sched-btn--no{background:#fff;color:#E65100;border:1.5px solid #E65100!important}
+/* সময়সূচি প্রস্তাব ডিফ — পুরনো (মুছে ফেলা/বদলানো) বনাম নতুন (যোগ/বদলানো) */
+.sched-diff-del td{background:#FFEBEE!important;color:#B71C1C;text-decoration:line-through;text-decoration-color:#E53935}
+.sched-diff-add td{background:#FFF9C4!important}
 .msg-date-sep{text-align:center;margin:8px 0}.msg-date-sep span{background:rgba(225,245,254,.95);color:var(--gray-600);font-size:12px;padding:3px 10px;border-radius:10px;box-shadow:var(--shadow-sm)}
 .msg-wrap{display:flex;flex-direction:column;max-width:78%;position:relative}.msg-wrap.out{align-self:flex-end}.msg-wrap.in{align-self:flex-start}
 .msg-sender{font-size:11px;font-weight:600;margin-bottom:2px;padding-left:4px}
@@ -250,6 +253,7 @@ body{font-family:var(--font);background:var(--gray-200);height:100vh;height:100d
 .daily-note-act-btn .ic-svg svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .daily-note-act-btn.edit{background:#E8F5E9;color:#2E7D32}.daily-note-act-btn.del{background:#FEE2E2;color:#991B1B}
 .daily-note-cat-badge{font-size:10px;font-weight:700;color:#2E7D32;background:#E8F5E9;border-radius:6px;padding:1px 6px;white-space:nowrap;line-height:1.4}
+.daily-note-pending-badge{font-size:10px;font-weight:700;color:#E65100;background:#FFF3E0;border-radius:6px;padding:1px 6px;white-space:nowrap;line-height:1.4}
 .daily-recorder{display:flex;gap:10px;align-items:center;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:8px 10px;margin-bottom:10px}
 .daily-record-btn{width:42px;height:42px;border:none;border-radius:50%;background:#4CAF50;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;box-shadow:0 4px 12px rgba(76,175,80,.22)}
 .daily-record-btn.recording{background:#F44336;box-shadow:0 4px 12px rgba(244,67,54,.2)}
@@ -277,7 +281,16 @@ body{font-family:var(--font);background:var(--gray-200);height:100vh;height:100d
 .daily-note-voice-wrap .chat-mic-btn{opacity:1;width:44px;height:44px;color:#4CAF50;background:#E8F5E9}
 .daily-note-voice-wrap .chat-mic-btn.recording{color:#fff;background:#EF5350}
 .daily-note-voice-wrap .chat-mic-btn.busy{color:#1565C0;background:#E3F2FD}
-.daily-note-filter{display:flex;flex-wrap:wrap;gap:6px;margin:0 12px 10px}
+.daily-note-filter-bar{margin:0 12px 10px}
+.daily-note-filter-wrap{position:relative;display:inline-block}
+.daily-note-filter-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1.5px solid var(--gray-300);color:var(--gray-600);padding:6px 12px;border-radius:20px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer}
+.daily-note-filter-btn .ic-svg svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.daily-note-filter-btn.open,.daily-note-filter-btn.open .ic-svg{color:#2E7D32;border-color:#2E7D32}
+.daily-note-filter-menu{display:none;position:absolute;left:0;top:calc(100% + 6px);z-index:5;background:#fff;border:1px solid #E2E8F0;border-radius:12px;box-shadow:0 8px 20px rgba(15,23,42,.12);overflow:hidden;min-width:150px}
+.daily-note-filter-menu.open{display:block}
+.daily-note-filter-opt{display:block;width:100%;text-align:right;background:none;border:none;padding:9px 14px;font-family:var(--font);font-size:13px;font-weight:500;color:var(--gray-600);cursor:pointer;white-space:nowrap}
+.daily-note-filter-opt:not(:last-child){border-bottom:1px solid var(--gray-100)}
+.daily-note-filter-opt.active{color:#2E7D32;font-weight:700;background:#E8F5E9}
 .daily-note-cat-select{appearance:auto;-webkit-appearance:menulist;cursor:pointer;padding-right:28px;font-weight:600;color:var(--gray-700);background:#F8FAFC}
 .note-cat-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--gray-100)}
 .note-cat-row:last-child{border-bottom:none}
