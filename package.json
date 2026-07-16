@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "build": "node scripts/inject-supabase-config.mjs && node scripts/inject-pwa-config.mjs && node scripts/build-routes.mjs",
-    "start": "npm run build && vercel dev --listen 3000",
+    "start": "npm run build && node scripts/dev-server.mjs",
     "import-firestore-students": "node scripts/import-firestore-students.mjs",
     "import-firestore-messages": "node scripts/import-firestore-messages.mjs"
   },

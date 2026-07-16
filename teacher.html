@@ -258,11 +258,14 @@
 .biboron-action-card.blue{background:#E3F2FD}.biboron-action-card.green{background:#E8F5E9}.biboron-action-card.orange{background:#FFF3E0}.biboron-action-card.red{background:#FFEBEE}
 .biboron-action-val{display:block;font-size:17px;font-weight:800;line-height:1;color:#0f172a;font-variant-numeric:tabular-nums}
 .biboron-action-lbl{display:block;margin-top:4px;font-size:10px;font-weight:700;line-height:1.15;color:var(--gray-500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.biboron-detail-panel{display:none;background:#fff;border-bottom:1px solid var(--gray-100);padding:8px 12px 10px}
+.biboron-detail-panel{display:none;background:#fff;border-bottom:1px solid var(--gray-100);padding:8px 12px 10px;flex-shrink:0}
 .biboron-detail-panel.open{display:block}
 .biboron-detail-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
 .biboron-detail-title{font-size:12px;font-weight:800;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .biboron-detail-close{width:28px;height:28px;border:none;border-radius:8px;background:#f1f5f9;color:#64748b;font-family:var(--font);font-size:16px;line-height:1;cursor:pointer}
+.biboron-detail-list{max-height:min(34vh,260px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-right:2px}
+.biboron-detail-list::-webkit-scrollbar{width:3px}
+.biboron-detail-list::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:2px}
 .biboron-detail-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid #f1f5f9}
 .biboron-detail-row:first-child{border-top:none}
 .biboron-detail-main{flex:1;min-width:0}
@@ -2472,7 +2475,7 @@ function renderBiboronDetailPanel(){
   const rows=biboronDetailRows(biboronDetailMode);
   el.style.display='block';
   el.innerHTML=`<div class="biboron-detail-head"><span class="biboron-detail-title">${titles[biboronDetailMode]||'তথ্য'}</span><button type="button" class="biboron-detail-close" onclick="showBiboronDetail('')">×</button></div>
-    <div class="biboron-detail-list">${rows.length?rows.slice(0,12).map(({s,row})=>`
+    <div class="biboron-detail-list">${rows.length?rows.map(({s,row})=>`
       <div class="biboron-detail-row">
         <div class="biboron-detail-main">
           <div class="biboron-detail-name">${esc(s.name)}</div>
