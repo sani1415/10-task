@@ -192,6 +192,18 @@
 .csp-amal-month{background:#fff;border:1px solid #f1f5f9;border-radius:10px;padding:7px 5px;text-align:center;min-width:0}
 .csp-amal-month-name{display:block;font-size:10px;font-weight:900;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .csp-amal-month-val{display:block;margin-top:4px;font-size:12px;font-weight:900;color:#0f172a}
+.csp-amal-ring-wrap{margin:2px 0 4px;padding:0}
+.csp-amal-ring-card{margin:0;border-color:#e8eef3;box-shadow:0 6px 20px rgba(15,118,110,.05)}
+.csp-amal-ring-card .stu-amal-dash-hd{min-height:auto;margin-bottom:10px}
+.csp-amal-ring-card .stu-amal-dash-title-wrap{padding:0 40px}
+.csp-amal-readonly-grid .weekly-amal-card{margin:4px 0}
+.csp-amal-readonly-grid .weekly-amal-cell{cursor:default;user-select:none}
+.csp-amal-readonly-grid .weekly-amal-cell:active{background:#fff}
+.csp-amal-readonly-grid .weekly-amal-cell.on:active{background:#E8F5E9}
+.csp-amal-readonly-grid .weekly-amal-cell.off:active{background:#FFEBEE}
+.csp-doc-body{flex:1;min-width:0}
+.csp-doc-body .csp-row-main{display:block}
+.csp-doc-review{margin-top:5px;padding:6px 8px;border-radius:8px;background:#E8F5E9;color:#2E7D32;font-size:11px;font-weight:600;line-height:1.4;white-space:normal}
 .csp-week-grid-card{background:#fff;border:1px solid #e8eef3;border-radius:12px;padding:9px 10px}
 .csp-week-grid-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px}
 .csp-week-grid-title{font-size:12px;font-weight:900;color:#0f172a;line-height:1.3}
@@ -1079,6 +1091,18 @@
   <div class="profile-edit-body" id="profileEditBody"></div>
 </div></div>
 
+<!-- Teacher-side amal history calendar (same view as the student dashboard) -->
+<div class="amal-cal-popover" id="teacherAmalCalPopover" aria-hidden="true">
+  <div class="amal-cal-backdrop" onclick="closeTeacherAmalCalendar()"></div>
+  <div class="amal-cal-sheet" role="dialog" aria-label="আমল ইতিহাস">
+    <div class="amal-cal-sheet-hd">
+      <span class="amal-cal-sheet-title">আমল ইতিহাস</span>
+      <button type="button" class="amal-cal-close" onclick="closeTeacherAmalCalendar()" aria-label="বন্ধ">✕</button>
+    </div>
+    <div id="teacherAmalCalendarContent" style="overflow-y:auto;-webkit-overflow-scrolling:touch"></div>
+  </div>
+</div>
+
 <!-- Doc preview modal -->
 <div class="modal-overlay" id="docPreviewModal"><div class="modal-sheet doc-preview-sheet">
   <div class="modal-handle"></div>
@@ -1145,7 +1169,7 @@
 <script src="pwa-notify.js"></script>
 <script>
 // ══ State ══════════════════════════════════════════════════
-let pin='', curTab='chats', curChat=null, curChatTab='msg', chatReturnTab='chats', chatNoteView='teacher', tFilter='all', docFilter='all', editSid=null;
+let pin='', curTab='chats', curChat=null, curChatTab='msg', chatReturnTab='chats', chatNoteView='teacher', tFilter='all', docFilter='all', editSid=null, teacherAmalEndDate='';
 let _bcReadCounts={}; // { [bc_id]: {read_count, total_count} }
 let currentGrpId=null;
 let newTaskType='daily';
@@ -1575,7 +1599,7 @@ function openChat(id, initialTab){
   document.getElementById('app').classList.add('in-chat');
   chatReturnTab=(curTab&&document.getElementById('screen-'+curTab))?curTab:'chats';
   if(initialTab!=='note') chatNoteView='teacher';
-  curChat=id; const isBC=id==='_broadcast';
+  curChat=id; teacherAmalEndDate=API.today(); const isBC=id==='_broadcast';
   const s=isBC?null:API.Students.getById(id);
   // Mark student messages as read — this triggers double-tick on student's side
   API.Messages.markRead(id==='_broadcast'?'_bc':id,'in');
@@ -1993,8 +2017,70 @@ function goProfileEditTab(tab,btn){
   pane.classList.add('active');
   if(tab==='schedule'&&curProfileSid&&typeof renderSchedulePane==='function') renderSchedulePane(API.Students.getById(curProfileSid));
 }
-function chatAmalKpi(val,label){
-  return `<div class="csp-amal-kpi"><span class="csp-amal-kpi-val">${esc(val)}</span><span class="csp-amal-kpi-lbl">${esc(label)}</span></div>`;
+function chatAmalRing(pct,stroke,label){
+  const p=Math.round(Math.min(100,Math.max(0,Number(pct)||0)));
+  const r=22,c=2*Math.PI*r,off=c*(1-p/100);
+  const svg=`<svg class="stu-ring-svg" width="52" height="52" viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="${r}" fill="none" stroke="#e8e8e8" stroke-width="5"/><circle cx="26" cy="26" r="${r}" fill="none" stroke="${stroke}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}" transform="rotate(-90 26 26)"/></svg>`;
+  return `<div class="stu-ring-col"><div class="stu-svg-ring-wrap">${svg}<span class="stu-ring-pct">${p}%</span></div><span class="stu-ring-lbl">${esc(label)}</span></div>`;
+}
+function renderTeacherAmalSummary(sid){
+  const prog=API.Tasks.getProgressSummary(sid);
+  const selected=teacherAmalEndDate||API.today();
+  const selectedDay=selected===API.today()?prog.today:API.Tasks.getRangeProgress(sid,selected,selected);
+  const date=new Date(selected+'T12:00:00Z').toLocaleDateString('bn-BD',{day:'numeric',month:'long',year:'numeric',timeZone:'Asia/Dhaka'});
+  const backIcon='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"/></svg>';
+  const calIcon='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>';
+  return `<div class="csp-amal-ring-wrap"><div class="stu-amal-dash-card csp-amal-ring-card">
+    <div class="stu-amal-dash-hd"><button type="button" class="stu-amal-yday-btn" onclick="shiftTeacherAmalDate(-1)" title="আগের দিন" aria-label="আগের দিন">${backIcon}</button><div class="stu-amal-dash-title-wrap"><div class="stu-amal-dash-title">মুহাসাবা</div><div class="stu-amal-dash-date">${esc(date)}</div></div><button type="button" class="stu-amal-cal-btn" onclick="openTeacherAmalCalendar()" title="আমল ইতিহাস" aria-label="আমল ইতিহাস ক্যালেন্ডার">${calIcon}</button></div>
+    <div class="stu-amal-rings">${chatAmalRing(selectedDay?.percent,'#4CAF50',selected===API.today()?'আজ':'নির্বাচিত')}${chatAmalRing(prog.week?.percent,'#43A047','সপ্তাহ')}${chatAmalRing(prog.month?.percent,'#42A5F5','মাস')}${chatAmalRing(prog.all?.percent,'#8D6E63','শুরু থেকে')}</div>
+  </div></div>`;
+}
+function shiftTeacherAmalDate(delta){
+  teacherAmalEndDate=teacherWeekDateAdd(teacherAmalEndDate||API.today(),delta);
+  if(teacherAmalEndDate>API.today()) teacherAmalEndDate=API.today();
+  renderChatTasks();
+}
+function openTeacherAmalCalendar(){
+  const pop=document.getElementById('teacherAmalCalPopover'); if(!pop||!curChat) return;
+  const selected=teacherAmalEndDate||API.today();
+  const parts=selected.split('-'); window._teacherCalYear=Number(parts[0]); window._teacherCalMonth=Number(parts[1]);
+  pop.classList.add('open'); pop.setAttribute('aria-hidden','false');
+  renderTeacherAmalCalendar();
+}
+function closeTeacherAmalCalendar(){
+  const pop=document.getElementById('teacherAmalCalPopover'); if(!pop) return;
+  pop.classList.remove('open'); pop.setAttribute('aria-hidden','true');
+}
+function selectTeacherAmalDate(date){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(String(date||''))) return;
+  teacherAmalEndDate=date>API.today()?API.today():date;
+  closeTeacherAmalCalendar();
+  renderChatTasks();
+}
+function renderTeacherAmalCalendar(){
+  const el=document.getElementById('teacherAmalCalendarContent'); if(!el||!curChat) return;
+  const today=API.today(),selected=teacherAmalEndDate||today;
+  if(!window._teacherCalYear){const t=selected.split('-');window._teacherCalYear=Number(t[0]);window._teacherCalMonth=Number(t[1]);}
+  const y=window._teacherCalYear,m=window._teacherCalMonth;
+  const data=API.Tasks.getCalendarData(curChat,y,m);
+  const dInM=new Date(y,m,0).getDate(),firstDay=new Date(y,m-1,1).getDay();
+  const pad=n=>String(n).padStart(2,'0');
+  const mNames=['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+  let h=`<div class="cal-header"><button type="button" class="date-nav-btn" onclick="teacherAmalCalNav(-1)">◀</button><span class="cal-month-title">${mNames[m-1]} ${y}</span><button type="button" class="date-nav-btn" onclick="teacherAmalCalNav(1)">▶</button></div><div class="s-cal-grid"><div class="s-cal-day-hd">রবি</div><div class="s-cal-day-hd">সোম</div><div class="s-cal-day-hd">মঙ্গল</div><div class="s-cal-day-hd">বুধ</div><div class="s-cal-day-hd">বৃহঃ</div><div class="s-cal-day-hd">শুক্র</div><div class="s-cal-day-hd">শনি</div>`;
+  for(let i=0;i<firstDay;i++) h+='<div class="s-cal-cell empty"></div>';
+  for(let d=1;d<=dInM;d++){
+    const date=`${y}-${pad(m)}-${pad(d)}`,cell=data[date],isToday=date===today,isSelected=date===selected;
+    if(date>today){h+=`<div class="s-cal-cell future${isToday?' cal-today':''}"><span class="s-cal-date">${d}</span></div>`;continue;}
+    if(!cell){h+=`<button type="button" class="s-cal-cell selectable${isToday?' cal-today':''}${isSelected?' selected':''}" onclick="selectTeacherAmalDate('${date}')"><span class="s-cal-date">${d}</span></button>`;continue;}
+    const st=cell.status||cell,pct=typeof cell.percent==='number'?cell.percent:(st==='done'?100:st==='partial'?50:0);
+    h+=`<button type="button" class="s-cal-cell selectable ${st}${isToday?' cal-today':''}${isSelected?' selected':''}" onclick="selectTeacherAmalDate('${date}')"><span class="s-cal-date">${d}</span><span class="s-cal-pct">${pct}%</span></button>`;
+  }
+  el.innerHTML=h+'</div>';
+}
+function teacherAmalCalNav(dir){
+  let m=window._teacherCalMonth+dir,y=window._teacherCalYear;
+  if(m>12){m=1;y++;} if(m<1){m=12;y--;}
+  window._teacherCalMonth=m; window._teacherCalYear=y; renderTeacherAmalCalendar();
 }
 function chatAmalDateLabel(date){
   try{ return new Date(date+'T12:00:00Z').toLocaleDateString('bn-BD',{day:'numeric',month:'short',timeZone:'Asia/Dhaka'}); }
@@ -2021,19 +2107,30 @@ function chatAmalMonthLabel(date){
 }
 function renderAmalHistoryBreakdown(sid){
   const today=API.today();
-  const days=Array.from({length:7},(_,i)=>teacherWeekDateAdd(today,i-6));
-  const dayHtml=days.map(date=>{
-    const p=API.Tasks.getRangeProgress(sid,date,date);
-    const cls=p.total&&p.done===p.total?'ok':p.done>0?'warn':'bad';
-    return `<div class="csp-amal-day ${cls}"><span class="csp-amal-day-date">${esc(chatAmalDateLabel(date))}</span><span class="csp-amal-day-val">${p.done}/${p.total}</span></div>`;
-  }).join('');
   const months=[0,-1,-2].map(offset=>chatAmalMonthAdd(today,offset));
   const monthHtml=months.map(start=>{
     const p=API.Tasks.getRangeProgress(sid,start,chatAmalMonthEnd(start));
     return `<div class="csp-amal-month"><span class="csp-amal-month-name">${esc(chatAmalMonthLabel(start))}</span><span class="csp-amal-month-val">${p.percent}% · ${p.done}/${p.total}</span></div>`;
   }).join('');
-  return `<div class="csp-amal-section-title">দিনভিত্তিক</div><div class="csp-amal-days">${dayHtml}</div>
-    <div class="csp-amal-section-title">মাসভিত্তিক</div><div class="csp-amal-months">${monthHtml}</div>`;
+  return `<div class="csp-amal-section-title">মাসভিত্তিক</div><div class="csp-amal-months">${monthHtml}</div>`;
+}
+function renderTeacherAmalSevenDays(sid){
+  const end=teacherAmalEndDate||API.today();
+  const dates=Array.from({length:7},(_,i)=>teacherWeekDateAdd(end,i-6));
+  const tasks=API.Tasks.getForStudent(sid).filter(t=>t.type==='daily');
+  if(!tasks.length) return '<div class="csp-amal-section-title">৭ দিনের আমল</div><div class="csp-empty" style="padding:12px 0">কোনো দৈনিক আমল নেই।</div>';
+  let done=0;
+  tasks.forEach(t=>dates.forEach(date=>{ if(API.Tasks.isCompleted(t.id,sid,date)) done++; }));
+  const total=tasks.length*dates.length;
+  const pct=total?Math.round(done/total*100):0;
+  return `<div class="csp-amal-readonly-grid"><div class="weekly-amal-card">
+    <div class="weekly-amal-head"><div><div class="weekly-amal-title">৭ দিনের আমল</div><div class="weekly-amal-sub">${esc(dates[0])} – ${esc(dates[6])} · ${done}/${total} · ${pct}%</div></div></div>
+    <div class="weekly-amal-grid-wrap"><div class="weekly-amal-grid" style="--week-cols:${dates.length}">
+      <div class="weekly-amal-corner">আমল</div>
+      ${dates.map(date=>`<div class="weekly-amal-day"><span class="weekly-amal-date">${esc(new Date(date+'T12:00:00Z').toLocaleDateString('bn-BD',{day:'numeric',timeZone:'Asia/Dhaka'}))}</span><span class="weekly-amal-weekday">${esc(new Date(date+'T12:00:00Z').toLocaleDateString('bn-BD',{weekday:'short',timeZone:'Asia/Dhaka'}))}</span></div>`).join('')}
+      ${tasks.map(t=>`<div class="weekly-amal-task">${esc(t.title)}</div>${dates.map(date=>{const on=!!API.Tasks.isCompleted(t.id,sid,date);return `<div class="weekly-amal-cell ${on?'on':'off'}" aria-label="${esc(t.title)} ${esc(date)} ${on?'সম্পন্ন':'অসম্পন্ন'}">${on?'✓':'✕'}</div>`;}).join('')}`).join('')}
+    </div></div>
+  </div></div>`;
 }
 function renderChatTasks(){
   const el=document.getElementById('csp-task'); if(!el||!curChat) return;
@@ -2041,17 +2138,6 @@ function renderChatTasks(){
   const stLbl={done:'সম্পন্ন',pending:'বকেয়া',late:'দেরি'};
   const stCls={done:'ok',pending:'warn',late:'bad'};
   const addBtn=`<button type="button" class="csp-add-btn" onclick="openAddTask('${curChat}')">＋ নতুন আমল</button>`;
-  const prog=API.Tasks.getProgressSummary(curChat);
-  const weeklyNotes=getWeeklyReceiptNotes(curChat);
-  const summary=`<div class="csp-amal-summary">
-    ${chatAmalKpi(`${prog.today?.done||0}/${prog.today?.total||0}`,'আজ')}
-    ${chatAmalKpi(`${prog.week?.done||0}/${prog.week?.total||0}`,'সপ্তাহ')}
-    ${chatAmalKpi(`${prog.month?.done||0}/${prog.month?.total||0}`,'মাস')}
-    ${chatAmalKpi(`${prog.all?.percent||0}%`,'শুরু থেকে')}
-  </div>`;
-  const archive=weeklyNotes.length
-    ? `<div class="csp-amal-section-title">সাপ্তাহিক জমার ইতিহাস</div>${weeklyNotes.map(n=>renderWeeklyReceiptNote(n,'সাপ্তাহিক')).join('')}`
-    : '<div class="csp-amal-section-title">সাপ্তাহিক জমার ইতিহাস</div><div class="csp-empty" style="padding:12px 0">এখনও কোনো সাপ্তাহিক জমা নেই।</div>';
   const taskRows=tasks.length?tasks.map(t=>{
     const isDaily=t.type==='daily';
     const st=isDaily?(API.Tasks.isDailyDoneToday(t,curChat)?'done':'pending'):(t.assignees[curChat]||'pending');
@@ -2062,7 +2148,7 @@ function renderChatTasks(){
       <span class="csp-row-meta ${stCls[st]||'warn'}">${stLbl[st]||st}</span>
     </div>`;
   }).join(''):'<div class="csp-empty" style="padding:12px 0">কোনো আমল নেই।</div>';
-  el.innerHTML=addBtn+summary+renderAmalHistoryBreakdown(curChat)+archive+'<div class="csp-amal-section-title">বর্তমান আমল</div>'+taskRows;
+  el.innerHTML=addBtn+renderTeacherAmalSummary(curChat)+renderAmalHistoryBreakdown(curChat)+renderTeacherAmalSevenDays(curChat)+'<div class="csp-amal-section-title">বর্তমান আমল</div>'+taskRows;
 }
 function renderChatDocs(){
   const el=document.getElementById('csp-doc'); if(!el||!curChat) return;
@@ -2071,8 +2157,9 @@ function renderChatDocs(){
   el.innerHTML=docs.map(d=>{
     const when=d.uploadedAt?API.bdDateStr(d.uploadedAt):'';
     const note=d.note?` · ${esc(d.note)}`:'';
+    const review=d.reviewStatus==='done'&&d.reviewComment?`<div class="csp-doc-review"><strong>মন্তব্য:</strong> ${esc(d.reviewComment)}</div>`:'';
     return `<div class="csp-row clickable" onclick="teacherPreviewChatDoc('${d.id}',true);switchChatTab('doc',document.getElementById('cst-doc'))">
-      <div class="csp-row-main">${esc(d.fileName)}</div>
+      <div class="csp-doc-body"><div class="csp-row-main">${esc(d.fileName)}</div>${review}</div>
       <span class="csp-row-meta">${when}${note}</span>
       ${!d.read?'<span class="csp-row-dot" title="অপঠিত"></span>':''}
     </div>`;
