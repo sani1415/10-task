@@ -816,6 +816,11 @@
       <div class="backup-card" style="text-align:center">
         <button class="backup-btn" style="background:#1565C0" onclick="localStorage.setItem('madrasa_lastPanel','student');location.href='/student/'">🎒 ছাত্র প্যানেলে যান</button>
       </div>
+      <div class="sec-hd">সেশন</div>
+      <div class="backup-card">
+        <p style="margin-bottom:10px">লগআউট না করলে এই ডিভাইসে অ্যাপ খুললেই সরাসরি ভিতরে যাবে — পিন আবার দিতে হবে না।</p>
+        <button type="button" class="backup-btn" style="background:#c62828" onclick="teacherLogout()">🚪 লগআউট</button>
+      </div>
     </div>
     <div style="height:20px"></div>
   </div>
@@ -1282,9 +1287,56 @@ function showUploadPrepError(e){
 }
 
 // ══ Init ═══════════════════════════════════════════════════
+function enterTeacherApp(){
+  localStorage.setItem('madrasa_lastPanel','teacher');
+  document.getElementById('lockScreen').style.display='none';
+  var _tn=document.getElementById('teaBottomNav'); if(_tn) _tn.style.display='block';
+  const err=document.getElementById('pinErr'); if(err) err.textContent='';
+  pin=''; dots();
+  renderAll();
+  void API.Pwa.enableNotificationsAfterAuth('teacher').then(updateTeacherNotifBtn);
+}
+function setLockStatus(msg){
+  const err=document.getElementById('pinErr');
+  if(err) err.textContent=msg||'';
+}
+async function tryRestoreTeacherSession(){
+  const saved=API.Auth.getTeacherSessionPin();
+  if(!saved) return false;
+  try{
+    if(window.RemoteSync && RemoteSync.isRemote() && RemoteSync.usesSecureKv()){
+      await API.unlockTeacherRemote(saved);
+      await API.DB.finalizeRemoteTeacherAfterUnlock();
+    } else if(!API.Auth.checkTeacherPin(saved)){
+      API.Auth.clearTeacherSession();
+      return false;
+    }
+    enterTeacherApp();
+    return true;
+  } catch(e){
+    console.warn('teacher session restore failed', e);
+    API.Auth.clearTeacherSession();
+    return false;
+  }
+}
+async function teacherLogout(){
+  if(!confirm('লগআউট করবেন? পরেরবার পিন দিতে হবে।')) return;
+  API.Auth.clearTeacherSession();
+  try{
+    if(window.RemoteSync && RemoteSync.isRemote() && RemoteSync.bootstrapTeacherIdle)
+      await RemoteSync.bootstrapTeacherIdle();
+  } catch(e){ console.warn(e); }
+  try{ if(document.getElementById('chatView')?.classList.contains('open')) closeChat(); }catch(e){}
+  try{ closeInChatSearch(); }catch(e){}
+  goTab('chats');
+  var _tn=document.getElementById('teaBottomNav'); if(_tn) _tn.style.display='none';
+  pin=''; dots(); setLockStatus('');
+  document.getElementById('lockScreen').style.display='flex';
+  showToast('লগআউট হয়েছে');
+}
 function init(){
   if(window.MadrasaPwa) MadrasaPwa.markPushSlot('teacher');
-  Promise.resolve(API.DB.init()).then(()=>{
+  Promise.resolve(API.DB.init()).then(async ()=>{
     void API.Pwa.registerServiceWorker();
     API.Tasks.resetDailyForToday();
     const t=API.DB.getTeacher();
@@ -1299,6 +1351,7 @@ function init(){
     document.addEventListener('visibilitychange',()=>{
       if(document.visibilityState==='visible') void API.Pwa.refreshPushSubscription('teacher').then(updateTeacherNotifBtn);
     });
+    await tryRestoreTeacherSession();
   }).catch(e=>{ console.error(e); const la=document.getElementById('lockAppName'); if(la){ la.textContent='সার্ভার সংযোগ ব্যর্থ'; la.removeAttribute('dir'); la.removeAttribute('lang'); la.classList.add('lock-soft-app-name--err'); } });
 }
 window.addEventListener('madrasa-remote-sync',()=>{
@@ -1364,16 +1417,13 @@ function pk(k){ if(!k||pin.length>=4) return; pin+=k; dots(); if(pin.length===4)
 function pd(){ pin=pin.slice(0,-1); dots(); }
 function dots(){ [0,1,2,3].forEach(i=>document.getElementById('d'+i).classList.toggle('filled',i<pin.length)); }
 async function chkPin(){
+  const entered=pin;
   if(window.RemoteSync && RemoteSync.isRemote() && RemoteSync.usesSecureKv()){
     try{
-      await API.unlockTeacherRemote(pin);
+      await API.unlockTeacherRemote(entered);
       await API.DB.finalizeRemoteTeacherAfterUnlock();
-      localStorage.setItem('madrasa_lastPanel','teacher');
-      document.getElementById('lockScreen').style.display='none';
-      var _tn=document.getElementById('teaBottomNav'); if(_tn) _tn.style.display='block';
-      pin=''; dots();
-      renderAll();
-      void API.Pwa.enableNotificationsAfterAuth('teacher').then(updateTeacherNotifBtn);
+      API.Auth.saveTeacherSession(entered);
+      enterTeacherApp();
     } catch(e){
       document.getElementById('pinErr').textContent='পিন ভুল হয়েছে';
       pin=''; dots();
@@ -1381,8 +1431,14 @@ async function chkPin(){
     }
     return;
   }
-  if(API.Auth.checkTeacherPin(pin)){ localStorage.setItem('madrasa_lastPanel','teacher'); document.getElementById('lockScreen').style.display='none'; var _tn2=document.getElementById('teaBottomNav'); if(_tn2) _tn2.style.display='block'; renderAll(); void API.Pwa.enableNotificationsAfterAuth('teacher').then(updateTeacherNotifBtn); }
-  else { document.getElementById('pinErr').textContent='পিন ভুল হয়েছে'; pin=''; dots(); setTimeout(()=>document.getElementById('pinErr').textContent='',2000); }
+  if(API.Auth.checkTeacherPin(entered)){
+    API.Auth.saveTeacherSession(entered);
+    enterTeacherApp();
+  } else {
+    document.getElementById('pinErr').textContent='পিন ভুল হয়েছে';
+    pin=''; dots();
+    setTimeout(()=>document.getElementById('pinErr').textContent='',2000);
+  }
 }
 function refreshBCReadCounts(){
   if(typeof RemoteSync!=='undefined' && RemoteSync.getBroadcastReadCounts){

@@ -3,6 +3,7 @@ const API = (() => {
   const DB_KEY='madrasa_db', GOALS_KEY='madrasa_goals',
         EXAMS_KEY='madrasa_exams', DOCS_KEY='madrasa_docs',
         T_PIN_KEY='teacher_pin', DEF_PIN='1234',
+        T_SESSION_KEY='madrasa_teacher_session',
         PROG_SETTINGS_KEY='madrasa_progress_settings';
 
   const _useRemote = typeof window !== 'undefined' && window.RemoteSync && window.RemoteSync.isRemote();
@@ -111,6 +112,7 @@ const API = (() => {
   }
 
   // ── AUTH ──────────────────────────────────────────────────
+  // Teacher PWA: pin session in localStorage until explicit logout (one trusted device).
   const Auth = {
     getTeacherPin() {
       if (_useRemote) return RS.mem.teacherPin || DEF_PIN;
@@ -120,11 +122,26 @@ const API = (() => {
       if (_useRemote) {
         await RS.flushKey('teacher_pin', { pin: p });
         RS.mem.teacherPin = p;
-        return;
+      } else {
+        localStorage.setItem(T_PIN_KEY, p);
       }
-      localStorage.setItem(T_PIN_KEY, p);
+      if (this.getTeacherSessionPin()) this.saveTeacherSession(p);
     },
     checkTeacherPin(p)  { return p === this.getTeacherPin(); },
+    getTeacherSessionPin() {
+      try {
+        const p = String(localStorage.getItem(T_SESSION_KEY) || '').trim();
+        return /^\d{4}$/.test(p) ? p : null;
+      } catch (e) { return null; }
+    },
+    saveTeacherSession(pin) {
+      const p = String(pin || '').trim();
+      if (!/^\d{4}$/.test(p)) return;
+      try { localStorage.setItem(T_SESSION_KEY, p); } catch (e) {}
+    },
+    clearTeacherSession() {
+      try { localStorage.removeItem(T_SESSION_KEY); } catch (e) {}
+    },
   };
 
   // ── DB ────────────────────────────────────────────────────
