@@ -1150,6 +1150,7 @@
 <script src="remote-sync.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <script src="pdf-merge.js"></script>
+<script src="pdf-preview.js"></script>
 <script src="api-amal.js"></script>
 <script src="api.js"></script>
 <script src="api-daily-schedule.js"></script>
@@ -2347,9 +2348,11 @@ async function openDocPreview(docId, markAsRead){
   const content=document.getElementById('docPreviewContent');
   const _ft=meta.fileType||'';
   const _isImg=_ft==='image'||_ft.startsWith('image/');
-  const _isPdf=_ft==='pdf'||_ft==='application/pdf';
+  const _isPdf=window.PdfPreview?PdfPreview.isPdfMeta(meta):(_ft==='pdf'||_ft==='application/pdf');
   if(_isImg && data){
     content.innerHTML=`<img src=${JSON.stringify(data)} style="max-width:100%;max-height:65vh;border-radius:8px;object-fit:contain;display:block;margin:0 auto" alt="">`;
+  } else if(_isPdf && data && window.PdfPreview){
+    content.innerHTML='';
   } else if(_isPdf && data){
     content.innerHTML=`<iframe src=${JSON.stringify(data)} style="width:100%;height:65vh;border:none;border-radius:8px;background:var(--gray-100)" title="${esc(meta.fileName)}"></iframe>`;
   } else {
@@ -2361,6 +2364,7 @@ async function openDocPreview(docId, markAsRead){
   renderDocReviewState(meta);
   if(markAsRead){ API.Docs.markRead(docId); updateDocBadge(); }
   openModal('docPreviewModal');
+  if(_isPdf && data && window.PdfPreview) PdfPreview.render(content, data, { maxHeight:'65vh', fileName:meta.fileName });
 }
 function teacherPreviewChatDoc(docId, markRead){
   if(!docId) return;

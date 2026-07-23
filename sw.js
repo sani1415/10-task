@@ -1,9 +1,11 @@
 /* Waqful Madinah — full-app shell cache + Web Push display */
-var CACHE = 'waqful-full-v189';
+var CACHE = 'waqful-full-v190';
 
 var CDN_ASSETS = [
   'https://unpkg.com/@supabase/supabase-js@2.49.8/dist/umd/supabase.js',
   'https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js',
+  'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',
+  'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js',
 ];
 
 function baseHref() {
@@ -33,6 +35,7 @@ var LOCAL_SHELL = [
   'remote-sync-write.js',
   'remote-sync.js',
   'pdf-merge.js',
+  'pdf-preview.js',
   'pwa-notify.js',
   'manifest-teacher.webmanifest',
   'manifest-student.webmanifest',
