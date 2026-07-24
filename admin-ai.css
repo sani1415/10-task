@@ -1,4 +1,15 @@
-.ai-fab{position:fixed;right:18px;bottom:calc(86px + env(safe-area-inset-bottom));z-index:56;width:52px;height:52px;border:0;border-radius:18px;background:linear-gradient(145deg,#075e54,#128c7e);color:#fff;box-shadow:0 10px 28px rgba(7,94,84,.28);display:none;align-items:center;justify-content:center;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease}
+/* AI FAB — জিম্মাদার + বাটনের ঠিক উপরে (একই ডান কলাম) */
+.ai-fab{
+  position:fixed;
+  right:20px;
+  bottom:calc(20px + 72px + 56px + 12px + env(safe-area-inset-bottom));
+  z-index:101;
+  width:52px;height:52px;border:0;border-radius:50%;
+  background:linear-gradient(145deg,#075e54,#128c7e);color:#fff;
+  box-shadow:0 10px 28px rgba(7,94,84,.28);
+  display:none;align-items:center;justify-content:center;cursor:pointer;
+  transition:transform .18s ease,box-shadow .18s ease
+}
 .ai-fab.show{display:flex}.ai-fab:active{transform:scale(.94)}.ai-fab svg{width:25px;height:25px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.ai-fab-dot{position:absolute;right:7px;top:7px;width:8px;height:8px;border:2px solid #075e54;border-radius:50%;background:#9af6c9}
 .ai-shell{position:fixed;inset:0;z-index:120;background:rgba(6,32,29,.42);backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center}.ai-shell.open{display:flex}
 .ai-panel{width:min(100%,560px);height:min(88dvh,760px);background:#f5faf8;border-radius:24px 24px 0 0;box-shadow:0 -18px 50px rgba(8,47,43,.22);display:flex;flex-direction:column;overflow:hidden;animation:aiRise .2s ease-out}@keyframes aiRise{from{transform:translateY(25px);opacity:.7}to{transform:none;opacity:1}}
@@ -8,4 +19,4 @@
 .ai-thinking{display:flex;gap:5px;align-items:center;height:20px}.ai-thinking i{width:6px;height:6px;background:#75a79d;border-radius:50%;animation:aiDot 1s infinite}.ai-thinking i:nth-child(2){animation-delay:.16s}.ai-thinking i:nth-child(3){animation-delay:.32s}@keyframes aiDot{0%,60%,100%{transform:none;opacity:.35}30%{transform:translateY(-4px);opacity:1}}
 .ai-action{margin:7px 0 14px 0;background:#fff;border:1px solid #b9ddd2;border-radius:17px;padding:12px;box-shadow:0 5px 18px rgba(15,82,73,.07)}.ai-action-label{font-size:10px;font-weight:800;color:#0f766e;text-transform:uppercase;letter-spacing:.05em}.ai-action-name{font-size:13px;font-weight:800;color:#143c35;margin:4px 0}.ai-action-msg{font-size:12px;line-height:1.55;color:#475569;background:#f3f8f6;border-radius:10px;padding:9px;white-space:pre-wrap}.ai-action-btns{display:flex;gap:8px;margin-top:10px}.ai-action-btns button{flex:1;border:0;border-radius:10px;padding:9px;font:800 12px var(--font);cursor:pointer}.ai-action-cancel{background:#eef2f1;color:#536460}.ai-action-send{background:#075e54;color:#fff}.ai-action.sent{border-color:#bbf7d0;background:#f0fdf4}.ai-action.sent .ai-action-btns{display:none}
 .ai-compose{background:#fff;border-top:1px solid #dce8e4;padding:9px 10px calc(10px + env(safe-area-inset-bottom));display:flex;gap:7px;align-items:flex-end}.ai-input-wrap{flex:1;min-width:0;background:#f2f6f5;border:1.5px solid transparent;border-radius:16px;display:flex;align-items:flex-end}.ai-input-wrap:focus-within{border-color:#81b8aa;background:#fff}.ai-input{flex:1;max-height:112px;min-height:42px;border:0;background:transparent;resize:none;outline:0;padding:11px 5px 9px 12px;font:500 13px/1.45 var(--font);color:#193c35}.ai-mic,.ai-send{width:42px;height:42px;flex:0 0 42px;border:0;border-radius:14px;display:grid;place-items:center;cursor:pointer}.ai-mic{background:transparent;color:#66837c}.ai-mic.recording{background:#ef5350;color:#fff}.ai-mic.busy{background:#e3f2fd;color:#1565c0}.ai-send{background:#075e54;color:#fff}.ai-send:disabled{opacity:.45;cursor:wait}.ai-mic svg,.ai-send svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.ai-voice-time{position:absolute;right:72px;bottom:calc(61px + env(safe-area-inset-bottom));font-size:10px;font-weight:800;color:#ef4444;display:none}.ai-voice-time.is-live{display:block}
-@media(min-width:700px){.ai-shell{align-items:center}.ai-panel{height:min(82vh,760px);border-radius:24px}.ai-fab{right:calc(50% - 330px)}}
+@media(min-width:700px){.ai-shell{align-items:center}.ai-panel{height:min(82vh,760px);border-radius:24px}.ai-fab{right:calc((100% - 430px) / 2 + 20px)}}
