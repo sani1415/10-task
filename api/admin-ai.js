@@ -5,7 +5,7 @@
  * explicit confirmation in the teacher app.
  */
 const MODEL = process.env.GEMINI_AI_MODEL || 'gemini-3.1-flash-lite';
-const MAX_BODY_BYTES = 220 * 1024;
+const MAX_BODY_BYTES = 768 * 1024;
 const buckets = new Map();
 
 function ensureGeminiEnv() {
@@ -77,6 +77,21 @@ function requestsBackupDownload(message) {
   return mentionsBackup && requestsDownload;
 }
 
+function unreadMessagesReply(context) {
+  if (!context || context.unreadMessageBodiesIncluded !== true || !Array.isArray(context.unreadMessages)) return null;
+  const messages = context.unreadMessages;
+  if (!messages.length) return 'বর্তমানে ছাত্রদের কোনো অপঠিত বার্তা নেই।';
+  const lines = messages.map((item, index) => {
+    const name = cleanText(item?.studentName, 160) || 'অজানা ছাত্র';
+    const waqfId = cleanText(item?.waqfId, 80);
+    const time = cleanText(item?.time, 40);
+    const body = cleanText(item?.text, 2000) || '(খালি বার্তা)';
+    const meta = [waqfId ? `আইডি ${waqfId}` : '', time].filter(Boolean).join(' · ');
+    return `${index + 1}. ${name}${meta ? ` (${meta})` : ''}\n${body}`;
+  });
+  return `মোট ${messages.length}টি অপঠিত বার্তা রয়েছে:\n\n${lines.join('\n\n')}`;
+}
+
 function extractText(data) {
   const parts = data?.candidates?.[0]?.content?.parts;
   if (!Array.isArray(parts)) return '';
@@ -129,6 +144,10 @@ module.exports = async function handler(req, res) {
   if (!message || !context || !Array.isArray(context.students)) {
     return json(res, 400, { ok: false, error: 'প্রশ্ন বা প্রয়োজনীয় তথ্য পাওয়া যায়নি।' });
   }
+  const exactUnreadReply = unreadMessagesReply(context);
+  if (exactUnreadReply) {
+    return json(res, 200, { ok: true, reply: exactUnreadReply, action: null, model: 'deterministic-unread-messages' });
+  }
   if (requestsBackupDownload(message)) {
     return json(res, 200, {
       ok: true,
@@ -143,6 +162,7 @@ module.exports = async function handler(req, res) {
 ছাত্রের নাম আংশিক বা উচ্চারণভেদে মিলিয়ে দেখুন। একাধিক সম্ভাব্য মিল থাকলে action দেবেন না; স্পষ্টীকরণ চাইবেন।
 আজকের কাজ সম্পর্কে APP_DATA.students[].today ব্যবহার করুন। কোনো task-এর total 0 হলে তাকে সম্পন্ন দাবি করবেন না।
 বিবরণ/সারসংক্ষেপে notes, recentMessages, today, overall ও pending ব্যবহার করুন এবং সময়সীমা উল্লেখ করুন।
+অপঠিত/না-পড়া ছাত্র-বার্তার প্রশ্নে APP_DATA.unreadMessages ব্যবহার করুন। unreadMessageBodiesIncluded true হলে তালিকার প্রতিটি message ছাত্রের নাম, সময় ও পূর্ণ text-সহ দেখাবেন; কিছু বাদ দেবেন না। তালিকা খালি হলে স্পষ্টভাবে বলবেন কোনো অপঠিত বার্তা নেই।
 শুধু ব্যবহারকারী স্পষ্টভাবে কোনো ছাত্রকে বার্তা পাঠাতে বললে send_message action প্রস্তাব করুন। আপনি নিজে বার্তা পাঠাননি—বলবেন অনুমোদনের জন্য খসড়ি প্রস্তুত।
 ব্যবহারকারী স্পষ্টভাবে database/data/JSON backup download বা export করতে বললে download_backup action প্রস্তাব করুন। এটি বিদ্যমান app backup download চালাবে; আপনি নিজে database query করবেন না।
 কোনো delete, edit, restore/import, broadcast, PIN, গোপন তথ্য বা অন্য side effect প্রস্তাব করবেন না।
@@ -162,7 +182,7 @@ module.exports = async function handler(req, res) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: { responseMimeType: 'application/json', maxOutputTokens: 4096 },
+        generationConfig: { responseMimeType: 'application/json', maxOutputTokens: 8192 },
       }),
     });
     const data = await response.json().catch(() => ({}));

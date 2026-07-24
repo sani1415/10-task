@@ -45,6 +45,12 @@
   }
 
   function normalizeFind(value) { return String(value || '').toLocaleLowerCase('bn-BD').replace(/[^\p{L}\p{N}]+/gu, ' ').trim(); }
+  function asksForUnreadMessages(message) {
+    const value=normalizeFind(message);
+    const mentionsMessages=/(মেসেজ|বার্তা|রিসালা|message|messages)/.test(value);
+    const mentionsUnread=/(অপঠিত|আনরিড|unread|পড়িনি|পড়িনি|পড়া হয়নি|পড়া হয়নি|না পড়া|না পড়া|দেখিনি|খুলিনি|নতুন মেসেজ|পাঠিয়েছে|পাঠিয়েছে)/.test(value);
+    return mentionsMessages&&mentionsUnread;
+  }
   function buildContext(message) {
     const date = todayBD();
     const query = normalizeFind(message);
@@ -55,6 +61,21 @@
       return queryParts.some((part) => hay.includes(part)) || (query.length >= 3 && hay.includes(query));
     }).slice(0, 5).map((s) => s.id));
     const students = allStudents.map((s) => studentContext(s, date, detailedIds.has(s.id)));
+    const includeUnread=asksForUnreadMessages(message);
+    const unreadMessages=[];
+    if(includeUnread){
+      allStudents.forEach((student)=>{
+        (w.API.Messages?.getThread?.(student.id)||[]).forEach((m)=>{
+          if(m.role!=='in'||m.read) return;
+          unreadMessages.push({
+            studentId:student.id,studentName:student.name||'',waqfId:student.waqfId||'',
+            messageId:m.id||'',time:m.time||'',sentAt:m._ts||null,type:m.type||'text',
+            text:clip(m.text||m.fileName||m.extra?.fileName||'(ফাইল/সংযুক্তি)',2000)
+          });
+        });
+      });
+      unreadMessages.sort((a,b)=>(Number(b.sentAt)||0)-(Number(a.sentAt)||0));
+    }
     const overview = w.API.Tasks?.getTodayOverview?.(date) || [];
     return {
       asOf: new Date().toISOString(), timeZone: 'Asia/Dhaka', today: date,
@@ -64,6 +85,9 @@
         completedStudentIds: (o.completed || []).map((x) => typeof x === 'string' ? x : x.id),
         pendingStudentIds: (o.pending || []).map((x) => typeof x === 'string' ? x : x.id)
       })),
+      unreadMessageBodiesIncluded:includeUnread,
+      unreadMessageCount:unreadMessages.length,
+      unreadMessages,
       students
     };
   }
